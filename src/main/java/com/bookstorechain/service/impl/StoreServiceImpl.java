@@ -18,6 +18,7 @@ import java.util.List;
 public class StoreServiceImpl implements StoreService {
 
     private final StoreRepository storeRepository;
+    private final com.bookstorechain.repository.StockTransferRepository stockTransferRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -75,6 +76,19 @@ public class StoreServiceImpl implements StoreService {
     public void toggleStoreStatus(Long id) {
         Store store = storeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chi nhánh với ID: " + id));
+
+        if (store.isActive()) {
+            boolean hasOngoingTransfers = stockTransferRepository.existsByStoreAndStatuses(
+                    id,
+                    java.util.List.of(
+                            com.bookstorechain.enums.TransferStatus.PENDING,
+                            com.bookstorechain.enums.TransferStatus.IN_TRANSIT
+                    )
+            );
+            if (hasOngoingTransfers) {
+                throw new IllegalStateException("Không thể tạm dừng hoạt động chi nhánh đang có phiếu chuyển kho chưa hoàn tất!");
+            }
+        }
 
         store.setActive(!store.isActive());
         storeRepository.save(store);

@@ -97,8 +97,20 @@ public class StockTransferController {
     @PostMapping("/{id}/status")
     public String updateStatus(@PathVariable Long id,
                                @RequestParam("status") TransferStatus status,
+                               @org.springframework.security.core.annotation.AuthenticationPrincipal com.bookstorechain.security.CustomUserDetails userDetails,
                                RedirectAttributes redirectAttributes) {
         try {
+            StockTransfer transfer = transferService.getTransferById(id);
+            if (userDetails != null && userDetails.getUser().getRole() == com.bookstorechain.enums.Role.STAFF) {
+                Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
+                boolean isRelated = staffStoreId != null &&
+                        (staffStoreId.equals(transfer.getSenderStore().getId()) || staffStoreId.equals(transfer.getReceiverStore().getId()));
+                if (!isRelated) {
+                    redirectAttributes.addFlashAttribute("errorMessage", "Nhân viên chỉ có quyền cập nhật phiếu chuyển kho của chi nhánh mình phụ trách!");
+                    return "redirect:/admin/transfers/" + id;
+                }
+            }
+
             transferService.updateTransferStatus(id, status);
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật trạng thái phiếu chuyển thành công!");
         } catch (Exception e) {

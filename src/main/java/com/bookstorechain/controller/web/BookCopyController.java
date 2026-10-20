@@ -48,8 +48,13 @@ public class BookCopyController {
     }
 
     @GetMapping("/new")
-    public String showCreateForm(Model model) {
-        model.addAttribute("copyForm", new BookCopyRequestDTO());
+    public String showCreateForm(@org.springframework.security.core.annotation.AuthenticationPrincipal com.bookstorechain.security.CustomUserDetails userDetails,
+                                 Model model) {
+        BookCopyRequestDTO form = new BookCopyRequestDTO();
+        if (userDetails != null && userDetails.getUser().getRole() == com.bookstorechain.enums.Role.STAFF && userDetails.getUser().getStore() != null) {
+            form.setStoreId(userDetails.getUser().getStore().getId());
+        }
+        model.addAttribute("copyForm", form);
         model.addAttribute("books", bookService.getBooks(null, PageRequest.of(0, 100)).getContent());
         model.addAttribute("stores", storeService.getAllStores());
         model.addAttribute("conditions", com.bookstorechain.enums.BookCondition.values());
@@ -59,8 +64,22 @@ public class BookCopyController {
     @PostMapping("/new")
     public String createBookCopy(@Valid @ModelAttribute("copyForm") BookCopyRequestDTO requestDTO,
                                  BindingResult bindingResult,
+                                 @org.springframework.security.core.annotation.AuthenticationPrincipal com.bookstorechain.security.CustomUserDetails userDetails,
                                  RedirectAttributes redirectAttributes,
                                  Model model) {
+        // Nếu là STAFF, ép buộc gán đúng chi nhánh trực thuộc
+        if (userDetails != null && userDetails.getUser().getRole() == com.bookstorechain.enums.Role.STAFF) {
+            Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
+            if (staffStoreId == null) {
+                model.addAttribute("errorMessage", "Tài khoản nhân viên chưa được gán vào chi nhánh nào!");
+                model.addAttribute("books", bookService.getBooks(null, PageRequest.of(0, 100)).getContent());
+                model.addAttribute("stores", storeService.getAllStores());
+                model.addAttribute("conditions", com.bookstorechain.enums.BookCondition.values());
+                return "admin/inventory/copy-form";
+            }
+            requestDTO.setStoreId(staffStoreId);
+        }
+
         if (bindingResult.hasErrors()) {
             model.addAttribute("books", bookService.getBooks(null, PageRequest.of(0, 100)).getContent());
             model.addAttribute("stores", storeService.getAllStores());
@@ -104,8 +123,20 @@ public class BookCopyController {
     public String updateBookCopy(@PathVariable Long id,
                                  @Valid @ModelAttribute("copyForm") BookCopyRequestDTO requestDTO,
                                  BindingResult bindingResult,
+                                 @org.springframework.security.core.annotation.AuthenticationPrincipal com.bookstorechain.security.CustomUserDetails userDetails,
                                  RedirectAttributes redirectAttributes,
                                  Model model) {
+        // Nếu là STAFF, ép buộc giữ nguyên chi nhánh trực thuộc của mình
+        if (userDetails != null && userDetails.getUser().getRole() == com.bookstorechain.enums.Role.STAFF) {
+            Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
+            BookCopyResponseDTO currentCopy = bookCopyService.getBookCopyById(id);
+            if (staffStoreId == null || !staffStoreId.equals(currentCopy.getStoreId())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Nhân viên chỉ có quyền chỉnh sửa bản sách thuộc chi nhánh mình!");
+                return "redirect:/admin/book-copies";
+            }
+            requestDTO.setStoreId(staffStoreId);
+        }
+
         if (bindingResult.hasErrors()) {
             model.addAttribute("copyId", id);
             model.addAttribute("books", bookService.getBooks(null, PageRequest.of(0, 100)).getContent());

@@ -37,7 +37,7 @@ public class Book extends BaseEntity {
     @Column(name = "cover_price", precision = 12, scale = 2)
     private BigDecimal coverPrice;
 
-    @Column(name = "cover_image")
+    @Column(name = "cover_image", columnDefinition = "NVARCHAR(500)")
     private String coverImage;
 
     @Column(name = "is_active", nullable = false)

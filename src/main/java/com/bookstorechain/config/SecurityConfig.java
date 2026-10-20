@@ -2,6 +2,7 @@ package com.bookstorechain.config;
 
 import com.bookstorechain.security.CustomAuthenticationSuccessHandler;
 import com.bookstorechain.security.CustomUserDetailsService;
+import com.bookstorechain.security.JwtAuthenticationFilter;
 
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -25,6 +27,7 @@ public class SecurityConfig {
 	private final CustomUserDetailsService userDetailsService;
 	private final CustomAuthenticationSuccessHandler successHandler;
 	private final PasswordEncoder passwordEncoder;
+	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	@Bean
 	public DaoAuthenticationProvider authenticationProvider() {
@@ -41,7 +44,7 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf(csrf -> csrf.disable())
+		http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
 
 				.authorizeHttpRequests(auth -> auth
 
@@ -54,7 +57,7 @@ public class SecurityConfig {
 						.permitAll()
 
 						// Các trang public
-						.requestMatchers("/", "/home", "/login", "/register", "/error").permitAll()
+						.requestMatchers("/", "/home", "/login", "/register", "/error", "/buyback-request", "/books/**").permitAll()
 
 						// Admin
 						.requestMatchers("/admin/**").hasAnyRole("ADMIN", "MANAGER", "STAFF")
@@ -69,6 +72,9 @@ public class SecurityConfig {
 						.invalidateHttpSession(true).deleteCookies("JSESSIONID").permitAll());
 
 		http.authenticationProvider(authenticationProvider());
+
+		// Kích hoạt JWT filter cho REST API (/api/**)
+		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}

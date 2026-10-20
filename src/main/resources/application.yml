@@ -3,9 +3,9 @@ server:
 
 spring:
     datasource:
-        url: jdbc:sqlserver://localhost:1433;databaseName=bookstore_chain;encrypt=true;trustServerCertificate=true
-        username: ${DB_USERNAME}
-        password: ${DB_PASSWORD}
+        url: jdbc:sqlserver://localhost:1433;databaseName=BookStoreChain;encrypt=true;trustServerCertificate=true
+        username: ${DB_USERNAME:sa}
+        password: ${DB_PASSWORD:123456}
         driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
     jpa:
@@ -30,14 +30,13 @@ spring:
 
 app:
     jwt:
-        secret: ${JWT_SECRET}
+        secret: ${JWT_SECRET:OldBookDarkLuxuryReadingRoomSecretKey2026SuperSecureKey}
         expiration-ms: 86400000
 
 cloudinary:
-    cloud-name: ${CLOUDINARY_CLOUD_NAME}
-    api-key: ${CLOUDINARY_API_KEY}
-    api-secret: ${CLOUDINARY_API_SECRET}
-
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:demo}
+    api-key: ${CLOUDINARY_API_KEY:demo}
+    api-secret: ${CLOUDINARY_API_SECRET:demo}
 
 logging:
     level:

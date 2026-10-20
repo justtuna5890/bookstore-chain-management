@@ -21,7 +21,7 @@ public class Store extends BaseEntity {
     @Column(nullable = false, columnDefinition = "NVARCHAR(255)")
     private String address;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, columnDefinition = "NVARCHAR(20)")
     private String phone;
 
     @Column(name = "is_active", nullable = false)

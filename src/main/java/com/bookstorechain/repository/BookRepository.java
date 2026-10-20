@@ -18,4 +18,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     Page<Book> searchBooks(@Param("keyword") String keyword, Pageable pageable);
 
     boolean existsByTitleAndAuthor(String title, String author);
+
+    java.util.List<Book> findByIsActiveTrue();
+
+    @Query("SELECT DISTINCT b.category FROM Book b WHERE b.category IS NOT NULL AND b.isActive = true")
+    java.util.List<String> findDistinctCategories();
 }

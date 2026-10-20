@@ -25,7 +25,7 @@ public class BuybackRequest extends BaseEntity {
     private Store store; // Chi nhánh tiếp nhận xử lý
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, columnDefinition = "NVARCHAR(20)")
     @Builder.Default
     private BuybackStatus status = BuybackStatus.PENDING;
 

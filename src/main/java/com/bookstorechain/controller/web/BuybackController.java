@@ -52,9 +52,23 @@ public class BuybackController {
                                 @RequestParam(value = "staffNote", required = false) String staffNote,
                                 @RequestParam(value = "itemIds", required = false) List<Long> itemIds,
                                 @RequestParam(value = "offeredPrices", required = false) List<BigDecimal> offeredPrices,
+                                @org.springframework.security.core.annotation.AuthenticationPrincipal com.bookstorechain.security.CustomUserDetails userDetails,
                                 RedirectAttributes redirectAttributes) {
-        buybackService.updateStatusAndPricing(id, status, staffNote, itemIds, offeredPrices);
-        redirectAttributes.addFlashAttribute("successMessage", "Cập nhật yêu cầu thu mua thành công!");
+        try {
+            BuybackRequest request = buybackService.getRequestById(id);
+            if (userDetails != null && userDetails.getUser().getRole() == com.bookstorechain.enums.Role.STAFF) {
+                Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
+                if (staffStoreId == null || !staffStoreId.equals(request.getStore().getId())) {
+                    redirectAttributes.addFlashAttribute("errorMessage", "Nhân viên chỉ có quyền thẩm định và duyệt đơn thu mua của chi nhánh mình!");
+                    return "redirect:/admin/buybacks/" + id;
+                }
+            }
+
+            buybackService.updateStatusAndPricing(id, status, staffNote, itemIds, offeredPrices);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật yêu cầu thu mua thành công!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/admin/buybacks/" + id;
     }
 }

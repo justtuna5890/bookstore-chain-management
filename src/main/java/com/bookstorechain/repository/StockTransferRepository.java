@@ -18,4 +18,18 @@ public interface StockTransferRepository extends JpaRepository<StockTransfer, Lo
     Page<StockTransfer> searchTransfers(@Param("storeId") Long storeId,
                                         @Param("status") TransferStatus status,
                                         Pageable pageable);
+
+    @Query("SELECT COUNT(st) > 0 FROM StockTransfer st WHERE " +
+           "(st.senderStore.id = :storeId OR st.receiverStore.id = :storeId) AND " +
+           "st.status IN (:statuses)")
+    boolean existsByStoreAndStatuses(@Param("storeId") Long storeId,
+                                     @Param("statuses") java.util.Collection<TransferStatus> statuses);
+
+    @Query("SELECT COUNT(st) FROM StockTransfer st WHERE st.senderStore.id = :storeId OR st.receiverStore.id = :storeId")
+    long countByStoreId(@Param("storeId") Long storeId);
+
+    @Query("SELECT COUNT(item) > 0 FROM StockTransferItem item WHERE " +
+           "item.bookCopy.id = :bookCopyId AND item.stockTransfer.status IN (:statuses)")
+    boolean isBookCopyInActiveTransfer(@Param("bookCopyId") Long bookCopyId,
+                                      @Param("statuses") java.util.Collection<TransferStatus> statuses);
 }

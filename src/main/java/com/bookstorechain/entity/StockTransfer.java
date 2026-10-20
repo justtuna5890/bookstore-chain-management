@@ -29,7 +29,7 @@ public class StockTransfer extends BaseEntity {
     private User creator; // Nhân viên tạo phiếu
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, columnDefinition = "NVARCHAR(20)")
     @Builder.Default
     private TransferStatus status = TransferStatus.PENDING;
 

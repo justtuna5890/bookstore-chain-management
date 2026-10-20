@@ -26,12 +26,12 @@ public class BuybackItem extends BaseEntity {
     private String bookAuthor; // Tác giả sách
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "proposed_condition", nullable = false, length = 20)
+    @Column(name = "proposed_condition", nullable = false, length = 20, columnDefinition = "NVARCHAR(20)")
     private BookCondition proposedCondition; // Tình trạng do nhân viên thẩm định
 
     @Column(name = "offered_price", precision = 12, scale = 2)
     private BigDecimal offeredPrice; // Giá cửa hàng đề xuất mua lại
 
-    @Column(name = "item_image")
+    @Column(name = "item_image", columnDefinition = "NVARCHAR(500)")
     private String itemImage; // Ảnh thực tế cuốn sách khách gửi
 }

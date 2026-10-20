@@ -50,7 +50,15 @@ public class StockTransferServiceImpl implements StockTransferService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chi nhánh nhận"));
 
         User creator = userRepository.findByUsername(currentUsername)
+                .or(() -> userRepository.findByEmail(currentUsername))
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tài khoản thao tác"));
+
+        // Nếu người thao tác là STAFF thì chỉ được tạo phiếu xuất từ đúng chi nhánh của mình
+        if (creator.getRole() == com.bookstorechain.enums.Role.STAFF) {
+            if (creator.getStore() == null || !creator.getStore().getId().equals(senderStore.getId())) {
+                throw new org.springframework.security.access.AccessDeniedException("Nhân viên chỉ có quyền tạo phiếu điều chuyển từ chi nhánh trực thuộc của mình!");
+            }
+        }
 
         StockTransfer transfer = StockTransfer.builder()
                 .senderStore(senderStore)
@@ -64,9 +72,19 @@ public class StockTransferServiceImpl implements StockTransferService {
             BookCopy bookCopy = bookCopyRepository.findById(copyId)
                     .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bản sách ID: " + copyId));
 
-            // Kiểm tra sách phải thuộc chi nhánh gửi và đang sẵn sàng
+            // Kiểm tra sách phải thuộc chi nhánh gửi
             if (!bookCopy.getStore().getId().equals(senderStore.getId())) {
                 throw new IllegalArgumentException("Bản sách " + bookCopy.getCopyCode() + " không thuộc kho chi nhánh gửi!");
+            }
+
+            // Kiểm tra trạng thái sách phải là AVAILABLE
+            if (bookCopy.getStatus() != CopyStatus.AVAILABLE) {
+                throw new IllegalStateException("Bản sách " + bookCopy.getCopyCode() + " hiện không ở trạng thái sẵn sàng (AVAILABLE) để điều chuyển! Trạng thái hiện tại: " + bookCopy.getStatus());
+            }
+
+            // Kiểm tra sách không nằm trong phiếu điều chuyển khác đang PENDING hoặc IN_TRANSIT
+            if (stockTransferRepository.isBookCopyInActiveTransfer(copyId, java.util.List.of(TransferStatus.PENDING, TransferStatus.IN_TRANSIT))) {
+                throw new IllegalStateException("Bản sách " + bookCopy.getCopyCode() + " đang nằm trong một phiếu điều chuyển khác chưa hoàn tất!");
             }
 
             StockTransferItem item = StockTransferItem.builder()
@@ -88,6 +106,12 @@ public class StockTransferServiceImpl implements StockTransferService {
         // Xử lý chuyển đổi trạng thái và cập nhật BookCopy tương ứng
         if (currentStatus == TransferStatus.COMPLETED || currentStatus == TransferStatus.CANCELLED) {
             throw new IllegalStateException("Không thể thay đổi trạng thái của phiếu đã hoàn tất hoặc đã hủy!");
+        }
+
+        // Ràng buộc quy trình trạng thái:
+        // PENDING -> chỉ được sang IN_TRANSIT hoặc CANCELLED
+        if (currentStatus == TransferStatus.PENDING && newStatus == TransferStatus.COMPLETED) {
+            throw new IllegalStateException("Phiếu chuyển kho phải qua trạng thái Đang vận chuyển (IN_TRANSIT) trước khi Hoàn tất (COMPLETED)!");
         }
 
         if (newStatus == TransferStatus.IN_TRANSIT) {

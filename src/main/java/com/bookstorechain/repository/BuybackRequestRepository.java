@@ -18,4 +18,12 @@ public interface BuybackRequestRepository extends JpaRepository<BuybackRequest, 
     Page<BuybackRequest> searchRequests(@Param("storeId") Long storeId,
                                                 @Param("status") BuybackStatus status,
                                                 Pageable pageable);
+
+    @Query("SELECT br.status, COUNT(br) FROM BuybackRequest br GROUP BY br.status")
+    java.util.List<Object[]> countByStatus();
+
+    @Query("SELECT br.status, COUNT(br) FROM BuybackRequest br WHERE br.store.id = :storeId GROUP BY br.status")
+    java.util.List<Object[]> countByStatusAndStore(@Param("storeId") Long storeId);
+
+    long countByStoreId(Long storeId);
 }
