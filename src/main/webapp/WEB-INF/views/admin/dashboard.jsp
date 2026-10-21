@@ -172,6 +172,23 @@
 
         }
 
+    
+        /* Dark Luxury Styling for Select Dropdowns & Options */
+        select, .glass-input {
+            color-scheme: dark !important;
+        }
+        select option {
+            background-color: #12151c !important;
+            color: #f1f5f9 !important;
+            padding: 8px 12px !important;
+        }
+        select option:hover,
+        select option:focus,
+        select option:checked {
+            background-color: #1e2430 !important;
+            color: #D4AF37 !important;
+            font-weight: 600 !important;
+        }
     </style>
 
 </head>
@@ -739,7 +756,7 @@
 
 
 
-            <!-- 5. Active Operations: Recent Buybacks & Stock Transfers Directly on Dashboard -->
+                        <!-- 5. Active Operations: Recent Buybacks & Stock Transfers Directly on Dashboard -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6">
                 <!-- Box 1: Recent Buyback Requests -->
                 <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 flex flex-col justify-between">
@@ -747,17 +764,17 @@
                         <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
                             <div class="flex items-center gap-2">
                                 <div class="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
-                                    <i class="fa-solid fa-hand-holding-dollar text-xs"></i>
+                                    <i class="fa-solid fa-handshake text-xs"></i>
                                 </div>
                                 <div>
                                     <h3 class="text-xs uppercase tracking-wider font-semibold text-amber-300">
-                                        Thu Mua S?ch C? C?n X? L?
+                                        Thu Mua Sách Cũ Cần Xử Lý
                                     </h3>
-                                    <p class="text-[10px] text-slate-400">H? s? ti?p nh?n th?m ??nh v? b?o gi? t? b?n ??c</p>
+                                    <p class="text-[10px] text-slate-400">Hồ sơ tiếp nhận thẩm định và báo giá từ bạn đọc</p>
                                 </div>
                             </div>
                             <a href="/admin/buybacks" class="text-[11px] text-brand-gold hover:text-brand-goldLight transition flex items-center gap-1 font-medium">
-                                <span>Xem t?t c?</span>
+                                <span>Xem tất cả</span>
                                 <i class="fa-solid fa-arrow-right text-[9px]"></i>
                             </a>
                         </div>
@@ -772,26 +789,26 @@
                                         </div>
                                         <div class="text-[10px] text-slate-400 flex items-center gap-2">
                                             <span><i class="fa-solid fa-store text-[9px] mr-1 text-slate-500"></i>${bb.store.name}</span>
-                                            <span>?</span>
-                                            <span>${bb.items.size()} cu?n</span>
+                                            <span>•</span>
+                                            <span>${bb.items.size()} cuốn</span>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2.5 shrink-0">
                                         <c:choose>
                                             <c:when test="${bb.status == 'PENDING'}">
-                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/15 border border-amber-500/30 text-amber-300">Ch? ??nh gi?</span>
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/15 border border-amber-500/30 text-amber-300">Chờ định giá</span>
                                             </c:when>
                                             <c:when test="${bb.status == 'APPROVED'}">
-                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-500/15 border border-sky-500/30 text-sky-300">?? ??nh gi?</span>
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-sky-500/15 border border-sky-500/30 text-sky-300">Đã định giá</span>
                                             </c:when>
                                             <c:when test="${bb.status == 'COMPLETED'}">
-                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">Ho?n t?t</span>
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">Hoàn tất</span>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/15 border border-rose-500/30 text-rose-300">?? t? ch?i</span>
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/15 border border-rose-500/30 text-rose-300">Đã từ chối</span>
                                             </c:otherwise>
                                         </c:choose>
-                                        <a href="/admin/buybacks/${bb.id}" class="px-2.5 py-1 rounded-lg bg-brand-gold/15 hover:bg-brand-gold/25 border border-brand-gold/30 text-brand-gold text-[11px] font-medium transition" title="Xem chi ti?t & th?m ??nh">
+                                        <a href="/admin/buybacks/${bb.id}" class="px-2.5 py-1 rounded-lg bg-brand-gold/15 hover:bg-brand-gold/25 border border-brand-gold/30 text-brand-gold text-[11px] font-medium transition" title="Xem chi tiết & thẩm định">
                                             <i class="fa-solid fa-arrow-up-right-from-square"></i>
                                         </a>
                                     </div>
@@ -799,7 +816,7 @@
                             </c:forEach>
                             <c:if test="${empty recentBuybacks}">
                                 <div class="py-6 text-center text-slate-500 text-xs italic">
-                                    Kh?ng c? y?u c?u thu mua n?o g?n ??y.
+                                    Không có yêu cầu thu mua nào gần đây.
                                 </div>
                             </c:if>
                         </div>
@@ -812,17 +829,17 @@
                         <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
                             <div class="flex items-center gap-2">
                                 <div class="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
-                                    <i class="fa-solid fa-truck-ramp-box text-xs"></i>
+                                    <i class="fa-solid fa-truck-fast text-xs"></i>
                                 </div>
                                 <div>
                                     <h3 class="text-xs uppercase tracking-wider font-semibold text-purple-300">
-                                        Phi?u ?i?u Chuy?n Kho G?n ??y
+                                        Phiếu Điều Chuyển Kho Gần Đây
                                     </h3>
-                                    <p class="text-[10px] text-slate-400">Lu?n chuy?n b?n sao s?ch gi?a c?c chi nh?nh chu?i</p>
+                                    <p class="text-[10px] text-slate-400">Luân chuyển bản sao sách giữa các chi nhánh chuỗi</p>
                                 </div>
                             </div>
                             <a href="/admin/transfers" class="text-[11px] text-brand-gold hover:text-brand-goldLight transition flex items-center gap-1 font-medium">
-                                <span>Xem t?t c?</span>
+                                <span>Xem tất cả</span>
                                 <i class="fa-solid fa-arrow-right text-[9px]"></i>
                             </a>
                         </div>
@@ -833,30 +850,30 @@
                                     <div class="min-w-0">
                                         <div class="flex items-center gap-2 mb-0.5">
                                             <span class="font-mono font-bold text-purple-300">#TR-${tr.id}</span>
-                                            <span class="font-semibold text-white truncate">${tr.senderStore.name} ? ${tr.receiverStore.name}</span>
+                                            <span class="font-semibold text-white truncate">${tr.senderStore.name} → ${tr.receiverStore.name}</span>
                                         </div>
                                         <div class="text-[10px] text-slate-400 flex items-center gap-2">
                                             <span><i class="fa-solid fa-user-pen text-[9px] mr-1 text-slate-500"></i>${tr.creator.fullName}</span>
-                                            <span>?</span>
-                                            <span>${tr.items.size()} b?n s?ch</span>
+                                            <span>•</span>
+                                            <span>${tr.items.size()} bản sách</span>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-2.5 shrink-0">
                                         <c:choose>
                                             <c:when test="${tr.status == 'PENDING'}">
-                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/15 border border-amber-500/30 text-amber-300">Ch? chuy?n</span>
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/15 border border-amber-500/30 text-amber-300">Chờ chuyển</span>
                                             </c:when>
                                             <c:when test="${tr.status == 'IN_TRANSIT'}">
-                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/15 border border-blue-500/30 text-blue-300">?ang chuy?n</span>
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/15 border border-blue-500/30 text-blue-300">Đang chuyển</span>
                                             </c:when>
                                             <c:when test="${tr.status == 'COMPLETED'}">
-                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">?? nh?p kho</span>
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">Đã nhập kho</span>
                                             </c:when>
                                             <c:otherwise>
-                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-500/15 border border-slate-500/30 text-slate-400">?? h?y</span>
+                                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-500/15 border border-slate-500/30 text-slate-400">Đã hủy</span>
                                             </c:otherwise>
                                         </c:choose>
-                                        <a href="/admin/transfers/${tr.id}" class="px-2.5 py-1 rounded-lg bg-brand-gold/15 hover:bg-brand-gold/25 border border-brand-gold/30 text-brand-gold text-[11px] font-medium transition" title="Xem chi ti?t phi?u chuy?n">
+                                        <a href="/admin/transfers/${tr.id}" class="px-2.5 py-1 rounded-lg bg-brand-gold/15 hover:bg-brand-gold/25 border border-brand-gold/30 text-brand-gold text-[11px] font-medium transition" title="Xem chi tiết phiếu chuyển">
                                             <i class="fa-solid fa-arrow-up-right-from-square"></i>
                                         </a>
                                     </div>
@@ -864,248 +881,13 @@
                             </c:forEach>
                             <c:if test="${empty recentTransfers}">
                                 <div class="py-6 text-center text-slate-500 text-xs italic">
-                                    Kh?ng c? phi?u ?i?u chuy?n n?o g?n ??y.
+                                    Không có phiếu điều chuyển nào gần đây.
                                 </div>
                             </c:if>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Role-Specific Action Shortcuts -->
-
-            <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 mt-6">
-
-                <c:choose>
-
-                    <c:when test="${isAdmin}">
-
-                        <!-- 1. Shortcuts for ADMIN -->
-
-                        <div class="flex items-center justify-between mb-3.5">
-
-                            <h3 class="text-xs uppercase tracking-wider font-semibold text-rose-300 flex items-center gap-2">
-
-                                <i class="fa-solid fa-shield-halved text-rose-400"></i>
-
-                                <span>Phím Tắt Tác Vụ Dành Cho Quản Trị Viên (ADMIN)</span>
-
-                            </h3>
-
-                            <span class="text-[11px] text-slate-400">Toàn quyền kiểm soát hệ thống</span>
-
-                        </div>
-
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-
-                            <a href="/admin/users" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-rose-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-users-gear text-lg text-rose-400"></i>
-
-                                <span>Quản lý Nhân sự</span>
-
-                            </a>
-
-                            <a href="/admin/stores" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-blue-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-store text-lg text-blue-400"></i>
-
-                                <span>Mạng lưới Chi nhánh</span>
-
-                            </a>
-
-                            <a href="/admin/books" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-amber-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-book text-lg text-amber-400"></i>
-
-                                <span>Danh mục Đầu sách</span>
-
-                            </a>
-
-                            <a href="/admin/book-copies" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-emerald-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-boxes-stacked text-lg text-emerald-400"></i>
-
-                                <span>Kho Sách Bản sao</span>
-
-                            </a>
-
-                            <a href="/admin/transfers" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-purple-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-truck-ramp-box text-lg text-purple-400"></i>
-
-                                <span>Lịch sử Chuyển kho</span>
-
-                            </a>
-
-                            <a href="/admin/buybacks" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-yellow-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-hand-holding-dollar text-lg text-yellow-400"></i>
-
-                                <span>Đơn Thu mua Sách</span>
-
-                            </a>
-
-                            <a href="/admin/reports" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-teal-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-chart-line text-lg text-teal-400"></i>
-
-                                <span>Báo Cáo Theo Kỳ</span>
-
-                            </a>
-
-                        </div>
-
-                    </c:when>
-
-                    <c:when test="${isManager}">
-
-                        <!-- 2. Shortcuts for MANAGER -->
-
-                        <div class="flex items-center justify-between mb-3.5">
-
-                            <h3 class="text-xs uppercase tracking-wider font-semibold text-purple-300 flex items-center gap-2">
-
-                                <i class="fa-solid fa-briefcase text-purple-400"></i>
-
-                                <span>Phím Tắt Tác Vụ Dành Cho Quản Lý Vận Hành (MANAGER)</span>
-
-                            </h3>
-
-                            <span class="text-[11px] text-slate-400">Điều phối luân chuyển & duyệt thu mua</span>
-
-                        </div>
-
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-
-                            <a href="/admin/transfers" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-purple-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-truck-fast text-lg text-purple-400"></i>
-
-                                <span>Duyệt Chuyển Kho</span>
-
-                            </a>
-
-                            <a href="/admin/buybacks" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-amber-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-clipboard-check text-lg text-amber-400"></i>
-
-                                <span>Duyệt Thu Mua</span>
-
-                            </a>
-
-                            <a href="/admin/book-copies" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-emerald-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-boxes-stacked text-lg text-emerald-400"></i>
-
-                                <span>Kiểm Kê Tồn Kho</span>
-
-                            </a>
-
-                            <a href="/admin/transfers/new" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-blue-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-plus-circle text-lg text-blue-400"></i>
-
-                                <span>Tạo Chuyển Kho</span>
-
-                            </a>
-
-                            <a href="/admin/stores" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-sky-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-store text-lg text-sky-400"></i>
-
-                                <span>Theo Dõi Chi Nhánh</span>
-
-                            </a>
-
-                            <a href="/admin/books" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-brand-gold/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-book text-lg text-brand-gold"></i>
-
-                                <span>Tra Cứu Đầu Sách</span>
-
-                            </a>
-
-                            <a href="/admin/reports" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-teal-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-chart-line text-lg text-teal-400"></i>
-
-                                <span>Báo Cáo Theo Kỳ</span>
-
-                            </a>
-
-                        </div>
-
-                    </c:when>
-
-                    <c:when test="${isStaff}">
-
-                        <!-- 3. Shortcuts for STAFF -->
-
-                        <div class="flex items-center justify-between mb-3.5">
-
-                            <h3 class="text-xs uppercase tracking-wider font-semibold text-sky-300 flex items-center gap-2">
-
-                                <i class="fa-solid fa-user-check text-sky-400"></i>
-
-                                <span>Phím Tắt Tác Vụ Dành Cho Nhân Viên Vận Hành (STAFF)</span>
-
-                            </h3>
-
-                            <span class="text-[11px] text-slate-400">Thao tác quầy và kho chi nhánh</span>
-
-                        </div>
-
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-
-                            <a href="/admin/buybacks" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-amber-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-hand-holding-dollar text-lg text-amber-400"></i>
-
-                                <span>Thẩm Định Thu Mua</span>
-
-                            </a>
-
-                            <a href="/admin/transfers/new" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-blue-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-truck-ramp-box text-lg text-blue-400"></i>
-
-                                <span>Lập Phiếu Chuyển Sách</span>
-
-                            </a>
-
-                            <a href="/admin/book-copies/new" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-emerald-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-barcode text-lg text-emerald-400"></i>
-
-                                <span>Nhập Mã Sách Mới</span>
-
-                            </a>
-
-                            <a href="/admin/book-copies" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-yellow-400/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-boxes-stacked text-lg text-yellow-400"></i>
-
-                                <span>Tra Cứu Kho Chi Nhánh</span>
-
-                            </a>
-
-                            <a href="/admin/books" class="p-3.5 rounded-xl glass-panel border border-white/5 hover:border-brand-gold/40 text-xs font-medium text-slate-300 hover:text-white transition flex flex-col items-center justify-center text-center gap-2">
-
-                                <i class="fa-solid fa-book text-lg text-brand-gold"></i>
-
-                                <span>Tra Cứu Danh Mục Sách</span>
-
-                            </a>
-
-                        </div>
-
-                    </c:when>
-
-                </c:choose>
-
-            </div>
-
         </main>
 
     </div>
