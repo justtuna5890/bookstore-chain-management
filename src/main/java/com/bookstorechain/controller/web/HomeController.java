@@ -4,15 +4,13 @@ import com.bookstorechain.dto.request.CustomerBuybackDTO;
 import com.bookstorechain.dto.response.BookCatalogItemDTO;
 import com.bookstorechain.dto.response.BookCopyResponseDTO;
 import com.bookstorechain.entity.*;
-import com.bookstorechain.enums.BuybackStatus;
 import com.bookstorechain.enums.CopyStatus;
-import com.bookstorechain.enums.Role;
 import com.bookstorechain.repository.*;
 import com.bookstorechain.security.CustomUserDetails;
+import com.bookstorechain.service.BuybackService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -30,10 +28,7 @@ public class HomeController {
     private final BookRepository bookRepository;
     private final BookCopyRepository bookCopyRepository;
     private final StoreRepository storeRepository;
-    private final BuybackRequestRepository buybackRequestRepository;
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final com.bookstorechain.service.NotificationService notificationService;
+    private final BuybackService buybackService;
 
     @GetMapping({"/", "/home"})
     public String home(@RequestParam(value = "keyword", required = false) String keyword,
@@ -58,62 +53,12 @@ public class HomeController {
         }
 
         try {
-            // Xác định hoặc tạo tài khoản khách hàng
-            User customer;
-            if (userDetails != null && userDetails.getUser() != null) {
-                customer = userDetails.getUser();
-            } else {
-                String email = buybackForm.getCustomerEmail() != null ? buybackForm.getCustomerEmail().trim() : "";
-                if (email.isEmpty()) {
-                    populateHomeModel(model, null, null, null, userDetails, buybackForm);
-                    model.addAttribute("buybackError", "Email không được để trống!");
-                    return "index";
-                }
-
-                customer = userRepository.findByEmail(email)
-                        .orElseGet(() -> {
-                            User newUser = User.builder()
-                                    .username(email)
-                                    .email(email)
-                                    .fullName(buybackForm.getCustomerName() != null && !buybackForm.getCustomerName().isBlank()
-                                            ? buybackForm.getCustomerName() : "Khách Hàng " + email.split("@")[0])
-                                    .phone(buybackForm.getCustomerPhone())
-                                    .password(passwordEncoder.encode(UUID.randomUUID().toString().substring(0, 8)))
-                                    .role(Role.CUSTOMER)
-                                    .isActive(true)
-                                    .build();
-                            return userRepository.save(newUser);
-                        });
-            }
-
-            Store store = storeRepository.findById(buybackForm.getStoreId())
-                    .orElseThrow(() -> new IllegalArgumentException("Chi nhánh không tồn tại!"));
-
-            BuybackRequest request = BuybackRequest.builder()
-                    .customer(customer)
-                    .store(store)
-                    .status(BuybackStatus.PENDING)
-                    .staffNote("Yêu cầu gửi từ cổng khách hàng trực tuyến. Ghi chú: " +
-                            (buybackForm.getNote() != null ? buybackForm.getNote() : "Không có"))
-                    .build();
-
-            BuybackItem item = BuybackItem.builder()
-                    .buybackRequest(request)
-                    .bookTitle(buybackForm.getBookTitle())
-                    .bookAuthor(buybackForm.getBookAuthor() != null && !buybackForm.getBookAuthor().isBlank()
-                            ? buybackForm.getBookAuthor() : "Chưa rõ")
-                    .proposedCondition(buybackForm.getCondition())
-                    .build();
-
-            request.getItems().add(item);
-            BuybackRequest saved = buybackRequestRepository.save(request);
-
-            // Gửi thông báo WebSocket tức thời đến nhân viên chi nhánh và admin
-            notificationService.notifyNewBuyback(saved);
+            User loggedInUser = userDetails != null ? userDetails.getUser() : null;
+            BuybackRequest saved = buybackService.createCustomerBuyback(buybackForm, loggedInUser);
 
             redirectAttributes.addFlashAttribute("buybackSuccessMsg",
                     "Gửi yêu cầu thu mua sách cũ thành công! Mã đơn: #BB-" + saved.getId() +
-                            ". Nhân viên chi nhánh " + store.getName() + " sẽ liên hệ sớm nhất để thẩm định.");
+                            ". Nhân viên chi nhánh " + saved.getStore().getName() + " sẽ liên hệ sớm nhất để thẩm định.");
             return "redirect:/?buybackSuccess=true#buyback";
 
         } catch (Exception e) {
