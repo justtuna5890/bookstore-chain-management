@@ -3,6 +3,7 @@ package com.bookstorechain.controller.web;
 import com.bookstorechain.dto.response.ReportSummaryDTO;
 import com.bookstorechain.enums.Role;
 import com.bookstorechain.security.CustomUserDetails;
+import com.bookstorechain.service.PdfExportService;
 import com.bookstorechain.service.ReportService;
 import com.bookstorechain.service.StoreService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,6 +28,7 @@ public class ReportController {
 
     private final ReportService reportService;
     private final StoreService storeService;
+    private final PdfExportService pdfExportService;
 
     @GetMapping
     public String showReports(@AuthenticationPrincipal CustomUserDetails userDetails,
@@ -86,5 +88,26 @@ public class ReportController {
         }
 
         reportService.exportReportExcel(startDate, endDate, storeId, response);
+    }
+
+    @GetMapping("/export/pdf")
+    public void exportReportPdf(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                                @RequestParam(value = "storeId", required = false) Long storeId,
+                                HttpServletResponse response) throws Exception {
+        Role userRole = userDetails != null && userDetails.getUser() != null ? userDetails.getUser().getRole() : Role.STAFF;
+        if (userRole == Role.STAFF) {
+            storeId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
+        }
+
+        if (startDate == null) {
+            startDate = LocalDate.now().minusDays(30);
+        }
+        if (endDate == null) {
+            endDate = LocalDate.now();
+        }
+
+        pdfExportService.exportPeriodicReportPdf(startDate, endDate, storeId, response);
     }
 }

@@ -292,14 +292,17 @@
 
                 <div class="flex items-center gap-3">
 
-                    <a href="/admin/reports/export/excel?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}" 
-
+                                        <a href="/admin/reports/export/excel?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}" 
                        class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-xs shadow-lg transition flex items-center gap-2">
-
                         <i class="fa-solid fa-file-excel"></i>
+                        <span>Xuất File Excel</span>
+                    </a>
 
-                        <span>Xuất File Excel Theo Kỳ</span>
-
+                    <a href="/admin/reports/export/pdf?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}" 
+                       target="_blank"
+                       class="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-bold text-xs shadow-lg transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>Xuất Báo Cáo PDF (A4)</span>
                     </a>
 
                     <a href="/admin/dashboard" class="px-3.5 py-2 rounded-xl glass-panel-subtle hover:bg-white/10 text-slate-300 text-xs transition flex items-center gap-1.5">
@@ -685,15 +688,19 @@
 
                             <div class="pt-2">
 
-                                <a href="/admin/reports/export/excel?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}" 
-
-                                   class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 text-xs font-semibold transition flex items-center justify-center gap-2">
-
-                                    <i class="fa-solid fa-download text-brand-gold"></i>
-
-                                    <span>Tải toàn bộ bộ số liệu về máy tính (.xlsx)</span>
-
-                                </a>
+                                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <a href="/admin/reports/export/excel?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}" 
+                                       class="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 text-xs font-semibold transition flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-file-excel text-emerald-400"></i>
+                                        <span>Tải file Excel (.xlsx)</span>
+                                    </a>
+                                    <a href="/admin/reports/export/pdf?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}" 
+                                       target="_blank"
+                                       class="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 text-xs font-semibold transition flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-file-pdf text-rose-400"></i>
+                                        <span>In Báo Cáo PDF (A4)</span>
+                                    </a>
+                                </div>
 
                             </div>
 
