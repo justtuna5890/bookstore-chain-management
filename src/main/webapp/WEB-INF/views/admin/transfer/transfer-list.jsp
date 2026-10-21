@@ -81,6 +81,23 @@
             border-color: rgba(212, 175, 55, 0.45);
             outline: none;
         }
+    
+        /* Dark Luxury Styling for Select Dropdowns & Options */
+        select, .glass-input {
+            color-scheme: dark !important;
+        }
+        select option {
+            background-color: #12151c !important;
+            color: #f1f5f9 !important;
+            padding: 8px 12px !important;
+        }
+        select option:hover,
+        select option:focus,
+        select option:checked {
+            background-color: #1e2430 !important;
+            color: #D4AF37 !important;
+            font-weight: 600 !important;
+        }
     </style>
 </head>
 <body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-6 px-4 md:px-8 lg:px-12 selection:bg-brand-gold selection:text-black">
@@ -159,11 +176,12 @@
                         </c:choose>
                     </div>
                     <div class="sm:col-span-5">
-                        <select name="status" class="glass-input w-full px-3 py-2 text-xs rounded-xl bg-[#161a22]">
+                        <select name="status" class="glass-input w-full px-3 py-2 text-xs rounded-xl bg-[#161a22] text-slate-100">
                             <option value="">-- Tất cả trạng thái phiếu --</option>
-                            <c:forEach var="st" items="${statuses}">
-                                <option value="${st}" ${selectedStatus == st ? 'selected' : ''}>${st}</option>
-                            </c:forEach>
+                            <option value="PENDING" ${selectedStatus == 'PENDING' ? 'selected' : ''}>Chờ xuất kho (PENDING)</option>
+                            <option value="IN_TRANSIT" ${selectedStatus == 'IN_TRANSIT' ? 'selected' : ''}>Đang vận chuyển (IN_TRANSIT)</option>
+                            <option value="COMPLETED" ${selectedStatus == 'COMPLETED' ? 'selected' : ''}>Đã nhập kho (COMPLETED)</option>
+                            <option value="CANCELLED" ${selectedStatus == 'CANCELLED' ? 'selected' : ''}>Đã hủy (CANCELLED)</option>
                         </select>
                     </div>
                     <div class="sm:col-span-2">
