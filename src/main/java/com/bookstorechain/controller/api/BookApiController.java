@@ -2,6 +2,7 @@ package com.bookstorechain.controller.api;
 
 import com.bookstorechain.entity.Book;
 import com.bookstorechain.repository.BookRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +27,7 @@ public class BookApiController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public Book create(@RequestBody Book book) {
         return bookRepository.save(book);
     }
