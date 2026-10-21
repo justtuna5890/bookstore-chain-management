@@ -222,14 +222,24 @@
                         <textarea name="staffNote" rows="3" class="glass-input w-full px-3.5 py-2.5 text-xs rounded-xl" placeholder="Đánh giá chi tiết tình trạng gáy, trang phụ hoặc phản hồi khách hàng...">${buybackRequest.staffNote}</textarea>
                     </div>
 
-                    <div class="pt-4 flex items-center gap-3">
-                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-400 text-slate-950 font-bold text-xs shadow-glow-gold transition">
-                            Cập Nhật Hồ Sơ Thu Mua
-                        </button>
-                        <a href="/admin/buybacks" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-300 text-xs transition">
-                            Hủy bỏ
-                        </a>
-                    </div>
+                    <c:choose>
+                        <c:when test="${buybackRequest.status == 'COMPLETED' || buybackRequest.status == 'REJECTED'}">
+                            <div class="p-4 rounded-xl bg-white/5 border border-white/10 text-slate-300 text-xs flex items-center gap-2">
+                                <i class="fa-solid fa-lock text-brand-gold text-sm"></i>
+                                <span>Hồ sơ này đã ở trạng thái <strong>${buybackRequest.status}</strong> (đã đóng). Không thể chỉnh sửa hoặc thay đổi trạng thái thêm.</span>
+                            </div>
+                        </c:when>
+                        <c:otherwise>
+                            <div class="pt-4 flex items-center gap-3">
+                                <button type="submit" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-400 text-slate-950 font-bold text-xs shadow-glow-gold transition">
+                                    Cập Nhật Hồ Sơ Thu Mua
+                                </button>
+                                <a href="/admin/buybacks" class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-300 text-xs transition">
+                                    Quay lại danh sách
+                                </a>
+                            </div>
+                        </c:otherwise>
+                    </c:choose>
                 </form>
             </div>
         </main>

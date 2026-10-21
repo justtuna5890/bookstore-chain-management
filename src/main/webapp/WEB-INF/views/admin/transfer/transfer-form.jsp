@@ -126,13 +126,24 @@
                     <label class="block text-xs font-semibold text-brand-gold mb-1.5">
                         1. Chi nhánh xuất kho (Gửi):
                     </label>
-                    <select id="senderStoreSelect" class="glass-input w-full px-3.5 py-2.5 text-xs rounded-xl bg-[#161a22]" onchange="location.href='/admin/transfers/new?senderStoreId=' + this.value;">
-                        <option value="">-- Chọn chi nhánh xuất kho --</option>
-                        <c:forEach var="store" items="${stores}">
-                            <option value="${store.id}" ${selectedSenderId == store.id ? 'selected' : ''}>${store.name}</option>
-                        </c:forEach>
-                    </select>
-                    <span class="text-[10px] text-slate-400 mt-1 block">Hệ thống sẽ tải danh sách sách khả dụng tại chi nhánh này</span>
+                    <c:choose>
+                        <c:when test="${isStaffScoped}">
+                            <div class="glass-input w-full px-3.5 py-2.5 text-xs rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 font-semibold flex items-center gap-2">
+                                <i class="fa-solid fa-store text-sky-400"></i>
+                                <span>${currentStoreName} (Chi nhánh phụ trách của bạn)</span>
+                            </div>
+                            <span class="text-[10px] text-slate-400 mt-1 block">Nhân viên chỉ có quyền lập phiếu xuất sách từ kho chi nhánh mình</span>
+                        </c:when>
+                        <c:otherwise>
+                            <select id="senderStoreSelect" class="glass-input w-full px-3.5 py-2.5 text-xs rounded-xl bg-[#161a22]" onchange="location.href='/admin/transfers/new?senderStoreId=' + this.value;">
+                                <option value="">-- Chọn chi nhánh xuất kho --</option>
+                                <c:forEach var="store" items="${stores}">
+                                    <option value="${store.id}" ${selectedSenderId == store.id ? 'selected' : ''}>${store.name}</option>
+                                </c:forEach>
+                            </select>
+                            <span class="text-[10px] text-slate-400 mt-1 block">Hệ thống sẽ tải danh sách sách khả dụng tại chi nhánh này</span>
+                        </c:otherwise>
+                    </c:choose>
                 </div>
 
                 <form:form action="/admin/transfers/new" method="post" modelAttribute="transferForm" cssClass="space-y-4">

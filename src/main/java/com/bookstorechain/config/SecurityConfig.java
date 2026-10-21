@@ -57,7 +57,7 @@ public class SecurityConfig {
 						.permitAll()
 
 						// Các trang public
-						.requestMatchers("/", "/home", "/login", "/register", "/error", "/buyback-request", "/books/**").permitAll()
+						.requestMatchers("/", "/home", "/login", "/register", "/error", "/buyback-request", "/books/**", "/api/auth/**", "/ws/**").permitAll()
 
 						// Admin
 						.requestMatchers("/admin/**").hasAnyRole("ADMIN", "MANAGER", "STAFF")
@@ -69,7 +69,9 @@ public class SecurityConfig {
 						.successHandler(successHandler).failureUrl("/login?error=true").permitAll())
 
 				.logout(logout -> logout.logoutUrl("/logout").logoutSuccessUrl("/login?logout=true")
-						.invalidateHttpSession(true).deleteCookies("JSESSIONID").permitAll());
+						.invalidateHttpSession(true).deleteCookies("JSESSIONID").permitAll())
+
+				.exceptionHandling(ex -> ex.accessDeniedPage("/?denied=true"));
 
 		http.authenticationProvider(authenticationProvider());
 

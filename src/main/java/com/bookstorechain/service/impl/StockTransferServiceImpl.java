@@ -7,12 +7,15 @@ import com.bookstorechain.enums.CopyStatus;
 import com.bookstorechain.enums.TransferStatus;
 import com.bookstorechain.exception.ResourceNotFoundException;
 import com.bookstorechain.repository.*;
+import com.bookstorechain.service.NotificationService;
 import com.bookstorechain.service.StockTransferService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ public class StockTransferServiceImpl implements StockTransferService {
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
     private final BookCopyRepository bookCopyRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -83,7 +87,7 @@ public class StockTransferServiceImpl implements StockTransferService {
             }
 
             // Kiểm tra sách không nằm trong phiếu điều chuyển khác đang PENDING hoặc IN_TRANSIT
-            if (stockTransferRepository.isBookCopyInActiveTransfer(copyId, java.util.List.of(TransferStatus.PENDING, TransferStatus.IN_TRANSIT))) {
+            if (stockTransferRepository.isBookCopyInActiveTransfer(copyId, List.of(TransferStatus.PENDING, TransferStatus.IN_TRANSIT))) {
                 throw new IllegalStateException("Bản sách " + bookCopy.getCopyCode() + " đang nằm trong một phiếu điều chuyển khác chưa hoàn tất!");
             }
 
@@ -94,7 +98,10 @@ public class StockTransferServiceImpl implements StockTransferService {
             transfer.getItems().add(item);
         }
 
-        stockTransferRepository.save(transfer);
+        StockTransfer saved = stockTransferRepository.save(transfer);
+
+        // Bắn thông báo thời gian thực WebSocket tới chi nhánh nhận và ban quản lý
+        notificationService.notifyNewStockTransfer(saved);
     }
 
     @Override

@@ -112,7 +112,14 @@
                     <a href="/admin/export/excel/inventory${not empty selectedStoreId ? '?storeId='.concat(selectedStoreId) : ''}" 
                        class="px-3.5 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-semibold text-xs border border-emerald-500/30 transition flex items-center gap-2 shadow-sm">
                         <i class="fa-solid fa-file-excel text-emerald-400"></i>
-                        <span>Xuất Excel Tồn Kho</span>
+                        <c:choose>
+                            <c:when test="${isStaffScoped}">
+                                <span>Xuất Tồn Kho Chi Nhánh</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span>Xuất Excel Tồn Kho</span>
+                            </c:otherwise>
+                        </c:choose>
                     </a>
                     <a href="/admin/book-copies/new" 
                        class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-400 text-slate-950 font-bold text-xs shadow-glow-gold transition flex items-center gap-2">
@@ -126,12 +133,23 @@
             <div class="glass-panel rounded-2xl p-4 mb-6 border border-white/10 shadow-lg">
                 <form action="/admin/book-copies" method="get" class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
                     <div class="sm:col-span-3">
-                        <select name="storeId" class="glass-input w-full px-3 py-2 text-xs rounded-xl bg-[#161a22]">
-                            <option value="">-- Tất cả chi nhánh --</option>
-                            <c:forEach var="store" items="${stores}">
-                                <option value="${store.id}" ${selectedStoreId == store.id ? 'selected' : ''}>${store.name}</option>
-                            </c:forEach>
-                        </select>
+                        <c:choose>
+                            <c:when test="${isStaffScoped}">
+                                <div class="glass-input w-full px-3 py-2 text-xs rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 font-semibold flex items-center gap-1.5">
+                                    <i class="fa-solid fa-store text-[10px]"></i>
+                                    <span class="truncate">${currentStoreName}</span>
+                                </div>
+                                <input type="hidden" name="storeId" value="${selectedStoreId}"/>
+                            </c:when>
+                            <c:otherwise>
+                                <select name="storeId" class="glass-input w-full px-3 py-2 text-xs rounded-xl bg-[#161a22]">
+                                    <option value="">-- Tất cả chi nhánh --</option>
+                                    <c:forEach var="store" items="${stores}">
+                                        <option value="${store.id}" ${selectedStoreId == store.id ? 'selected' : ''}>${store.name}</option>
+                                    </c:forEach>
+                                </select>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                     <div class="sm:col-span-3">
                         <select name="status" class="glass-input w-full px-3 py-2 text-xs rounded-xl bg-[#161a22]">
@@ -152,6 +170,17 @@
                 </form>
             </div>
 
+            <!-- Cảnh báo nếu nhân viên chưa được gán chi nhánh -->
+            <c:if test="${unassignedStoreWarning}">
+                <div class="mb-5 p-4 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs flex items-center gap-3 shadow-lg">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-400 text-xl shrink-0"></i>
+                    <div>
+                        <strong class="font-bold block text-sm mb-0.5">Tài khoản chưa được phân bổ chi nhánh công tác!</strong>
+                        <span class="text-slate-300 leading-relaxed">Bạn không thể xem hoặc quản lý bản sách của toàn chuỗi khi chưa được gán chi nhánh. Vui lòng liên hệ Quản trị viên để được phân bổ chi nhánh làm việc.</span>
+                    </div>
+                </div>
+            </c:if>
+
             <!-- Feedback Messages -->
             <c:if test="${not empty successMessage}">
                 <div class="mb-5 p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center justify-between">

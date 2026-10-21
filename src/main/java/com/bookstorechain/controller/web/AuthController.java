@@ -29,10 +29,17 @@ public class AuthController {
             @RequestParam(value = "registered", required = false) String registered,
             Model model) {
 
-        // Nếu đã đăng nhập thì chuyển hướng thẳng vào dashboard
+        // Nếu đã đăng nhập thì chuyển hướng phù hợp theo Role
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
-            return "redirect:/admin/dashboard";
+            boolean isStaffOrAdmin = auth.getAuthorities().stream().anyMatch(role ->
+                    role.getAuthority().equals("ROLE_ADMIN")
+                            || role.getAuthority().equals("ROLE_MANAGER")
+                            || role.getAuthority().equals("ROLE_STAFF"));
+            if (isStaffOrAdmin) {
+                return "redirect:/admin/dashboard";
+            }
+            return "redirect:/";
         }
 
         if (error != null) {

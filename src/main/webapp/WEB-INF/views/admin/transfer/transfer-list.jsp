@@ -112,7 +112,21 @@
                     <a href="/admin/export/excel/transfers" 
                        class="px-3.5 py-2.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 font-semibold text-xs border border-blue-500/30 transition flex items-center gap-2 shadow-sm">
                         <i class="fa-solid fa-file-excel text-blue-400"></i>
-                        <span>Xuất Excel Phiếu Chuyển</span>
+                        <c:choose>
+
+                            <c:when test="${isStaffScoped}">
+
+                                <span>Xuất Phiếu Chuyển Chi Nhánh</span>
+
+                            </c:when>
+
+                            <c:otherwise>
+
+                                <span>Xuất Excel Phiếu Chuyển</span>
+
+                            </c:otherwise>
+
+                        </c:choose>
                     </a>
                     <a href="/admin/transfers/new" 
                        class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-400 text-slate-950 font-bold text-xs shadow-glow-gold transition flex items-center gap-2">
@@ -126,12 +140,23 @@
             <div class="glass-panel rounded-2xl p-4 mb-6 border border-white/10 shadow-lg">
                 <form action="/admin/transfers" method="get" class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
                     <div class="sm:col-span-5">
-                        <select name="storeId" class="glass-input w-full px-3 py-2 text-xs rounded-xl bg-[#161a22]">
-                            <option value="">-- Tất cả chi nhánh (Gửi hoặc Nhận) --</option>
-                            <c:forEach var="store" items="${stores}">
-                                <option value="${store.id}" ${selectedStoreId == store.id ? 'selected' : ''}>${store.name}</option>
-                            </c:forEach>
-                        </select>
+                        <c:choose>
+                            <c:when test="${isStaffScoped}">
+                                <div class="glass-input w-full px-3 py-2 text-xs rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 font-semibold flex items-center gap-1.5">
+                                    <i class="fa-solid fa-store text-[10px]"></i>
+                                    <span class="truncate">Phiếu liên quan: ${currentStoreName}</span>
+                                </div>
+                                <input type="hidden" name="storeId" value="${selectedStoreId}"/>
+                            </c:when>
+                            <c:otherwise>
+                                <select name="storeId" class="glass-input w-full px-3 py-2 text-xs rounded-xl bg-[#161a22]">
+                                    <option value="">-- Tất cả chi nhánh (Gửi hoặc Nhận) --</option>
+                                    <c:forEach var="store" items="${stores}">
+                                        <option value="${store.id}" ${selectedStoreId == store.id ? 'selected' : ''}>${store.name}</option>
+                                    </c:forEach>
+                                </select>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                     <div class="sm:col-span-5">
                         <select name="status" class="glass-input w-full px-3 py-2 text-xs rounded-xl bg-[#161a22]">
@@ -148,6 +173,28 @@
                     </div>
                 </form>
             </div>
+
+            <!-- Cảnh báo nếu nhân viên chưa được gán chi nhánh -->
+
+            <c:if test="${unassignedStoreWarning}">
+
+                <div class="mb-5 p-4 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs flex items-center gap-3 shadow-lg">
+
+                    <i class="fa-solid fa-triangle-exclamation text-amber-400 text-xl shrink-0"></i>
+
+                    <div>
+
+                        <strong class="font-bold block text-sm mb-0.5">Tài khoản chưa được phân bổ chi nhánh công tác!</strong>
+
+                        <span class="text-slate-300 leading-relaxed">Bạn không thể lập hoặc xem phiếu điều chuyển khi chưa được phân bổ chi nhánh. Vui lòng liên hệ Quản trị viên để được gán chi nhánh làm việc.</span>
+
+                    </div>
+
+                </div>
+
+            </c:if>
+
+
 
             <!-- Feedback Messages -->
             <c:if test="${not empty successMessage}">
@@ -192,13 +239,12 @@
                                         </div>
                                     </td>
                                     <td class="py-3.5 px-4 text-slate-300">
-                                        <span class="font-bold text-brand-gold font-mono">${t.items.size()}</span> cuốn
+                                        <span class="font-bold text-brand-gold font-mono">${t.itemCount}</span> cu?n
                                     </td>
                                     <td class="py-3.5 px-4 text-slate-400">
-                                        <div>${t.creatorName}</div>
+                                        <div>${t.creatorUsername}</div>
                                         <div class="text-[10px] text-slate-500 font-mono">
-                                            <fmt:parseDate value="${t.createdAt}" pattern="yyyy-MM-dd'T'HH:mm" var="parsedDate" type="both" />
-                                            <fmt:formatDate value="${parsedDate}" pattern="dd/MM/yyyy HH:mm" />
+                                            ${t.createdAt}
                                         </div>
                                     </td>
                                     <td class="py-3.5 px-4 text-center">

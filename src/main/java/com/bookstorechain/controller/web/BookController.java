@@ -39,12 +39,14 @@ public class BookController {
     }
 
     @GetMapping("/new")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public String showCreateForm(Model model) {
         model.addAttribute("bookForm", new BookRequestDTO());
         return "admin/book/book-form";
     }
 
     @PostMapping("/new")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public String createBook(@Valid @ModelAttribute("bookForm") BookRequestDTO requestDTO,
                              BindingResult bindingResult,
                              RedirectAttributes redirectAttributes,
@@ -64,6 +66,7 @@ public class BookController {
     }
 
     @GetMapping("/{id}/edit")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public String showEditForm(@PathVariable Long id, Model model) {
         BookResponseDTO book = bookService.getBookById(id);
 
@@ -83,6 +86,7 @@ public class BookController {
     }
 
     @PostMapping("/{id}/edit")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public String updateBook(@PathVariable Long id,
                              @Valid @ModelAttribute("bookForm") BookRequestDTO requestDTO,
                              BindingResult bindingResult,
@@ -99,6 +103,7 @@ public class BookController {
     }
 
     @PostMapping("/{id}/toggle-status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public String toggleStatus(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         bookService.toggleBookStatus(id);
         redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật trạng thái sách!");

@@ -163,10 +163,10 @@
                         <div>
                             <label class="block text-xs font-medium text-slate-300 mb-1.5">Chi nhánh tiếp nhận (*)</label>
                             <c:choose>
-                                <c:when test="${isStaff}">
-                                    <input type="text" value="${staffStoreName}" class="glass-input w-full px-3.5 py-2.5 text-xs rounded-xl opacity-60 cursor-not-allowed" readonly />
-                                    <form:hidden path="storeId" value="${staffStoreId}" />
-                                    <span class="text-[10px] text-brand-gold mt-1 block"><i class="fa-solid fa-lock mr-1"></i>Khóa theo chi nhánh của nhân viên</span>
+                                <c:when test="${isStaffScoped}">
+                                    <input type="text" value="${pageContext.request.userPrincipal.principal.user.store.name}" class="glass-input w-full px-3.5 py-2.5 text-xs rounded-xl cursor-not-allowed bg-sky-500/10 border-sky-500/30 text-sky-200" readonly />
+                                    <form:hidden path="storeId" />
+                                    <span class="text-[10px] text-sky-400 mt-1 block"><i class="fa-solid fa-lock mr-1"></i>Khóa theo chi nhánh phụ trách của bạn</span>
                                 </c:when>
                                 <c:otherwise>
                                     <form:select path="storeId" cssClass="glass-input w-full px-3.5 py-2.5 text-xs rounded-xl bg-[#161a22]">

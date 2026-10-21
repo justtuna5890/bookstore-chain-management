@@ -33,6 +33,7 @@ public class HomeController {
     private final BuybackRequestRepository buybackRequestRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final com.bookstorechain.service.NotificationService notificationService;
 
     @GetMapping({"/", "/home"})
     public String home(@RequestParam(value = "keyword", required = false) String keyword,
@@ -106,6 +107,9 @@ public class HomeController {
 
             request.getItems().add(item);
             BuybackRequest saved = buybackRequestRepository.save(request);
+
+            // Gửi thông báo WebSocket tức thời đến nhân viên chi nhánh và admin
+            notificationService.notifyNewBuyback(saved);
 
             redirectAttributes.addFlashAttribute("buybackSuccessMsg",
                     "Gửi yêu cầu thu mua sách cũ thành công! Mã đơn: #BB-" + saved.getId() +

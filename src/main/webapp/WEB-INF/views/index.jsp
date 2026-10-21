@@ -2,6 +2,9 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<c:set var="isLoggedIn" value="${pageContext.request.userPrincipal != null}" />
+<c:set var="userRole" value="${isLoggedIn ? pageContext.request.userPrincipal.principal.user.role.name() : ''}" />
+<c:set var="isStaffOrAdmin" value="${userRole == 'ADMIN' || userRole == 'MANAGER' || userRole == 'STAFF'}" />
 <!DOCTYPE html>
 <html class="dark" lang="vi">
 <head>
@@ -184,7 +187,7 @@
                 </a>
 
                 <!-- Admin Link if Authorized -->
-                <sec:authorize access="hasAnyRole('ADMIN', 'MANAGER', 'STAFF')">
+                <c:if test="${isStaffOrAdmin}">
                     <a class="p-2.5 rounded-full text-brand-gold bg-brand-gold/15 hover:bg-brand-gold/30 transition group relative" href="/admin/dashboard" title="Trang Quản Trị">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z"/>
@@ -192,19 +195,19 @@
                         </svg>
                         <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-brand-gold opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Vào Quản Trị</span>
                     </a>
-                </sec:authorize>
+                </c:if>
             </nav>
 
             <!-- Settings / Login Bottom -->
-            <sec:authorize access="isAnonymous()">
+            <c:if test="${!isLoggedIn}">
                 <a class="p-2.5 rounded-full text-slate-400 hover:text-brand-gold hover:bg-white/5 transition group relative" href="/login" title="Đăng nhập">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
                     </svg>
                     <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Đăng Nhập</span>
                 </a>
-            </sec:authorize>
-            <sec:authorize access="isAuthenticated()">
+            </c:if>
+            <c:if test="${isLoggedIn}">
                 <form action="/logout" method="post" class="m-0">
                     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                     <button type="submit" class="p-2.5 rounded-full text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition group relative" title="Đăng xuất">
@@ -214,7 +217,7 @@
                         <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-rose-300 opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Đăng Xuất</span>
                     </button>
                 </form>
-            </sec:authorize>
+            </c:if>
         </aside>
         <!-- END: LeftFloatingDock -->
 
@@ -260,36 +263,52 @@
                     </a>
 
                     <!-- User status -->
-                    <sec:authorize access="isAnonymous()">
+                    <c:if test="${!isLoggedIn}">
                         <a href="/login" class="flex items-center gap-2 pl-3 pr-4 py-1.5 rounded-full bg-gradient-to-r from-brand-gold to-yellow-500 text-slate-950 font-bold text-xs shadow-glow-gold hover:from-yellow-400 hover:to-amber-500 transition">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
                             </svg>
                             <span>Đăng nhập</span>
                         </a>
-                    </sec:authorize>
+                    </c:if>
 
-                    <sec:authorize access="isAuthenticated()">
+                    <c:if test="${isLoggedIn}">
+                        <c:if test="${isStaffOrAdmin}">
+                            <a href="/admin/dashboard" class="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-gold/15 hover:bg-brand-gold/25 border border-brand-gold/30 text-xs text-brand-gold hover:text-white transition">
+                                <i class="fa-solid fa-gauge text-[11px]"></i>
+                                <span>Quản Trị</span>
+                            </a>
+                        </c:if>
                         <div class="flex items-center gap-2.5 pl-2 pr-3 py-1 rounded-full glass-panel-subtle border border-white/10 hover:border-brand-gold/40 transition">
                             <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-600 via-brand-gold to-yellow-200 p-[1px] flex items-center justify-center">
                                 <div class="w-full h-full rounded-full bg-[#1e2330] flex items-center justify-center text-xs font-bold text-amber-200">
-                                    <sec:authentication property="principal.username" var="uname"/>
-                                    ${uname.substring(0, 1).toUpperCase()}
+                                    ${pageContext.request.userPrincipal.principal.username.substring(0, 1).toUpperCase()}
                                 </div>
                             </div>
                             <div class="hidden sm:flex flex-col text-left">
                                 <span class="text-xs font-semibold text-slate-200 leading-tight">
-                                    <sec:authentication property="principal.user.fullName"/>
+                                    ${pageContext.request.userPrincipal.principal.user.fullName}
                                 </span>
                                 <span class="text-[10px] text-brand-goldLight leading-none">
-                                    <sec:authentication property="principal.user.role"/>
+                                    ${pageContext.request.userPrincipal.principal.user.role}
                                 </span>
                             </div>
                         </div>
-                    </sec:authorize>
+                    </c:if>
                 </div>
             </header>
             <!-- END: TopNavigationBar -->
+
+            <!-- Alert if access denied -->
+            <c:if test="${param.denied == 'true'}">
+                <div class="mt-4 p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-200 text-xs flex items-center justify-between gap-3 shadow-lg">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fa-solid fa-shield-halved text-rose-400 text-base"></i>
+                        <span><strong>Truy cập bị từ chối:</strong> Bạn không có quyền truy cập khu vực Quản trị hệ thống. Khu vực này chỉ dành cho Nhân viên (STAFF) và Ban Quản trị chuỗi (MANAGER, ADMIN).</span>
+                    </div>
+                    <a href="/" class="text-rose-300 hover:text-white text-xs underline font-semibold">Đóng</a>
+                </div>
+            </c:if>
 
             <!-- BEGIN: ContentGrid -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">

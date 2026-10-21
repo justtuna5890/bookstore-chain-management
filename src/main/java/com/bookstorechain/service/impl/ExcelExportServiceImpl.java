@@ -73,9 +73,9 @@ public class ExcelExportServiceImpl implements ExcelExportService {
     }
 
     @Override
-    public void exportTransfers(HttpServletResponse response) throws IOException {
+    public void exportTransfers(Long storeId, HttpServletResponse response) throws IOException {
         List<StockTransfer> transfers = stockTransferRepository
-                .searchTransfers(null, null, PageRequest.of(0, 10000))
+                .searchTransfers(storeId, null, PageRequest.of(0, 10000))
                 .getContent();
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -112,9 +112,9 @@ public class ExcelExportServiceImpl implements ExcelExportService {
     }
 
     @Override
-    public void exportBuybacks(HttpServletResponse response) throws IOException {
+    public void exportBuybacks(Long storeId, HttpServletResponse response) throws IOException {
         List<BuybackRequest> requests = buybackRequestRepository
-                .searchRequests(null, null, PageRequest.of(0, 10000))
+                .searchRequests(storeId, null, PageRequest.of(0, 10000))
                 .getContent();
 
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");

@@ -1,6 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<c:set var="userRole" value="${pageContext.request.userPrincipal != null ? pageContext.request.userPrincipal.principal.user.role.name() : ''}" />
+<c:set var="uStoreId" value="${pageContext.request.userPrincipal != null && pageContext.request.userPrincipal.principal.user.store != null ? pageContext.request.userPrincipal.principal.user.store.id : null}" />
+<c:set var="uName" value="${pageContext.request.userPrincipal != null ? pageContext.request.userPrincipal.name : ''}" />
+<c:set var="isStaff" value="${userRole == 'STAFF'}" />
+<c:set var="isCreator" value="${transfer.creator.username == uName}" />
+<c:set var="isSender" value="${uStoreId != null && uStoreId == transfer.senderStore.id}" />
+<c:set var="isReceiver" value="${uStoreId != null && uStoreId == transfer.receiverStore.id}" />
 <!DOCTYPE html>
 <html class="dark" lang="vi">
 <head>
@@ -154,21 +161,20 @@
                                 </div>
                                 <div class="flex items-center justify-between pb-2 border-b border-white/5">
                                     <span class="text-slate-400">Chi nhánh xuất (Gửi):</span>
-                                    <span class="font-semibold text-white">${transfer.senderStoreName}</span>
+                                    <span class="font-semibold text-white">${transfer.senderStore.name}</span>
                                 </div>
                                 <div class="flex items-center justify-between pb-2 border-b border-white/5">
                                     <span class="text-slate-400">Chi nhánh nhập (Nhận):</span>
-                                    <span class="font-semibold text-white">${transfer.receiverStoreName}</span>
+                                    <span class="font-semibold text-white">${transfer.receiverStore.name}</span>
                                 </div>
                                 <div class="flex items-center justify-between pb-2 border-b border-white/5">
                                     <span class="text-slate-400">Người lập phiếu:</span>
-                                    <span class="text-slate-300">${transfer.creatorName}</span>
+                                    <span class="text-slate-300">${transfer.creator.fullName} (@${transfer.creator.username})</span>
                                 </div>
                                 <div class="flex items-center justify-between pb-2 border-b border-white/5">
                                     <span class="text-slate-400">Thời gian tạo:</span>
                                     <span class="text-slate-400 font-mono text-[11px]">
-                                        <fmt:parseDate value="${transfer.createdAt}" pattern="yyyy-MM-dd'T'HH:mm" var="parsedDate" type="both" />
-                                        <fmt:formatDate value="${parsedDate}" pattern="dd/MM/yyyy HH:mm" />
+                                        ${transfer.createdAt}
                                     </span>
                                 </div>
                                 <div class="flex items-center justify-between pb-2 border-b border-white/5">
@@ -199,39 +205,66 @@
                         <div class="mt-6 pt-4 border-t border-white/10 space-y-2">
                             <!-- Nút gửi hàng (Chỉ khi PENDING) -->
                             <c:if test="${transfer.status == 'PENDING'}">
-                                <form action="/admin/transfers/${transfer.id}/status" method="post">
-                                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-                                    <input type="hidden" name="status" value="IN_TRANSIT" />
-                                    <button type="submit" 
-                                            onclick="return confirm('Xác nhận đã xuất kho và bắt đầu vận chuyển?')"
-                                            class="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 text-white font-bold text-xs transition shadow flex items-center justify-center gap-2">
-                                        <i class="fa-solid fa-truck-fast"></i>
-                                        <span>Xác Nhận Xuất Kho & Vận Chuyển</span>
-                                    </button>
-                                </form>
-                                <form action="/admin/transfers/${transfer.id}/status" method="post" class="mt-2">
-                                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-                                    <input type="hidden" name="status" value="CANCELLED" />
-                                    <button type="submit" 
-                                            onclick="return confirm('Hủy bỏ đợt điều chuyển này?')"
-                                            class="w-full py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs transition border border-rose-500/20">
-                                        Hủy Đợt Điều Chuyển
-                                    </button>
-                                </form>
+                                <c:choose>
+                                    <c:when test="${isStaff && isCreator}">
+                                        <button type="button" disabled class="w-full py-2.5 px-3 rounded-xl bg-white/5 border border-white/10 text-slate-400 font-semibold text-xs cursor-not-allowed flex items-center justify-center gap-2">
+                                            <i class="fa-solid fa-lock text-amber-400 text-xs"></i>
+                                            <span>Người lập phiếu không thể tự duyệt xuất kho</span>
+                                        </button>
+                                    </c:when>
+                                    <c:when test="${isStaff && !isSender}">
+                                        <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs text-center leading-relaxed">
+                                            <i class="fa-solid fa-clock text-xs mr-1"></i>Phiếu đang chờ chi nhánh xuất (<strong>${transfer.senderStore.name}</strong>) phê duyệt xuất kho.
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <form action="/admin/transfers/${transfer.id}/status" method="post">
+                                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                                            <input type="hidden" name="status" value="IN_TRANSIT" />
+                                            <button type="submit" 
+                                                    onclick="return confirm('Xác nhận đã xuất kho và bắt đầu vận chuyển?')"
+                                                    class="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 text-white font-bold text-xs transition shadow flex items-center justify-center gap-2">
+                                                <i class="fa-solid fa-truck-fast"></i>
+                                                <span>Xác Nhận Xuất Kho & Vận Chuyển</span>
+                                            </button>
+                                        </form>
+                                    </c:otherwise>
+                                </c:choose>
+
+                                <c:if test="${!isStaff || isSender || isCreator}">
+                                    <form action="/admin/transfers/${transfer.id}/status" method="post" class="mt-2">
+                                        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                                        <input type="hidden" name="status" value="CANCELLED" />
+                                        <button type="submit" 
+                                                onclick="return confirm('Hủy bỏ đợt điều chuyển này?')"
+                                                class="w-full py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs transition border border-rose-500/20">
+                                            Hủy Đợt Điều Chuyển
+                                        </button>
+                                    </form>
+                                </c:if>
                             </c:if>
 
                             <!-- Nút nhận hàng (Chỉ khi IN_TRANSIT) -->
                             <c:if test="${transfer.status == 'IN_TRANSIT'}">
-                                <form action="/admin/transfers/${transfer.id}/status" method="post">
-                                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-                                    <input type="hidden" name="status" value="COMPLETED" />
-                                    <button type="submit" 
-                                            onclick="return confirm('Xác nhận đã kiểm đếm đầy đủ và nhận sách vào kho đích?')"
-                                            class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 text-white font-bold text-xs transition shadow flex items-center justify-center gap-2">
-                                        <i class="fa-solid fa-boxes-packing"></i>
-                                        <span>Kiểm Đếm & Hoàn Tất Nhập Kho</span>
-                                    </button>
-                                </form>
+                                <c:choose>
+                                    <c:when test="${isStaff && !isReceiver}">
+                                        <div class="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs text-center leading-relaxed">
+                                            <i class="fa-solid fa-truck-fast text-xs mr-1"></i>Sách đang trên đường vận chuyển tới <strong>${transfer.receiverStore.name}</strong>. Chỉ nhân viên chi nhánh nhận mới có quyền kiểm đếm và hoàn tất nhập kho.
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <form action="/admin/transfers/${transfer.id}/status" method="post">
+                                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                                            <input type="hidden" name="status" value="COMPLETED" />
+                                            <button type="submit" 
+                                                    onclick="return confirm('Xác nhận đã kiểm đếm đầy đủ và nhận sách vào kho đích?')"
+                                                    class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 text-white font-bold text-xs transition shadow flex items-center justify-center gap-2">
+                                                <i class="fa-solid fa-boxes-packing"></i>
+                                                <span>Kiểm Đếm & Hoàn Tất Nhập Kho</span>
+                                            </button>
+                                        </form>
+                                    </c:otherwise>
+                                </c:choose>
                             </c:if>
                         </div>
                     </div>

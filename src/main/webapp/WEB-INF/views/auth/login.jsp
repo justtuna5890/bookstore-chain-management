@@ -188,16 +188,19 @@
 
             <!-- Quick Demo Accounts Help Pill -->
             <div class="mt-6 pt-5 border-t border-white/5 text-center">
-                <span class="text-[11px] text-slate-400 block mb-2 font-medium">Tài khoản mẫu kiểm thử:</span>
-                <div class="flex flex-wrap items-center justify-center gap-2">
-                    <span class="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] text-amber-300">
-                        ADMIN: <strong>admin</strong>
+                <span class="text-[11px] text-slate-400 block mb-2 font-medium">Tài khoản mẫu kiểm thử hệ thống:</span>
+                <div class="flex flex-wrap items-center justify-center gap-1.5 text-[10px]">
+                    <span class="px-2 py-0.5 rounded-md bg-rose-500/10 border border-rose-500/20 text-rose-300">
+                        ADMIN: <strong>admin</strong> | <strong>admin123</strong>
                     </span>
-                    <span class="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] text-slate-300">
-                        STAFF: <strong>staff_hn1</strong>
+                    <span class="px-2 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-purple-300">
+                        MANAGER: <strong>manager</strong> | <strong>manager123</strong>
                     </span>
-                    <span class="px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-[10px] text-slate-400">
-                        Pass: <strong>password</strong>
+                    <span class="px-2 py-0.5 rounded-md bg-sky-500/10 border border-sky-500/20 text-sky-300">
+                        STAFF: <strong>staff</strong> | <strong>staff123</strong>
+                    </span>
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+                        CUSTOMER: <strong>customer</strong> | <strong>customer123</strong>
                     </span>
                 </div>
                 <div class="mt-4">
