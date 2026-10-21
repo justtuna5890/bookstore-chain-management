@@ -37,7 +37,7 @@ public class User extends BaseEntity {
     @Column(name = "is_active", nullable = false)
     private boolean isActive = true;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "store_id")
     private Store store;
 }
