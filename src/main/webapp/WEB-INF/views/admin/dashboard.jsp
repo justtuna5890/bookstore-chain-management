@@ -469,7 +469,80 @@
 
 
 
-            <!-- 4 Metric Cards - Role Aware -->
+            
+            <!-- ================= CỤM CẢNH BÁO VẬN HÀNH THỜI GIAN THỰC ================= -->
+            <div class="mt-6 glass-panel rounded-2xl p-5 border border-white/10 shadow-glass-elevated">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-white/10 gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 shrink-0">
+                            <i class="fa-solid fa-bell-concierge text-base"></i>
+                            <c:if test="${not empty operationalAlerts}">
+                                <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                                </span>
+                            </c:if>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-sm font-bold text-white uppercase tracking-wider">
+                                    Trung Tâm Cảnh Báo Vận Hành & Tắc Nghẽn
+                                </h2>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${not empty operationalAlerts ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}">
+                                    ${not empty operationalAlerts ? operationalAlerts.size().concat(' sự vụ cần xử lý') : 'Hoạt động ổn định'}
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-0.5">Giám sát tự động đơn thu mua trễ hẹn, phiếu chuyển kho quá giờ và cảnh báo mức tồn kho.</p>
+                        </div>
+                    </div>
+                    <div class="text-xs text-slate-400 flex items-center gap-2">
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>Quét liên tục theo dữ liệu kho thực</span>
+                    </div>
+                </div>
+
+                <c:choose>
+                    <c:when test="${not empty operationalAlerts}">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                            <c:forEach var="alert" items="${operationalAlerts}">
+                                <div class="p-4 rounded-xl border transition flex flex-col justify-between gap-3 ${alert.level == 'DANGER' ? 'bg-rose-500/10 border-rose-500/30 hover:border-rose-500/50' : alert.level == 'WARNING' ? 'bg-amber-500/10 border-amber-500/30 hover:border-amber-500/50' : 'bg-sky-500/10 border-sky-500/30 hover:border-sky-500/50'}">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${alert.level == 'DANGER' ? 'bg-rose-500/20 text-rose-400' : alert.level == 'WARNING' ? 'bg-amber-500/20 text-amber-400' : 'bg-sky-500/20 text-sky-400'}">
+                                            <i class="fa-solid ${alert.level == 'DANGER' ? 'fa-triangle-exclamation' : alert.level == 'WARNING' ? 'fa-circle-exclamation' : 'fa-circle-info'} text-sm"></i>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="text-xs font-bold text-white truncate">${alert.title}</span>
+                                                <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${alert.level == 'DANGER' ? 'bg-rose-500/30 text-rose-200' : alert.level == 'WARNING' ? 'bg-amber-500/30 text-amber-200' : 'bg-sky-500/30 text-sky-200'}">
+                                                    ${alert.level == 'DANGER' ? 'Khẩn cấp' : alert.level == 'WARNING' ? 'Chú ý' : 'Thông tin'}
+                                                </span>
+                                            </div>
+                                            <p class="text-xs text-slate-300 leading-relaxed">${alert.message}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-end pt-2 border-t border-white/5">
+                                        <a href="${alert.actionUrl}" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${alert.level == 'DANGER' ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30' : alert.level == 'WARNING' ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'bg-sky-500/20 text-sky-300 hover:bg-sky-500/30'}">
+                                            <span>${alert.actionLabel}</span>
+                                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </c:forEach>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <div class="py-4 px-5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-base text-emerald-400 shrink-0"></i>
+                            <div>
+                                <span class="font-bold text-white block">Toàn bộ quy trình vận hành đang trong trạng thái kiểm soát tốt!</span>
+                                <span class="text-slate-400">Không phát hiện hồ sơ thu mua nào trễ hạn quá 48h, không có phiếu chuyển kho bị đình trệ quá 72h và kho sách duy trì mức tồn hợp lý.</span>
+                            </div>
+                        </div>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+
+<!-- 4 Metric Cards - Role Aware -->
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
 
@@ -633,7 +706,91 @@
 
 
 
-            <!-- 4 Visual Charts Grid -->
+            
+            <!-- 4 Operational Metrics Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                <!-- Op Metric 1: Thu mua chờ duyệt -->
+                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-amber-500/30 transition">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs text-slate-400 font-medium">Thu Mua Chờ Thẩm Định</span>
+                        <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                            <i class="fa-solid fa-hand-holding-dollar"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline justify-between">
+                        <div class="text-2xl font-bold font-serif text-amber-300">${extendedMetrics.pendingBuybacks}</div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${extendedMetrics.pendingBuybacks > 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-white/5 text-slate-400'}">
+                            ${extendedMetrics.pendingBuybacks > 0 ? 'Cần định giá' : 'Đã sạch hàng chờ'}
+                        </span>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between text-[11px]">
+                        <span class="text-slate-500">Hạn phản hồi trong 48h</span>
+                        <a href="/admin/buybacks" class="text-brand-gold hover:underline">Xử lý ngay &rarr;</a>
+                    </div>
+                </div>
+
+                <!-- Op Metric 2: Phiếu chuyển kho đang vận chuyển -->
+                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-blue-500/30 transition">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs text-slate-400 font-medium">Chuyển Kho Đang Lưu Thông</span>
+                        <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                            <i class="fa-solid fa-truck-fast"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline justify-between">
+                        <div class="text-2xl font-bold font-serif text-sky-400">${extendedMetrics.activeTransfers}</div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${extendedMetrics.activeTransfers > 0 ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30' : 'bg-white/5 text-slate-400'}">
+                            ${extendedMetrics.activeTransfers > 0 ? 'Đang chuyển' : 'Đã nhập kho đủ'}
+                        </span>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between text-[11px]">
+                        <span class="text-slate-500">Luân chuyển giữa các chi nhánh</span>
+                        <a href="/admin/transfers" class="text-brand-gold hover:underline">Xem lộ trình &rarr;</a>
+                    </div>
+                </div>
+
+                <!-- Op Metric 3: Cảnh báo sách sắp hết -->
+                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-rose-500/30 transition">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs text-slate-400 font-medium">Đầu Sách Sắp Hết Kho</span>
+                        <div class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline justify-between">
+                        <div class="text-2xl font-bold font-serif text-rose-400">${extendedMetrics.lowStockCount}</div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${extendedMetrics.lowStockCount > 0 ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}">
+                            ${extendedMetrics.lowStockCount > 0 ? 'Tồn <= 2 cuốn' : 'Đủ tồn kho'}
+                        </span>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between text-[11px]">
+                        <span class="text-slate-500">Ưu tiên bổ sung hoặc thu mua</span>
+                        <a href="/admin/book-copies" class="text-brand-gold hover:underline">Chi tiết kho &rarr;</a>
+                    </div>
+                </div>
+
+                <!-- Op Metric 4: Tỷ lệ hoàn tất thu mua -->
+                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-emerald-500/30 transition">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs text-slate-400 font-medium">Tỷ Lệ Thu Mua Thành Công</span>
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                            <i class="fa-solid fa-percent"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-baseline justify-between">
+                        <div class="text-2xl font-bold font-serif text-emerald-400">${extendedMetrics.buybackApprovalRate}%</div>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            Thành công / Hoàn tất
+                        </span>
+                    </div>
+                    <div class="mt-2 flex items-center justify-between text-[11px]">
+                        <span class="text-slate-500">${extendedMetrics.completedBuybacks} hoàn tất / ${extendedMetrics.rejectedBuybacks} từ chối</span>
+                        <a href="/admin/buybacks" class="text-brand-gold hover:underline">Báo cáo &rarr;</a>
+                    </div>
+                </div>
+            </div>
+
+<!-- 4 Visual Charts Grid -->
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
 
@@ -756,7 +913,36 @@
 
 
 
-                        <!-- 5. Active Operations: Recent Buybacks & Stock Transfers Directly on Dashboard -->
+                        
+            <!-- Ma trận luồng luân chuyển kho liên chi nhánh -->
+            <c:if test="${not empty transferFlow}">
+                <div class="mt-6 glass-panel-subtle rounded-2xl p-5 border border-white/5">
+                    <div class="flex items-center justify-between pb-3 mb-4 border-b border-white/5">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+                                <i class="fa-solid fa-arrows-split-up-and-left text-xs"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs uppercase tracking-wider font-semibold text-purple-300">
+                                    Ma Trận Luồng Điều Chuyển Đã Hoàn Tất
+                                </h3>
+                                <p class="text-[10px] text-slate-400">Tần suất và lộ trình luân chuyển sách giữa các cặp chi nhánh</p>
+                            </div>
+                        </div>
+                        <a href="/admin/transfers" class="text-[11px] text-brand-gold hover:underline font-medium">Quản lý phiếu chuyển &rarr;</a>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                        <c:forEach var="entry" items="${transferFlow}">
+                            <div class="p-3 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
+                                <div class="text-xs text-slate-300 font-medium truncate pr-2" title="${entry.key}">${entry.key}</div>
+                                <span class="px-2.5 py-1 rounded-lg bg-purple-500/20 text-purple-300 font-bold text-xs shrink-0">${entry.value} chuyến</span>
+                            </div>
+                        </c:forEach>
+                    </div>
+                </div>
+            </c:if>
+
+<!-- 5. Active Operations: Recent Buybacks & Stock Transfers Directly on Dashboard -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6">
                 <!-- Box 1: Recent Buyback Requests -->
                 <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 flex flex-col justify-between">

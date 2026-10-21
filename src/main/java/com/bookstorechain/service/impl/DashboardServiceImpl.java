@@ -1,8 +1,11 @@
 package com.bookstorechain.service.impl;
 
+import com.bookstorechain.dto.response.OperationalAlertDTO;
 import com.bookstorechain.entity.BuybackRequest;
 import com.bookstorechain.entity.StockTransfer;
 import com.bookstorechain.entity.Store;
+import com.bookstorechain.enums.BuybackStatus;
+import com.bookstorechain.enums.TransferStatus;
 import com.bookstorechain.repository.*;
 import com.bookstorechain.service.DashboardService;
 import lombok.RequiredArgsConstructor;
@@ -12,10 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -145,5 +146,117 @@ public class DashboardServiceImpl implements DashboardService {
     @Transactional(readOnly = true)
     public List<Store> getAllStores() {
         return storeRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OperationalAlertDTO> getOperationalAlerts(Long storeId) {
+        List<OperationalAlertDTO> alerts = new ArrayList<>();
+
+        // 1. Cảnh báo yêu cầu thu mua PENDING quá 48h
+        LocalDateTime threshold48h = LocalDateTime.now().minusHours(48);
+        List<BuybackRequest> overdueBuybacks = buybackRequestRepository.findOverduePendingRequests(storeId, threshold48h);
+        if (!overdueBuybacks.isEmpty()) {
+            alerts.add(OperationalAlertDTO.builder()
+                    .id("OVERDUE_BUYBACK")
+                    .title("Yêu Cầu Thu Mua Chờ Duyệt Quá 48 Giờ")
+                    .message("Có " + overdueBuybacks.size() + " yêu cầu thu mua đang chờ thẩm định/báo giá quá 48h.")
+                    .level("DANGER")
+                    .actionUrl("/admin/buybacks")
+                    .actionLabel("Thẩm định ngay")
+                    .category("BUYBACK")
+                    .build());
+        }
+
+        // 2. Cảnh báo phiếu chuyển kho IN_TRANSIT quá 72h
+        LocalDateTime threshold72h = LocalDateTime.now().minusHours(72);
+        List<StockTransfer> delayedTransfers = stockTransferRepository.findDelayedInTransitTransfers(storeId, threshold72h);
+        if (!delayedTransfers.isEmpty()) {
+            alerts.add(OperationalAlertDTO.builder()
+                    .id("DELAYED_TRANSFER")
+                    .title("Phiếu Chuyển Kho Vận Chuyển Quá Hạn (72h)")
+                    .message("Có " + delayedTransfers.size() + " phiếu chuyển kho đang vận chuyển hơn 72 giờ chưa nhập kho.")
+                    .level("DANGER")
+                    .actionUrl("/admin/transfers")
+                    .actionLabel("Kiểm tra vận chuyển")
+                    .category("TRANSFER")
+                    .build());
+        }
+
+        // 3. Cảnh báo đầu sách sắp cạn tồn kho (<= 2 bản sách khả dụng)
+        List<Object[]> lowStockBooks = bookCopyRepository.findLowStockBooks(storeId);
+        if (!lowStockBooks.isEmpty()) {
+            alerts.add(OperationalAlertDTO.builder()
+                    .id("LOW_STOCK")
+                    .title("Cảnh Báo Đầu Sách Sắp Hết Kho")
+                    .message("Có " + lowStockBooks.size() + " tựa sách trong kho chỉ còn từ 1 đến 2 bản sách khả dụng.")
+                    .level("WARNING")
+                    .actionUrl("/admin/book-copies")
+                    .actionLabel("Xem danh sách kho")
+                    .category("INVENTORY")
+                    .build());
+        }
+
+        // 4. Cảnh báo bản sách lưu kho quá 30 ngày chưa phát sinh giao dịch
+        LocalDateTime threshold30d = LocalDateTime.now().minusDays(30);
+        long staleCopiesCount = bookCopyRepository.countStaleCopies(storeId, threshold30d);
+        if (staleCopiesCount > 0) {
+            alerts.add(OperationalAlertDTO.builder()
+                    .id("STALE_INVENTORY")
+                    .title("Bản Sách Tồn Kho Lâu (> 30 Ngày)")
+                    .message("Có " + staleCopiesCount + " bản sách khả dụng lưu kho trên 30 ngày chưa có phát sinh giao dịch hoặc điều chuyển.")
+                    .level("INFO")
+                    .actionUrl("/admin/book-copies")
+                    .actionLabel("Rà soát tồn kho")
+                    .category("INVENTORY")
+                    .build());
+        }
+
+        return alerts;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> getExtendedMetrics(Long storeId) {
+        Map<String, Object> metrics = new HashMap<>();
+
+        long pendingBuybacks = buybackRequestRepository.countByStatusAndStoreId(BuybackStatus.PENDING, storeId);
+        metrics.put("pendingBuybacks", pendingBuybacks);
+
+        long activeTransfers = stockTransferRepository.countByStatusesAndStoreId(
+                List.of(TransferStatus.PENDING, TransferStatus.IN_TRANSIT), storeId);
+        metrics.put("activeTransfers", activeTransfers);
+
+        List<Object[]> lowStockBooks = bookCopyRepository.findLowStockBooks(storeId);
+        metrics.put("lowStockCount", (long) lowStockBooks.size());
+
+        long completedBuybacks = buybackRequestRepository.countByStatusAndStoreId(BuybackStatus.COMPLETED, storeId);
+        long rejectedBuybacks = buybackRequestRepository.countByStatusAndStoreId(BuybackStatus.REJECTED, storeId);
+        long resolvedBuybacks = completedBuybacks + rejectedBuybacks;
+        double approvalRate = resolvedBuybacks > 0 ? ((double) completedBuybacks / resolvedBuybacks) * 100.0 : 0.0;
+        metrics.put("buybackApprovalRate", Math.round(approvalRate * 10.0) / 10.0);
+        metrics.put("completedBuybacks", completedBuybacks);
+        metrics.put("rejectedBuybacks", rejectedBuybacks);
+
+        LocalDateTime threshold30d = LocalDateTime.now().minusDays(30);
+        long staleCopies = bookCopyRepository.countStaleCopies(storeId, threshold30d);
+        metrics.put("staleCopiesCount", staleCopies);
+
+        return metrics;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Long> getTransferFlowMatrix() {
+        Map<String, Long> matrix = new LinkedHashMap<>();
+        List<Object[]> rows = stockTransferRepository.getCompletedTransferFlow();
+        for (Object[] row : rows) {
+            String sender = (String) row[0];
+            String receiver = (String) row[1];
+            Long count = ((Number) row[2]).longValue();
+            String route = (sender != null ? sender : "Kho A") + " ➔ " + (receiver != null ? receiver : "Kho B");
+            matrix.put(route, count);
+        }
+        return matrix;
     }
 }
