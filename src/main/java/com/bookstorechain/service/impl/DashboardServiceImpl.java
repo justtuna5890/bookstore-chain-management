@@ -1,8 +1,13 @@
 package com.bookstorechain.service.impl;
 
+import com.bookstorechain.entity.BuybackRequest;
+import com.bookstorechain.entity.StockTransfer;
+import com.bookstorechain.entity.Store;
 import com.bookstorechain.repository.*;
 import com.bookstorechain.service.DashboardService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -122,5 +127,23 @@ public class DashboardServiceImpl implements DashboardService {
             result.put(status, count);
         }
         return result;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BuybackRequest> getRecentBuybacks(Long storeId, int limit) {
+        return buybackRequestRepository.searchRequests(storeId, null, PageRequest.of(0, limit, Sort.by("id").descending())).getContent();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<StockTransfer> getRecentTransfers(Long storeId, int limit) {
+        return stockTransferRepository.searchTransfers(storeId, null, PageRequest.of(0, limit, Sort.by("id").descending())).getContent();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Store> getAllStores() {
+        return storeRepository.findAll();
     }
 }

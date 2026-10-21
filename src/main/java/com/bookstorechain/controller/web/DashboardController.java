@@ -3,17 +3,12 @@ package com.bookstorechain.controller.web;
 import com.bookstorechain.entity.BuybackRequest;
 import com.bookstorechain.entity.StockTransfer;
 import com.bookstorechain.enums.Role;
-import com.bookstorechain.repository.BuybackRequestRepository;
-import com.bookstorechain.repository.StockTransferRepository;
-import com.bookstorechain.repository.StoreRepository;
 import com.bookstorechain.security.CustomUserDetails;
 import com.bookstorechain.service.DashboardService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -33,12 +28,10 @@ import java.util.Map;
 public class DashboardController {
 
     private final DashboardService dashboardService;
-    private final StoreRepository storeRepository;
-    private final BuybackRequestRepository buybackRequestRepository;
-    private final StockTransferRepository stockTransferRepository;
     private final ObjectMapper objectMapper;
 
     @GetMapping
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public String showDashboard(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         Role userRole = userDetails != null && userDetails.getUser() != null ? userDetails.getUser().getRole() : Role.STAFF;
         boolean isAdmin = userRole == Role.ADMIN;
@@ -110,7 +103,7 @@ public class DashboardController {
 
             stats = dashboardService.getDashboardStatistics();
             model.addAttribute("stats", stats);
-            model.addAttribute("stores", storeRepository.findAll());
+            model.addAttribute("stores", dashboardService.getAllStores());
 
             for (BigDecimal val : storeValues.values()) {
                 if (val != null) {
@@ -137,7 +130,7 @@ public class DashboardController {
         model.addAttribute("totalTransfers", stats.getOrDefault("totalTransfers", 0L));
         model.addAttribute("totalInventoryValue", totalInventoryValue);
 
-        // Danh sách yêu cầu thu mua & phiếu điều chuyển gần đây để hiển thị trực tiếp trên Dashboard
+        // Danh sách yêu cầu thu mua & phiếu điều chuyển gần đây từ Service
         List<BuybackRequest> recentBuybacks;
         List<StockTransfer> recentTransfers;
         if (isStaff) {
@@ -145,12 +138,12 @@ public class DashboardController {
                 recentBuybacks = List.of();
                 recentTransfers = List.of();
             } else {
-                recentBuybacks = buybackRequestRepository.searchRequests(staffStoreId, null, PageRequest.of(0, 5, Sort.by("id").descending())).getContent();
-                recentTransfers = stockTransferRepository.searchTransfers(staffStoreId, null, PageRequest.of(0, 5, Sort.by("id").descending())).getContent();
+                recentBuybacks = dashboardService.getRecentBuybacks(staffStoreId, 5);
+                recentTransfers = dashboardService.getRecentTransfers(staffStoreId, 5);
             }
         } else {
-            recentBuybacks = buybackRequestRepository.searchRequests(null, null, PageRequest.of(0, 5, Sort.by("id").descending())).getContent();
-            recentTransfers = stockTransferRepository.searchTransfers(null, null, PageRequest.of(0, 5, Sort.by("id").descending())).getContent();
+            recentBuybacks = dashboardService.getRecentBuybacks(null, 5);
+            recentTransfers = dashboardService.getRecentTransfers(null, 5);
         }
         model.addAttribute("recentBuybacks", recentBuybacks);
         model.addAttribute("recentTransfers", recentTransfers);
