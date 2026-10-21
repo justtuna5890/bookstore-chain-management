@@ -1,54 +1,34 @@
 package com.bookstorechain.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "stores")
-public class Store {
+@Table(name = "store")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Store extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    @Column(nullable = false, unique = true, length = 100, columnDefinition = "NVARCHAR(100)")
     private String name;
 
+    @Column(nullable = false, columnDefinition = "NVARCHAR(255)")
     private String address;
 
+    @Column(nullable = false, length = 20, columnDefinition = "NVARCHAR(20)")
     private String phone;
 
-    public Long getId() {
-        return id;
-    }
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private boolean isActive = true;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
+    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<User> employees = new ArrayList<>();
 }
