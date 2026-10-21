@@ -316,95 +316,73 @@
 
 
 
-            <!-- Filter Controls Bar -->
-
+                        <!-- Filter Controls Bar -->
             <div class="glass-panel-subtle rounded-2xl p-4 border border-white/5 mt-6">
+                <!-- Preset Quick Buttons Bar -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-white/5">
+                    <div class="flex items-center gap-2 text-xs text-slate-400">
+                        <i class="fa-solid fa-bolt text-brand-gold"></i>
+                        <span class="font-medium text-slate-300">Chọn nhanh mốc thời gian:</span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <button type="button" onclick="setQuickFilter('today')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-brand-gold/15 hover:text-brand-gold text-slate-300 transition border border-white/5">Hôm nay</button>
+                        <button type="button" onclick="setQuickFilter('7days')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-brand-gold/15 hover:text-brand-gold text-slate-300 transition border border-white/5">7 ngày qua</button>
+                        <button type="button" onclick="setQuickFilter('30days')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-brand-gold/15 hover:text-brand-gold text-slate-300 transition border border-white/5">30 ngày qua</button>
+                        <button type="button" onclick="setQuickFilter('thisMonth')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-brand-gold/15 hover:text-brand-gold text-slate-300 transition border border-white/5">Tháng này</button>
+                        <button type="button" onclick="setQuickFilter('thisQuarter')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-brand-gold/15 hover:text-brand-gold text-slate-300 transition border border-white/5">Quý này</button>
+                        <button type="button" onclick="setQuickFilter('thisYear')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-brand-gold/15 hover:text-brand-gold text-slate-300 transition border border-white/5">Năm nay</button>
+                        <button type="button" onclick="resetQuickFilter()" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 transition border border-rose-500/20 flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-rotate-left text-[10px]"></i>
+                            <span>Đặt lại</span>
+                        </button>
+                    </div>
+                </div>
 
-                <form action="/admin/reports" method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-
+                <form id="reportFilterForm" action="/admin/reports" method="get" onsubmit="return validateDateRange()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                     <input type="hidden" name="tab" value="${currentTab}"/>
 
-
-
                     <div>
-
                         <label class="block text-xs font-medium text-slate-300 mb-1.5">
-
                             <i class="fa-solid fa-calendar-day text-brand-gold mr-1"></i>Từ Ngày
-
                         </label>
-
-                        <input type="date" name="startDate" value="${startDate}" required
-
+                        <input type="date" id="inputStartDate" name="startDate" value="${startDate}" required
                                class="glass-input w-full px-3.5 py-2 text-xs rounded-xl bg-[#12151c] text-slate-100 border border-white/10"/>
-
                     </div>
 
-
-
                     <div>
-
                         <label class="block text-xs font-medium text-slate-300 mb-1.5">
-
                             <i class="fa-solid fa-calendar-check text-brand-gold mr-1"></i>Đến Ngày
-
                         </label>
-
-                        <input type="date" name="endDate" value="${endDate}" required
-
+                        <input type="date" id="inputEndDate" name="endDate" value="${endDate}" required
                                class="glass-input w-full px-3.5 py-2 text-xs rounded-xl bg-[#12151c] text-slate-100 border border-white/10"/>
-
                     </div>
 
-
-
                     <div>
-
                         <label class="block text-xs font-medium text-slate-300 mb-1.5">
-
                             <i class="fa-solid fa-store text-brand-gold mr-1"></i>Chi Nhánh
-
                         </label>
-
                         <select name="storeId" class="glass-input w-full px-3.5 py-2 text-xs rounded-xl bg-[#15181E]">
-
-                            <option value="">— Tất cả chi nhánh toàn chuỗi —</option>
-
+                            <c:if test="${!isScopedToStore}">
+                                <option value="">— Tất cả chi nhánh toàn chuỗi —</option>
+                            </c:if>
                             <c:forEach var="st" items="${stores}">
-
                                 <option value="${st.id}" ${selectedStoreId == st.id ? 'selected' : ''}>
-
                                     ${st.name}
-
                                 </option>
-
                             </c:forEach>
-
                         </select>
-
                     </div>
-
-
 
                     <div>
-
                         <button type="submit" class="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-brand-gold to-yellow-500 hover:from-yellow-400 text-slate-950 font-bold text-xs shadow-glow-gold transition flex items-center justify-center gap-2">
-
                             <i class="fa-solid fa-filter"></i>
-
                             <span>Áp Dụng Bộ Lọc</span>
-
                         </button>
-
                     </div>
-
                 </form>
-
             </div>
 
-
-
-            <!-- 4 Metric Cards for Selected Period -->
+<!-- 4 Metric Cards for Selected Period -->
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
 
@@ -1194,6 +1172,68 @@
         </main>
 
     </div>
+
+
+    <!-- Quick Filter & Date Validation Scripts -->
+    <script>
+        function formatDate(d) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function setQuickFilter(type) {
+            const now = new Date();
+            let start = new Date();
+            let end = new Date();
+
+            switch (type) {
+                case 'today':
+                    start = new Date();
+                    break;
+                case '7days':
+                    start.setDate(now.getDate() - 7);
+                    break;
+                case '30days':
+                    start.setDate(now.getDate() - 30);
+                    break;
+                case 'thisMonth':
+                    start = new Date(now.getFullYear(), now.getMonth(), 1);
+                    break;
+                case 'thisQuarter':
+                    const currentQuarterMonth = Math.floor(now.getMonth() / 3) * 3;
+                    start = new Date(now.getFullYear(), currentQuarterMonth, 1);
+                    break;
+                case 'thisYear':
+                    start = new Date(now.getFullYear(), 0, 1);
+                    break;
+            }
+
+            document.getElementById('inputStartDate').value = formatDate(start);
+            document.getElementById('inputEndDate').value = formatDate(end);
+            document.getElementById('reportFilterForm').submit();
+        }
+
+        function resetQuickFilter() {
+            const now = new Date();
+            const start = new Date();
+            start.setDate(now.getDate() - 30);
+            document.getElementById('inputStartDate').value = formatDate(start);
+            document.getElementById('inputEndDate').value = formatDate(now);
+            document.getElementById('reportFilterForm').submit();
+        }
+
+        function validateDateRange() {
+            const startVal = document.getElementById('inputStartDate').value;
+            const endVal = document.getElementById('inputEndDate').value;
+            if (startVal && endVal && startVal > endVal) {
+                alert('⚠️ Ngày bắt đầu không thể lớn hơn ngày kết thúc! Vui lòng chọn lại.');
+                return false;
+            }
+            return true;
+        }
+    </script>
 
 </body>
 
