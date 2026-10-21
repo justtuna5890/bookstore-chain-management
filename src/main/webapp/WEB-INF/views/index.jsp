@@ -143,81 +143,71 @@
     <!-- BEGIN: MasterLayoutWrapper -->
     <div class="relative z-10 max-w-[1520px] w-full mx-auto flex items-start gap-5">
         <!-- BEGIN: LeftFloatingDock -->
-        <aside class="hidden xl:flex flex-col items-center justify-between py-6 px-3 rounded-full glass-panel shadow-glass-elevated sticky top-10 h-[560px] w-[64px] border border-white/10 shrink-0" data-purpose="vertical-dock">
-            <!-- Logo Mark Top -->
-            <a class="w-10 h-10 rounded-full bg-brand-gold/15 border border-brand-gold/30 flex items-center justify-center text-brand-gold hover:bg-brand-gold/25 transition-all" href="/" title="OldBook Trang Chủ">
-                <svg class="w-5 h-5 text-brand-gold" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                    <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"></path>
-                </svg>
+        <aside class="hidden xl:flex flex-col items-center justify-between py-5 px-2 rounded-full glass-panel shadow-glass-elevated sticky top-8 w-16 border border-white/10 shrink-0 h-auto max-h-[calc(100vh-4rem)] gap-3 z-40" data-purpose="vertical-dock">
+            <!-- Top: Brand Logo -->
+            <a class="w-10 h-10 rounded-full bg-brand-gold/15 border border-brand-gold/30 flex items-center justify-center text-brand-gold hover:bg-brand-gold/25 transition-all shrink-0 shadow-sm" href="/" title="OldBook Trang Chủ">
+                <i class="fa-solid fa-feather-pointed text-brand-gold text-base"></i>
             </a>
 
+            <!-- Divider -->
+            <div class="w-6 h-[1px] bg-white/10 shrink-0"></div>
+
             <!-- Primary Dock Actions -->
-            <nav class="flex flex-col items-center gap-6 my-auto">
+            <nav class="flex flex-col items-center gap-3 my-auto">
                 <!-- Home (Active) -->
-                <a class="relative p-2.5 rounded-full bg-white/10 text-brand-gold shadow-glow-gold hover:text-white transition group" href="/" title="Trang chủ">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z"></path>
-                        <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.432z"></path>
-                    </svg>
+                <a class="w-10 h-10 rounded-full flex items-center justify-center transition group relative shrink-0 bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold" href="/" title="Khám Phá Sách">
+                    <i class="fa-solid fa-house text-base"></i>
                     <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Khám Phá Sách</span>
                 </a>
 
-                <!-- Wishlist / Kho sách -->
-                <a class="p-2.5 rounded-full text-slate-400 hover:text-brand-gold hover:bg-white/5 transition group relative" href="/#catalog" title="Kho sách">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
+                <!-- Kho sách -->
+                <a class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-brand-gold hover:bg-white/5 transition group relative shrink-0" href="/#catalog" title="Kho sách tuyển chọn">
+                    <i class="fa-solid fa-boxes-stacked text-base"></i>
                     <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Kho Sách Tuyển Chọn</span>
                 </a>
 
                 <!-- Thu mua sách -->
-                <a class="p-2.5 rounded-full text-slate-400 hover:text-brand-gold hover:bg-white/5 transition group relative" href="/#buyback" title="Thu mua sách cũ">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
-                    <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Dịch Vụ Thu Mua</span>
+                <a class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-brand-gold hover:bg-white/5 transition group relative shrink-0" href="/#buyback" title="Thu mua sách cũ">
+                    <i class="fa-solid fa-handshake text-base"></i>
+                    <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Dịch Vụ Thu Mua Sách</span>
                 </a>
 
                 <!-- Hệ thống chi nhánh -->
-                <a class="p-2.5 rounded-full text-slate-400 hover:text-brand-gold hover:bg-white/5 transition group relative" href="/#stores" title="Chi nhánh chuỗi">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
+                <a class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-brand-gold hover:bg-white/5 transition group relative shrink-0" href="/#stores" title="Hệ thống chi nhánh">
+                    <i class="fa-solid fa-store text-base"></i>
                     <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Hệ Thống Chi Nhánh</span>
                 </a>
 
                 <!-- Admin Link if Authorized -->
                 <c:if test="${isStaffOrAdmin}">
-                    <a class="p-2.5 rounded-full text-brand-gold bg-brand-gold/15 hover:bg-brand-gold/30 transition group relative" href="/admin/dashboard" title="Trang Quản Trị">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z"/>
-                        </svg>
-                        <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-brand-gold opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Vào Quản Trị</span>
+                    <a class="w-10 h-10 rounded-full flex items-center justify-center text-brand-gold bg-brand-gold/15 hover:bg-brand-gold/30 border border-brand-gold/30 transition group relative shrink-0 shadow-sm" href="/admin/dashboard" title="Vào Trang Quản Trị">
+                        <i class="fa-solid fa-table-cells-large text-base"></i>
+                        <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-brand-gold opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Vào Quản Trị Hệ Thống</span>
                     </a>
                 </c:if>
             </nav>
 
+            <!-- Divider -->
+            <div class="w-6 h-[1px] bg-white/10 shrink-0"></div>
+
             <!-- Settings / Login Bottom -->
-            <c:if test="${!isLoggedIn}">
-                <a class="p-2.5 rounded-full text-slate-400 hover:text-brand-gold hover:bg-white/5 transition group relative" href="/login" title="Đăng nhập">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9"/>
-                    </svg>
-                    <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Đăng Nhập</span>
-                </a>
-            </c:if>
-            <c:if test="${isLoggedIn}">
-                <form action="/logout" method="post" class="m-0">
-                    <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-                    <button type="submit" class="p-2.5 rounded-full text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition group relative" title="Đăng xuất">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9"/>
-                        </svg>
-                        <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-rose-300 opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Đăng Xuất</span>
-                    </button>
-                </form>
-            </c:if>
+            <div class="flex flex-col items-center gap-2 shrink-0">
+                <c:if test="${!isLoggedIn}">
+                    <a class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-brand-gold hover:bg-white/5 transition group relative shrink-0" href="/login" title="Đăng nhập tài khoản">
+                        <i class="fa-solid fa-arrow-right-to-bracket text-base"></i>
+                        <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Đăng Nhập</span>
+                    </a>
+                </c:if>
+                <c:if test="${isLoggedIn}">
+                    <form action="/logout" method="post" class="m-0">
+                        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                        <button type="submit" class="w-10 h-10 rounded-full flex items-center justify-center text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition group relative shrink-0" title="Đăng xuất">
+                            <i class="fa-solid fa-arrow-right-from-bracket text-base"></i>
+                            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-rose-300 opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Đăng Xuất</span>
+                        </button>
+                    </form>
+                </c:if>
+            </div>
         </aside>
         <!-- END: LeftFloatingDock -->
 
@@ -555,8 +545,9 @@
                     <section id="catalog" class="flex flex-col" data-purpose="recommendations-gallery">
                         <div class="flex items-center justify-between mb-4">
                             <div>
-                                <h2 class="text-base sm:text-lg font-serif font-semibold text-white tracking-tight">
-                                    Có thể bạn sẽ thích (Kho Sách Hiện Có)
+                                <h2 class="text-base sm:text-lg font-serif font-semibold text-white tracking-tight flex items-center gap-2">
+                                    <i class="fa-solid fa-boxes-stacked text-brand-gold text-sm"></i>
+                                    <span>Có thể bạn sẽ thích (Kho Sách Tuyển Chọn)</span>
                                 </h2>
                                 <p class="text-xs text-slate-400">Tuyển lựa sách thật từ hệ thống chi nhánh OldBook toàn quốc</p>
                             </div>
@@ -712,8 +703,9 @@
                     <section id="buyback" class="mt-4 p-6 md:p-8 rounded-2xl glass-panel-subtle border border-white/10">
                         <div class="flex flex-col lg:flex-row gap-8 items-center">
                             <div class="lg:w-5/12">
-                                <span class="px-2.5 py-1 text-[11px] font-medium tracking-wide rounded-full bg-brand-gold/15 text-brand-gold border border-brand-gold/30">
-                                    Dịch Vụ Thu Mua Sách Cũ
+                                <span class="px-3 py-1 text-[11px] font-medium tracking-wide rounded-full bg-brand-gold/15 text-brand-gold border border-brand-gold/30 inline-flex items-center gap-1.5">
+                                    <i class="fa-solid fa-handshake text-xs"></i>
+                                    <span>Dịch Vụ Thu Mua Sách Cũ</span>
                                 </span>
                                 <h2 class="text-2xl sm:text-3xl font-serif font-bold text-white mt-2 mb-3">
                                     Trao Sách Cũ — <span class="text-brand-gold">Mở Tri Thức Mới</span>
@@ -812,8 +804,9 @@
                     <section id="stores" class="mt-4 p-6 md:p-8 rounded-2xl glass-panel-subtle border border-white/10">
                         <div class="flex items-center justify-between mb-4">
                             <div>
-                                <h2 class="text-base sm:text-lg font-serif font-semibold text-white tracking-tight">
-                                    Hệ Thống Chi Nhánh Toàn Chuỗi
+                                <h2 class="text-base sm:text-lg font-serif font-semibold text-white tracking-tight flex items-center gap-2">
+                                    <i class="fa-solid fa-store text-brand-gold text-sm"></i>
+                                    <span>Hệ Thống Chi Nhánh Toàn Chuỗi</span>
                                 </h2>
                                 <p class="text-xs text-slate-400">Các không gian đọc sách và tiếp nhận trao đổi sách cũ</p>
                             </div>

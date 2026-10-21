@@ -52,7 +52,7 @@
             <form action="/logout" method="post" class="m-0 inline">
                 <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                 <button type="submit" class="w-7 h-7 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 flex items-center justify-center transition" title="Đăng xuất">
-                    <i class="fa-solid fa-power-off text-xs"></i>
+                    <i class="fa-solid fa-arrow-right-from-bracket text-xs"></i>
                 </button>
             </form>
         </div>
@@ -100,112 +100,123 @@
     </div>
 </div>
 
-<!-- 2. Desktop Floating Left Dock (hidden xl:flex) -->
-<aside class="hidden xl:flex flex-col items-center justify-between py-6 px-3 rounded-full glass-panel shadow-glass-elevated sticky top-10 h-[670px] w-[64px] border border-white/10 shrink-0">
-    <a class="w-10 h-10 rounded-full bg-brand-gold/15 border border-brand-gold/30 flex items-center justify-center text-brand-gold hover:bg-brand-gold/25 transition-all" href="/" title="Về Sàn Khám Phá Trang Chủ">
-        <i class="fa-solid fa-feather-pointed text-brand-gold"></i>
-    </a>
-
-    <nav class="flex flex-col items-center gap-4 my-auto">
-        <!-- Dashboard -->
-        <a class="p-2.5 rounded-full transition group relative ${param.active == 'dashboard' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
-           href="/admin/dashboard" title="Tổng quan Dashboard">
-            <i class="fa-solid fa-gauge-high text-base"></i>
-            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Tổng Quan Dashboard</span>
-        </a>
-
-        <!-- Nhân sự (Chỉ ADMIN) -->
-        <c:if test="${isAdmin}">
-            <a class="p-2.5 rounded-full transition group relative ${param.active == 'users' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
-               href="/admin/users" title="Quản lý nhân sự">
-                <i class="fa-solid fa-users-gear text-base"></i>
-                <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Tài Khoản & Quyền</span>
-            </a>
-        </c:if>
-
-        <!-- Chi nhánh (ADMIN & MANAGER) -->
-        <c:if test="${isAdmin || isManager}">
-            <a class="p-2.5 rounded-full transition group relative ${param.active == 'stores' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
-               href="/admin/stores" title="Mạng lưới chi nhánh">
-                <i class="fa-solid fa-store text-base"></i>
-                <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Chi Nhánh</span>
-            </a>
-        </c:if>
-
-        <!-- Đầu sách -->
-        <a class="p-2.5 rounded-full transition group relative ${param.active == 'books' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
-           href="/admin/books" title="Danh mục đầu sách">
-            <i class="fa-solid fa-book text-base"></i>
-            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Đầu Sách</span>
-        </a>
-
-        <!-- Kho bản sách -->
-        <a class="p-2.5 rounded-full transition group relative ${param.active == 'copies' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
-           href="/admin/book-copies" title="Quản lý bản sao tồn kho">
-            <i class="fa-solid fa-boxes-stacked text-base"></i>
-            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Kho Bản Sách</span>
-        </a>
-
-        <!-- Thu mua -->
-        <a class="p-2.5 rounded-full transition group relative ${param.active == 'buybacks' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
-           href="/admin/buybacks" title="Duyệt thu mua sách cũ">
-            <i class="fa-solid fa-hand-holding-dollar text-base"></i>
-            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Duyệt Thu Mua</span>
-        </a>
-
-        <!-- Chuyển kho -->
-        <a class="p-2.5 rounded-full transition group relative ${param.active == 'transfers' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
-           href="/admin/transfers" title="Điều chuyển kho chi nhánh">
-            <i class="fa-solid fa-truck-ramp-box text-base"></i>
-            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Chuyển Kho</span>
-        </a>
-
-        <!-- Báo cáo kỳ chuyên sâu (ADMIN & MANAGER) -->
-        <c:if test="${isAdmin || isManager}">
-            <a class="p-2.5 rounded-full transition group relative ${param.active == 'reports' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
-               href="/admin/reports" title="Báo cáo chuyên sâu theo kỳ">
-                <i class="fa-solid fa-chart-line text-base"></i>
-                <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Báo Cáo Kỳ</span>
-            </a>
-        </c:if>
-    </nav>
-
-    <!-- Desktop User Role Pill -->
-    <div class="relative mb-3 group">
-        <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs border cursor-pointer transition shadow-sm ${isAdmin ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' : isManager ? 'bg-purple-500/20 border-purple-500/40 text-purple-300' : 'bg-sky-500/20 border-sky-500/40 text-sky-300'}">
-            ${pageContext.request.userPrincipal != null ? pageContext.request.userPrincipal.name.substring(0, 1).toUpperCase() : 'U'}
-        </div>
-        <div class="absolute left-14 bottom-0 ml-2 p-3 rounded-2xl glass-panel shadow-glass-elevated border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap z-50 text-left">
-            <div class="text-xs font-bold text-white">${pageContext.request.userPrincipal.principal.user.fullName}</div>
-            <div class="text-[10px] ${isAdmin ? 'text-rose-400' : isManager ? 'text-purple-400' : 'text-sky-400'} font-semibold mt-0.5">
-                ${isAdmin ? 'Quản trị hệ thống (ADMIN)' : isManager ? 'Quản lý vận hành (MANAGER)' : 'Nhân viên chi nhánh (STAFF)'}
-            </div>
-            <c:if test="${not empty pageContext.request.userPrincipal.principal.user.store}">
-                <div class="text-[10px] text-brand-gold mt-1 flex items-center gap-1">
-                    <i class="fa-solid fa-store text-[9px]"></i>
-                    <span>${pageContext.request.userPrincipal.principal.user.store.name}</span>
-                </div>
-            </c:if>
-        </div>
-    </div>
-
-    <!-- Desktop Notification Bell -->
-    <div class="relative mb-2">
-        <button type="button" onclick="toggleNotifDropdown()" class="p-2.5 rounded-full text-slate-400 hover:text-brand-gold hover:bg-white/5 transition group relative" title="Thông báo thời gian thực">
-            <i class="fa-solid fa-bell text-base"></i>
-            <span id="desktopNotifBadge" class="hidden absolute top-1 right-1 min-w-[15px] h-[15px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center animate-pulse">0</span>
-            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Chuông Thông Báo</span>
-        </button>
-    </div>
-
-    <!-- Logout -->
-    <form action="/logout" method="post" class="m-0">
-        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-        <button type="submit" class="p-2.5 rounded-full text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition group relative" title="Đăng xuất">
-            <i class="fa-solid fa-power-off text-base"></i>
-            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-rose-300 opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Đăng Xuất</span>
-        </button>
-    </form>
+<!-- 2. Desktop Floating Left Dock (hidden xl:flex) -->
+<aside class="hidden xl:flex flex-col items-center justify-between py-5 px-2 rounded-full glass-panel shadow-glass-elevated sticky top-8 w-16 border border-white/10 shrink-0 h-auto max-h-[calc(100vh-4rem)] gap-3 z-40">
+    <!-- Top: Brand Logo -->
+    <a class="w-10 h-10 rounded-full bg-brand-gold/15 border border-brand-gold/30 flex items-center justify-center text-brand-gold hover:bg-brand-gold/25 transition-all shrink-0 shadow-sm" href="/" title="Về Sàn Khám Phá Trang Chủ">
+        <i class="fa-solid fa-feather-pointed text-brand-gold text-base"></i>
+    </a>
+
+    <!-- Divider -->
+    <div class="w-6 h-[1px] bg-white/10 shrink-0"></div>
+
+    <!-- Center: Business Navigation -->
+    <nav class="flex flex-col items-center gap-2.5 my-auto">
+        <!-- Dashboard -->
+        <a class="w-10 h-10 rounded-full flex items-center justify-center transition group relative shrink-0 ${param.active == 'dashboard' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
+           href="/admin/dashboard" title="Tổng quan Dashboard">
+            <i class="fa-solid fa-table-cells-large text-base"></i>
+            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Tổng Quan Dashboard</span>
+        </a>
+
+        <!-- Nhân sự (Chỉ ADMIN) -->
+        <c:if test="${isAdmin}">
+            <a class="w-10 h-10 rounded-full flex items-center justify-center transition group relative shrink-0 ${param.active == 'users' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
+               href="/admin/users" title="Quản lý nhân sự">
+                <i class="fa-solid fa-users-gear text-base"></i>
+                <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Tài Khoản & Quyền</span>
+            </a>
+        </c:if>
+
+        <!-- Chi nhánh (ADMIN & MANAGER) -->
+        <c:if test="${isAdmin || isManager}">
+            <a class="w-10 h-10 rounded-full flex items-center justify-center transition group relative shrink-0 ${param.active == 'stores' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
+               href="/admin/stores" title="Mạng lưới chi nhánh">
+                <i class="fa-solid fa-store text-base"></i>
+                <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Chi Nhánh</span>
+            </a>
+        </c:if>
+
+        <!-- Đầu sách -->
+        <a class="w-10 h-10 rounded-full flex items-center justify-center transition group relative shrink-0 ${param.active == 'books' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
+           href="/admin/books" title="Danh mục đầu sách">
+            <i class="fa-solid fa-book-bookmark text-base"></i>
+            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Đầu Sách</span>
+        </a>
+
+        <!-- Kho bản sách -->
+        <a class="w-10 h-10 rounded-full flex items-center justify-center transition group relative shrink-0 ${param.active == 'copies' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
+           href="/admin/book-copies" title="Quản lý bản sao tồn kho">
+            <i class="fa-solid fa-boxes-stacked text-base"></i>
+            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Kho Bản Sách</span>
+        </a>
+
+        <!-- Thu mua -->
+        <a class="w-10 h-10 rounded-full flex items-center justify-center transition group relative shrink-0 ${param.active == 'buybacks' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
+           href="/admin/buybacks" title="Duyệt thu mua sách cũ">
+            <i class="fa-solid fa-handshake text-base"></i>
+            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Duyệt Thu Mua</span>
+        </a>
+
+        <!-- Chuyển kho -->
+        <a class="w-10 h-10 rounded-full flex items-center justify-center transition group relative shrink-0 ${param.active == 'transfers' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
+           href="/admin/transfers" title="Điều chuyển kho chi nhánh">
+            <i class="fa-solid fa-truck-fast text-base"></i>
+            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Chuyển Kho</span>
+        </a>
+
+        <!-- Báo cáo kỳ chuyên sâu (ADMIN & MANAGER) -->
+        <c:if test="${isAdmin || isManager}">
+            <a class="w-10 h-10 rounded-full flex items-center justify-center transition group relative shrink-0 ${param.active == 'reports' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
+               href="/admin/reports" title="Báo cáo chuyên sâu theo kỳ">
+                <i class="fa-solid fa-chart-line text-base"></i>
+                <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Báo Cáo Kỳ</span>
+            </a>
+        </c:if>
+    </nav>
+
+    <!-- Divider -->
+    <div class="w-6 h-[1px] bg-white/10 shrink-0"></div>
+
+    <!-- Bottom: User & Utility Actions -->
+    <div class="flex flex-col items-center gap-2 shrink-0">
+        <!-- Desktop User Role Pill -->
+        <div class="relative group">
+            <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs border cursor-pointer transition shadow-sm ${isAdmin ? 'bg-rose-500/20 border-rose-500/40 text-rose-300' : isManager ? 'bg-purple-500/20 border-purple-500/40 text-purple-300' : 'bg-sky-500/20 border-sky-500/40 text-sky-300'}">
+                ${pageContext.request.userPrincipal != null ? pageContext.request.userPrincipal.name.substring(0, 1).toUpperCase() : 'U'}
+            </div>
+            <div class="absolute left-14 bottom-0 ml-2 p-3 rounded-2xl glass-panel shadow-glass-elevated border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap z-50 text-left">
+                <div class="text-xs font-bold text-white">${pageContext.request.userPrincipal.principal.user.fullName}</div>
+                <div class="text-[10px] ${isAdmin ? 'text-rose-400' : isManager ? 'text-purple-400' : 'text-sky-400'} font-semibold mt-0.5">
+                    ${isAdmin ? 'Quản trị hệ thống (ADMIN)' : isManager ? 'Quản lý vận hành (MANAGER)' : 'Nhân viên chi nhánh (STAFF)'}
+                </div>
+                <c:if test="${not empty pageContext.request.userPrincipal.principal.user.store}">
+                    <div class="text-[10px] text-brand-gold mt-1 flex items-center gap-1">
+                        <i class="fa-solid fa-store text-[9px]"></i>
+                        <span>${pageContext.request.userPrincipal.principal.user.store.name}</span>
+                    </div>
+                </c:if>
+            </div>
+        </div>
+
+        <!-- Desktop Notification Bell -->
+        <div class="relative">
+            <button type="button" onclick="toggleNotifDropdown()" class="w-10 h-10 rounded-full flex items-center justify-center text-slate-400 hover:text-brand-gold hover:bg-white/5 transition group relative" title="Thông báo thời gian thực">
+                <i class="fa-solid fa-bell text-base"></i>
+                <span id="desktopNotifBadge" class="hidden absolute top-1 right-1 min-w-[15px] h-[15px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center animate-pulse">0</span>
+                <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Chuông Thông Báo</span>
+            </button>
+        </div>
+
+        <!-- Logout -->
+        <form action="/logout" method="post" class="m-0">
+            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+            <button type="submit" class="w-10 h-10 rounded-full flex items-center justify-center text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition group relative" title="Đăng xuất">
+                <i class="fa-solid fa-arrow-right-from-bracket text-base"></i>
+                <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-rose-300 opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Đăng Xuất</span>
+            </button>
+        </form>
+    </div>
 </aside>
 
 <!-- ============================================== -->
