@@ -91,6 +91,10 @@ public class StockTransferServiceImpl implements StockTransferService {
                 throw new IllegalStateException("Bản sách " + bookCopy.getCopyCode() + " đang nằm trong một phiếu điều chuyển khác chưa hoàn tất!");
             }
 
+            // Khóa sách sang trạng thái HOLDING ngay khi tạo phiếu PENDING để ngăn bán tại quầy
+            bookCopy.setStatus(CopyStatus.HOLDING);
+            bookCopyRepository.save(bookCopy);
+
             StockTransferItem item = StockTransferItem.builder()
                     .stockTransfer(transfer)
                     .bookCopy(bookCopy)
@@ -137,7 +141,7 @@ public class StockTransferServiceImpl implements StockTransferService {
                 bookCopyRepository.save(bc);
             }
         } else if (newStatus == TransferStatus.CANCELLED) {
-            // Hủy phiếu: Trả lại trạng thái AVAILABLE cho sách ở chi nhánh cũ
+            // Hủy phiếu: Trả lại trạng thái AVAILABLE cho sách ở chi nhánh cũ (giải phóng từ HOLDING hoặc IN_TRANSIT)
             for (StockTransferItem item : transfer.getItems()) {
                 BookCopy bc = item.getBookCopy();
                 bc.setStatus(CopyStatus.AVAILABLE);
