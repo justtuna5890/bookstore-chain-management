@@ -1,7 +1,7 @@
 package com.bookstorechain.controller.api;
 
-import com.bookstorechain.entity.Role;
 import com.bookstorechain.entity.User;
+import com.bookstorechain.enums.Role;
 import com.bookstorechain.repository.UserRepository;
 import com.bookstorechain.security.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,13 +27,35 @@ public class AuthApiController {
     }
 
     @PostMapping("/register")
-    public User register(@RequestBody Map<String, String> body) {
+    public Map<String, Object> register(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String username = body.get("username");
+        if (username == null || username.isBlank()) {
+            username = email != null ? email.split("@")[0] : "user_" + System.currentTimeMillis();
+        }
+
+        if (userRepository.existsByEmail(email)) {
+            throw new RuntimeException("Email đã tồn tại trong hệ thống");
+        }
+        if (userRepository.existsByUsername(username)) {
+            username = username + "_" + (System.currentTimeMillis() % 1000);
+        }
+
         User user = new User();
-        user.setEmail(body.get("email"));
+        user.setUsername(username);
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(body.get("password")));
-        user.setFullName(body.get("fullName"));
+        user.setFullName(body.get("fullName") != null ? body.get("fullName") : username);
         user.setRole(Role.CUSTOMER);
-        return userRepository.save(user);
+        user.setActive(true);
+        User saved = userRepository.save(user);
+
+        return Map.of(
+                "message", "Đăng ký thành công",
+                "userId", saved.getId(),
+                "username", saved.getUsername(),
+                "email", saved.getEmail()
+        );
     }
 
     @PostMapping("/login")
