@@ -190,6 +190,13 @@
 
         }
 
+        input[type="date"],
+        input[type="date"].glass-input {
+            color-scheme: dark !important;
+            background-color: #12151c !important;
+            color: #f1f5f9 !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        }
         input[type="date"]::-webkit-calendar-picker-indicator {
 
             filter: invert(0.8);
@@ -329,7 +336,7 @@
 
                         <input type="date" name="startDate" value="${startDate}" required
 
-                               class="glass-input w-full px-3.5 py-2 text-xs rounded-xl"/>
+                               class="glass-input w-full px-3.5 py-2 text-xs rounded-xl bg-[#12151c] text-slate-100 border border-white/10"/>
 
                     </div>
 
@@ -345,7 +352,7 @@
 
                         <input type="date" name="endDate" value="${endDate}" required
 
-                               class="glass-input w-full px-3.5 py-2 text-xs rounded-xl"/>
+                               class="glass-input w-full px-3.5 py-2 text-xs rounded-xl bg-[#12151c] text-slate-100 border border-white/10"/>
 
                     </div>
 
@@ -827,7 +834,7 @@
 
                                         </td>
 
-                                        <td class="py-3 px-4 text-slate-400">${br.createdAt}</td>
+                                        <td class="py-3 px-4 text-slate-400">${br.formattedCreatedAt}</td>
 
                                         <td class="py-3 px-4 text-center">
 
@@ -943,7 +950,7 @@
 
                                         </td>
 
-                                        <td class="py-3 px-4 text-slate-400">${st.createdAt}</td>
+                                        <td class="py-3 px-4 text-slate-400">${st.formattedCreatedAt}</td>
 
                                         <td class="py-3 px-4 text-center">
 
