@@ -3,17 +3,21 @@ package com.bookstorechain.config;
 import com.bookstorechain.security.CustomAuthenticationSuccessHandler;
 import com.bookstorechain.security.CustomUserDetailsService;
 import com.bookstorechain.security.JwtAuthenticationFilter;
+import com.bookstorechain.security.RestAuthenticationEntryPoint;
 
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -28,6 +32,7 @@ public class SecurityConfig {
 	private final CustomAuthenticationSuccessHandler successHandler;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
 	@Bean
 	public DaoAuthenticationProvider authenticationProvider() {
@@ -42,12 +47,34 @@ public class SecurityConfig {
 		return config.getAuthenticationManager();
 	}
 
+	// =========================================================================
+	// CHAIN 1: REST API (/api/**) - STATELESS, JWT AUTH, TRA VE JSON 401
+	// =========================================================================
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf(csrf -> csrf.ignoringRequestMatchers("/api/**"))
-
+	@Order(1)
+	public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
+		http.securityMatcher("/api/**")
+				.csrf(csrf -> csrf.disable()) // REST API stateless khong dung session nen khong can CSRF
+				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
+						.requestMatchers("/api/auth/**").permitAll()
+						.requestMatchers(HttpMethod.GET, "/api/books/**").permitAll()
+						.requestMatchers(HttpMethod.POST, "/api/books/**").hasAnyRole("ADMIN", "MANAGER", "STAFF")
+						.anyRequest().authenticated()
+				)
+				.exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthenticationEntryPoint))
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
+		return http.build();
+	}
+
+	// =========================================================================
+	// CHAIN 2: WEB MVC & JSP - SESSION-BASED, FORM LOGIN, CSRF BAT
+	// =========================================================================
+	@Bean
+	@Order(2)
+	public SecurityFilterChain webSecurityFilterChain(HttpSecurity http) throws Exception {
+		http.authorizeHttpRequests(auth -> auth
 						// Cho phép các request FORWARD/ERROR của Spring MVC
 						.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
 
@@ -57,7 +84,7 @@ public class SecurityConfig {
 						.permitAll()
 
 						// Các trang public
-						.requestMatchers("/", "/home", "/login", "/register", "/error", "/buyback-request", "/books/**", "/api/auth/**", "/ws/**").permitAll()
+						.requestMatchers("/", "/home", "/login", "/register", "/error", "/buyback-request", "/books/**", "/ws/**").permitAll()
 
 						// Admin
 						.requestMatchers("/admin/**").hasAnyRole("ADMIN", "MANAGER", "STAFF")
@@ -74,9 +101,6 @@ public class SecurityConfig {
 				.exceptionHandling(ex -> ex.accessDeniedPage("/?denied=true"));
 
 		http.authenticationProvider(authenticationProvider());
-
-		// Kích hoạt JWT filter cho REST API (/api/**)
-		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
