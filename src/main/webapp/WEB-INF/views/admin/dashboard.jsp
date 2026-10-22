@@ -489,7 +489,7 @@
                                     Trung Tâm Cảnh Báo Vận Hành & Tắc Nghẽn
                                 </h2>
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${not empty operationalAlerts ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}">
-                                    ${not empty operationalAlerts ? operationalAlerts.size().concat(' sự vụ cần xử lý') : 'Hoạt động ổn định'}
+                                    <c:choose><c:when test="${not empty operationalAlerts}">${operationalAlerts.size()} sự vụ cần xử lý</c:when><c:otherwise>Hoạt động ổn định</c:otherwise></c:choose>
                                 </span>
                             </div>
                             <p class="text-xs text-slate-400 mt-0.5">Giám sát tự động đơn thu mua trễ hẹn, phiếu chuyển kho quá giờ và cảnh báo mức tồn kho.</p>
