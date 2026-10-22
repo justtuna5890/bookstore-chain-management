@@ -9,11 +9,13 @@ import java.util.Optional;
 
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
-    List<CartItem> findByCartId(Long cartId);
+    List<CartItem> findByCartIdOrderByCreatedAtAsc(Long cartId);
 
     Optional<CartItem> findByCartIdAndCopyId(Long cartId, Long copyId);
 
     boolean existsByCartIdAndCopyId(Long cartId, Long copyId);
 
     long countByCartId(Long cartId);
+
+    long countByCartUserId(Long userId);
 }

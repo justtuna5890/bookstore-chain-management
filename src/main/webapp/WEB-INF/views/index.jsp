@@ -254,6 +254,13 @@
 
                 <!-- User profile & Quick notification (Right) -->
                 <div class="flex items-center justify-end gap-3 shrink-0" data-purpose="user-actions">
+                    <!-- Cart Icon -->
+                    <a href="/cart" class="relative p-2 rounded-full glass-panel-subtle hover:bg-white/10 transition text-slate-300" title="Giỏ hàng">
+                        <i class="fa-solid fa-cart-shopping text-sm"></i>
+                        <c:if test="${cartCount > 0}">
+                            <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-brand-gold text-slate-950 text-[10px] font-bold flex items-center justify-center">${cartCount}</span>
+                        </c:if>
+                    </a>
                     <!-- Notification Icon -->
                     <a href="/#stores" class="relative p-2 rounded-full glass-panel-subtle hover:bg-white/10 transition text-slate-300" title="Chi nhánh hoạt động">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

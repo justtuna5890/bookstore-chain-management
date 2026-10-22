@@ -89,6 +89,7 @@
                             <th class="p-3">Tình trạng</th>
                             <th class="p-3">Ghi chú</th>
                             <th class="p-3 text-right">Giá bán</th>
+                            <th class="p-3"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-white/5">
@@ -106,10 +107,15 @@
                                 </td>
                                 <td class="p-3 text-slate-400">${empty cp.note ? '—' : cp.note}</td>
                                 <td class="p-3 text-right font-bold text-emerald-400"><fmt:formatNumber value="${cp.price}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></td>
+                                <td class="p-3 text-right">
+                                    <button type="button" data-add-to-cart="${cp.id}" class="whitespace-nowrap px-3 py-1.5 rounded-full bg-gradient-to-r from-brand-gold to-yellow-500 text-slate-950 font-bold text-[11px] hover:from-yellow-400 hover:to-amber-500 transition">
+                                        <i class="fa-solid fa-cart-plus mr-1"></i>Thêm vào giỏ
+                                    </button>
+                                </td>
                             </tr>
                         </c:forEach>
                         <c:if test="${empty book.copies}">
-                            <tr><td colspan="5" class="p-6 text-center text-slate-500">Hiện tất cả bản sách đã được bán hoặc đang điều chuyển. Bạn có thể quay lại sau.</td></tr>
+                            <tr><td colspan="6" class="p-6 text-center text-slate-500">Hiện tất cả bản sách đã được bán hoặc đang điều chuyển. Bạn có thể quay lại sau.</td></tr>
                         </c:if>
                     </tbody>
                 </table>
