@@ -21,6 +21,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     java.util.List<Book> findByIsActiveTrue();
 
+    java.util.List<Book> findTop4ByCategoryAndIdNotAndIsActiveTrue(String category, Long id);
+
     @Query("SELECT DISTINCT b.category FROM Book b WHERE b.category IS NOT NULL AND b.isActive = true")
     java.util.List<String> findDistinctCategories();
 }

@@ -48,8 +48,8 @@ public class SecurityConfig {
 
 				.authorizeHttpRequests(auth -> auth
 
-						// Cho phép các request FORWARD/ERROR của Spring MVC
-						.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
+						// Cho phép các request FORWARD/INCLUDE/ERROR của Spring MVC (INCLUDE cần cho jsp:include khi chưa đăng nhập)
+						.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE, DispatcherType.ERROR).permitAll()
 
 						// Static resources
 						.requestMatchers("/css/**", "/js/**", "/images/**", "/static/**", "/bootstrap/**",

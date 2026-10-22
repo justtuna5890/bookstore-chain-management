@@ -701,6 +701,11 @@
                                                 </tbody>
                                             </table>
                                         </div>
+                                        <div class="mt-4 text-right">
+                                            <a href="/books/${book.id}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-brand-gold to-yellow-500 text-slate-950 font-bold text-xs hover:from-yellow-400 hover:to-amber-500 transition">
+                                                <i class="fa-solid fa-arrow-right text-[11px]"></i> Xem chi tiết sách
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </c:forEach>
