@@ -59,6 +59,13 @@
         .glass-panel-subtle { background: rgba(25, 30, 40, 0.5); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.06); }
         .glass-input { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
         .glass-input:focus { background: rgba(255, 255, 255, 0.08); border-color: rgba(212, 175, 55, 0.45); outline: none; }
+        input.form-field, textarea.form-field, select.form-field {
+            background-color: rgba(255, 255, 255, 0.06); color: #f1f5f9; border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        input.form-field::placeholder, textarea.form-field::placeholder { color: #64748b; }
+        input.form-field:focus, textarea.form-field:focus, select.form-field:focus {
+            background-color: rgba(255, 255, 255, 0.1); border-color: rgba(212, 175, 55, 0.55); outline: none; box-shadow: none;
+        }
         .book-spine-effect { box-shadow: inset 5px 0 10px -2px rgba(0,0,0,0.6), inset -2px 0 5px rgba(255,255,255,0.1), 0 15px 30px rgba(0,0,0,0.65); }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }

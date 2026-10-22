@@ -9,11 +9,11 @@ import java.util.Optional;
 
 @Repository
 public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Long> {
+    boolean existsByOrderCode(String orderCode);
+
     Optional<CustomerOrder> findByOrderCode(String orderCode);
 
     Optional<CustomerOrder> findByOrderCodeAndCustomerId(String orderCode, Long customerId);
 
     List<CustomerOrder> findByCustomerIdOrderByCreatedAtDesc(Long customerId);
-
-    long countByCreatedAtBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
 }

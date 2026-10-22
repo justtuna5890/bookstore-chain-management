@@ -17,6 +17,12 @@
     </c:if>
 </div>
 
+<c:if test="${not empty cartNotice}">
+    <div class="mt-4 p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-2.5">
+        <i class="fa-solid fa-triangle-exclamation text-amber-400 text-base mt-0.5"></i><span>${cartNotice}</span>
+    </div>
+</c:if>
+
 <c:if test="${cart.emptyCart}">
     <div class="mt-10 p-10 rounded-2xl glass-panel-subtle text-center">
         <i class="fa-solid fa-cart-shopping text-3xl text-slate-600 mb-3"></i>
@@ -88,6 +94,16 @@
                         <dd class="text-emerald-400 font-bold"><fmt:formatNumber value="${cart.subtotal}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></dd>
                     </div>
                 </dl>
+                <c:choose>
+                    <c:when test="${cart.availableCount > 0}">
+                        <a href="/checkout" class="block text-center mt-5 px-5 py-2.5 rounded-full bg-gradient-to-r from-brand-gold to-yellow-500 text-slate-950 font-bold text-sm hover:from-yellow-400 hover:to-amber-500 transition">
+                            <i class="fa-solid fa-bag-shopping mr-1.5"></i>Tiến hành đặt hàng
+                        </a>
+                    </c:when>
+                    <c:otherwise>
+                        <p class="mt-5 text-center text-[11px] text-rose-300">Giỏ hàng chưa có sách khả dụng để đặt.</p>
+                    </c:otherwise>
+                </c:choose>
                 <p class="text-[11px] text-slate-500 mt-4 leading-relaxed">Sách thuộc các chi nhánh khác nhau sẽ được tách thành các đơn riêng để mỗi chi nhánh chuẩn bị hàng.</p>
             </div>
         </aside>

@@ -5,6 +5,7 @@ import com.bookstorechain.enums.CopyStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -18,6 +19,15 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, Long> {
     boolean existsByCopyCode(String copyCode);
 
     java.util.Optional<BookCopy> findByCopyCode(String copyCode);
+
+    /**
+     * Giữ chỗ nguyên tử: chỉ chuyển các bản sao đang AVAILABLE sang RESERVED trong một câu lệnh UPDATE.
+     * So sánh số dòng trả về với số id gửi lên để biết có bản nào đã bị người khác lấy trước.
+     */
+    @Modifying(flushAutomatically = true)
+    @Query("UPDATE BookCopy bc SET bc.status = com.bookstorechain.enums.CopyStatus.RESERVED " +
+           "WHERE bc.id IN :ids AND bc.status = com.bookstorechain.enums.CopyStatus.AVAILABLE")
+    int reserveIfAvailable(@Param("ids") java.util.Collection<Long> ids);
 
     @Query("SELECT bc FROM BookCopy bc WHERE " +
            "(:storeId IS NULL OR bc.store.id = :storeId) AND " +
