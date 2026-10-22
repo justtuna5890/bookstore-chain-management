@@ -87,7 +87,7 @@ public class CheckoutController {
     @GetMapping("/success")
     public String success(Model model) {
         if (!model.containsAttribute("placedOrders")) {
-            return "redirect:/";
+            return "redirect:/orders";
         }
         return "customer/checkout-success";
     }

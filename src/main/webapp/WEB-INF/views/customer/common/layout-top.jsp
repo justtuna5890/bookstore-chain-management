@@ -115,6 +115,11 @@
                         <i class="fa-solid fa-cart-shopping text-sm"></i>
                         <span data-cart-count class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-brand-gold text-slate-950 text-[10px] font-bold flex items-center justify-center ${empty cartCount || cartCount == 0 ? 'hidden' : ''}">${empty cartCount ? 0 : cartCount}</span>
                     </a>
+                    <c:if test="${isLoggedIn}">
+                        <a href="/orders" class="relative p-2 rounded-full glass-panel-subtle hover:bg-white/10 transition text-slate-300" title="Đơn hàng của tôi">
+                            <i class="fa-solid fa-receipt text-sm"></i>
+                        </a>
+                    </c:if>
                     <c:if test="${!isLoggedIn}">
                         <a href="/login" class="flex items-center gap-2 pl-3 pr-4 py-1.5 rounded-full bg-gradient-to-r from-brand-gold to-yellow-500 text-slate-950 font-bold text-xs shadow-glow-gold hover:from-yellow-400 hover:to-amber-500 transition">
                             <i class="fa-solid fa-right-to-bracket text-[11px]"></i><span>Đăng nhập</span>

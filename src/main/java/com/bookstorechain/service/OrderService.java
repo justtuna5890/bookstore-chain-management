@@ -15,4 +15,13 @@ public interface OrderService {
 
     /** Phí giao hàng áp dụng cho mỗi đơn giao tận nơi. */
     BigDecimal getDeliveryFee();
+
+    /** Các đơn của khách, mới nhất trước. */
+    List<OrderSummaryDTO> getCustomerOrders(Long userId);
+
+    /** Chi tiết một đơn của khách. Ném ResourceNotFoundException nếu mã không tồn tại hoặc đơn của người khác. */
+    OrderSummaryDTO getCustomerOrder(Long userId, String orderCode);
+
+    /** Khách tự huỷ đơn PENDING chưa thanh toán, trả các bản sách về AVAILABLE. */
+    void cancelByCustomer(Long userId, String orderCode);
 }

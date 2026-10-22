@@ -41,7 +41,10 @@
     </c:forEach>
 </div>
 
-<div class="mt-8 text-center">
+<div class="mt-8 flex items-center justify-center gap-3 flex-wrap">
+    <a href="/orders" class="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-brand-gold/50 text-brand-gold hover:bg-brand-gold/10 font-bold text-xs transition">
+        <i class="fa-solid fa-receipt text-[11px]"></i> Xem đơn hàng của tôi
+    </a>
     <a href="/" class="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-brand-gold to-yellow-500 text-slate-950 font-bold text-xs hover:from-yellow-400 hover:to-amber-500 transition">
         <i class="fa-solid fa-book-open text-[11px]"></i> Tiếp tục khám phá sách
     </a>

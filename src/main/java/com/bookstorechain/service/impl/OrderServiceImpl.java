@@ -16,6 +16,7 @@ import com.bookstorechain.enums.FulfillmentType;
 import com.bookstorechain.enums.OrderStatus;
 import com.bookstorechain.enums.PaymentStatus;
 import com.bookstorechain.exception.BusinessException;
+import com.bookstorechain.exception.ResourceNotFoundException;
 import com.bookstorechain.repository.BookCopyRepository;
 import com.bookstorechain.repository.CartItemRepository;
 import com.bookstorechain.repository.CartRepository;
@@ -26,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
@@ -67,6 +69,40 @@ public class OrderServiceImpl implements OrderService {
         // Khoá ngoài transaction để bấm đặt hàng hai lần liên tiếp không tạo trùng đơn
         synchronized (userLocks.lockFor(userId)) {
             return new TransactionTemplate(transactionManager).execute(status -> doCheckout(userId, request));
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderSummaryDTO> getCustomerOrders(Long userId) {
+        return customerOrderRepository.findByCustomerIdOrderByCreatedAtDesc(userId).stream()
+                .map(this::toSummary)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderSummaryDTO getCustomerOrder(Long userId, String orderCode) {
+        return customerOrderRepository.findByOrderCodeAndCustomerId(orderCode, userId)
+                .map(this::toSummary)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng " + orderCode));
+    }
+
+    @Override
+    @Transactional
+    public void cancelByCustomer(Long userId, String orderCode) {
+        CustomerOrder order = customerOrderRepository.lockByOrderCodeAndCustomerId(orderCode, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng " + orderCode));
+        if (order.getStatus() != OrderStatus.PENDING || order.getPayment().getStatus() != PaymentStatus.UNPAID) {
+            throw new BusinessException("Đơn hàng đã được xử lý nên không thể tự huỷ. Vui lòng liên hệ chi nhánh để được hỗ trợ.");
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+        for (OrderItem item : order.getItems()) {
+            BookCopy copy = item.getCopy();
+            if (copy.getStatus() == CopyStatus.RESERVED) {
+                copy.setStatus(CopyStatus.AVAILABLE);
+            }
         }
     }
 
@@ -158,7 +194,12 @@ public class OrderServiceImpl implements OrderService {
                 .orderCode(order.getOrderCode())
                 .storeId(order.getStore().getId())
                 .storeName(order.getStore().getName())
+                .storeAddress(order.getStore().getAddress())
+                .storePhone(order.getStore().getPhone())
                 .customerName(order.getReceiverName())
+                .receiverPhone(order.getReceiverPhone())
+                .shippingAddress(order.getShippingAddress())
+                .note(order.getNote())
                 .status(order.getStatus())
                 .fulfillmentType(order.getFulfillmentType())
                 .paymentMethod(order.getPayment().getMethod())
