@@ -1,5 +1,6 @@
 package com.bookstorechain.controller.web;
 
+import com.bookstorechain.dto.response.OperationalAlertDTO;
 import com.bookstorechain.entity.BuybackRequest;
 import com.bookstorechain.entity.StockTransfer;
 import com.bookstorechain.enums.Role;
@@ -148,6 +149,35 @@ public class DashboardController {
         model.addAttribute("recentBuybacks", recentBuybacks);
         model.addAttribute("recentTransfers", recentTransfers);
 
+        // Trung tâm cảnh báo vận hành & Chỉ số mở rộng
+        Long targetStoreId = isStaff ? staffStoreId : null;
+        List<OperationalAlertDTO> alerts;
+        Map<String, Object> extendedMetrics;
+        if (isStaff && staffStoreId == null) {
+            alerts = List.of();
+            extendedMetrics = Map.of(
+                    "pendingBuybacks", 0L,
+                    "activeTransfers", 0L,
+                    "lowStockCount", 0L,
+                    "buybackApprovalRate", 0.0,
+                    "staleCopiesCount", 0L
+            );
+        } else {
+            alerts = dashboardService.getOperationalAlerts(targetStoreId);
+            extendedMetrics = dashboardService.getExtendedMetrics(targetStoreId);
+        }
+        model.addAttribute("operationalAlerts", alerts);
+        model.addAttribute("extendedMetrics", extendedMetrics);
+
+        // Ma trận luân chuyển
+        Map<String, Long> transferFlow = dashboardService.getTransferFlowMatrix();
+        model.addAttribute("transferFlow", transferFlow);
+        try {
+            model.addAttribute("transferFlowJson", objectMapper.writeValueAsString(transferFlow));
+        } catch (JsonProcessingException e) {
+            model.addAttribute("transferFlowJson", "{}");
+        }
+
         return "admin/dashboard";
     }
 
@@ -156,5 +186,6 @@ public class DashboardController {
         model.addAttribute("inventoryValueJson", "{}");
         model.addAttribute("conditionBreakdownJson", "{}");
         model.addAttribute("buybackStatusJson", "{}");
+        model.addAttribute("transferFlowJson", "{}");
     }
 }
