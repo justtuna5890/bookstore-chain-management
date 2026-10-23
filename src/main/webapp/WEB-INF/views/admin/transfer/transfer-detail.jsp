@@ -9,11 +9,14 @@
 <c:set var="isSender" value="${uStoreId != null && uStoreId == transfer.senderStore.id}" />
 <c:set var="isReceiver" value="${uStoreId != null && uStoreId == transfer.receiverStore.id}" />
 <!DOCTYPE html>
-<html class="dark" lang="vi">
+<html class="dark" data-bs-theme="dark" lang="vi">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Phiếu Chuyển Kho #${transfer.id} — OldBook</title>
+        <!-- Bootstrap 5.3.3 Framework (Dark Theme Native) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Tailwind CSS v3 with Plugins -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script>
