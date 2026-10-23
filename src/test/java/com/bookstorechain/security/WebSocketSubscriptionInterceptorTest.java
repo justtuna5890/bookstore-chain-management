@@ -120,6 +120,31 @@ class WebSocketSubscriptionInterceptorTest {
     }
 
     @Test
+    @DisplayName("Mọi người dùng đã đăng nhập nghe được kênh thông báo riêng của mình")
+    void signedInUsersGetTheirPersonalQueue() {
+        for (Role role : Role.values()) {
+            assertThat(subscribeAllowed(principal(role, null), "/user/queue/notifications")).as(role.name()).isTrue();
+        }
+    }
+
+    @Test
+    @DisplayName("Người chưa đăng nhập không nghe được kênh thông báo riêng")
+    void anonymousCannotUsePersonalQueue() {
+        assertThat(subscribeAllowed(null, "/user/queue/notifications")).isFalse();
+    }
+
+    @Test
+    @DisplayName("Khách không đăng ký được kênh riêng của người khác hay hàng đợi chung")
+    void customerCannotReachOthersQueues() {
+        Principal customer = principal(Role.CUSTOMER, null);
+
+        assertThat(subscribeAllowed(customer, "/user/admin/queue/notifications")).isFalse();
+        assertThat(subscribeAllowed(customer, "/user/queue/notifications/extra")).isFalse();
+        assertThat(subscribeAllowed(customer, "/queue/notifications")).isFalse();
+        assertThat(subscribeAllowed(customer, "/user/queue/other")).isFalse();
+    }
+
+    @Test
     @DisplayName("Chỉ khung SUBSCRIBE bị kiểm tra, các khung khác đi qua nguyên vẹn")
     void otherFramesPassThrough() {
         Message<?> connect = frame(StompCommand.CONNECT, null, null);

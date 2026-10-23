@@ -20,6 +20,7 @@ USE BookStoreChain;
 GO
 
 -- 1. XÓA BẢNG CŨ NẾU ĐÃ TỒN TẠI (THEO THỨ TỰ RÀNG BUỘC KHÓA NGOẠI)
+IF OBJECT_ID(N'dbo.user_notification', N'U') IS NOT NULL DROP TABLE dbo.user_notification;
 IF OBJECT_ID(N'dbo.wishlist_item', N'U') IS NOT NULL DROP TABLE dbo.wishlist_item;
 IF OBJECT_ID(N'dbo.review', N'U') IS NOT NULL DROP TABLE dbo.review;
 IF OBJECT_ID(N'dbo.payment', N'U') IS NOT NULL DROP TABLE dbo.payment;
@@ -201,6 +202,24 @@ CREATE TABLE dbo.wishlist_item (
     CONSTRAINT FK_wishlist_user FOREIGN KEY (user_id) REFERENCES dbo.users(id),
     CONSTRAINT FK_wishlist_book FOREIGN KEY (book_id) REFERENCES dbo.book(id)
 );
+GO
+
+-- Bảng Thông Báo Riêng (user_notification): thông báo gửi cho từng người dùng, lưu lại để xem sau
+CREATE TABLE dbo.user_notification (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    user_id BIGINT NOT NULL,
+    type NVARCHAR(20) NOT NULL CHECK (type IN ('ORDER', 'WISHLIST', 'BUYBACK', 'REVIEW')),
+    title NVARCHAR(150) NOT NULL,
+    message NVARCHAR(500) NOT NULL,
+    link NVARCHAR(255) NULL,
+    is_read BIT NOT NULL DEFAULT 0,
+    CONSTRAINT PK_user_notification PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT FK_user_notification_user FOREIGN KEY (user_id) REFERENCES dbo.users(id)
+);
+GO
+CREATE INDEX IX_user_notification_user_read ON dbo.user_notification (user_id, is_read, created_at DESC);
 GO
 
 -- Bảng Giỏ Hàng (cart): mỗi khách hàng có đúng một giỏ
@@ -523,6 +542,13 @@ INSERT INTO dbo.wishlist_item (created_at, updated_at, user_id, book_id) VALUES
 (DATEADD(day, -5, SYSDATETIME()), SYSDATETIME(), 5, 1),
 (DATEADD(day, -2, SYSDATETIME()), SYSDATETIME(), 5, 4),
 (DATEADD(day, -1, SYSDATETIME()), SYSDATETIME(), 6, 2);
+GO
+
+-- 3.12. Thông báo riêng mẫu cho khách hàng 'customer'
+INSERT INTO dbo.user_notification (created_at, updated_at, user_id, type, title, message, link, is_read) VALUES
+(DATEADD(hour, -2, SYSDATETIME()), SYSDATETIME(), 5, 'WISHLIST', N'Sách yêu thích đã có hàng', N'"Chiến Tranh Và Hòa Bình" vừa có hàng trở lại. Đặt sớm kẻo hết.', '/books/4', 0),
+(DATEADD(day, -1, SYSDATETIME()), SYSDATETIME(), 5, 'ORDER', N'Đơn hàng sẵn sàng nhận', N'Đơn hàng của bạn đã sẵn sàng, mời bạn đến chi nhánh nhận sách.', '/orders', 0),
+(DATEADD(day, -4, SYSDATETIME()), SYSDATETIME(), 5, 'BUYBACK', N'Yêu cầu thu mua đã được duyệt', N'Nhân viên đã định giá sách bạn gửi. Mời bạn mang sách đến chi nhánh.', NULL, 1);
 GO
 
 PRINT N'>>> HOÀN TẤT KHỞI TẠO CƠ SỞ DỮ LIỆU BOOKSTORE CHAIN ĐA DẠNG THÀNH CÔNG! <<<';
