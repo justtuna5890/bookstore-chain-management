@@ -9,13 +9,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"store"})
     Optional<User> findByUsername(String username);
 
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"store"})
     Optional<User> findByEmail(String email);
 
     boolean existsByUsername(String username);
@@ -30,4 +33,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Page<User> searchUsers(@Param("keyword") String keyword,
                            @Param("role") Role role,
                            Pageable pageable);
+
+    long countByRole(Role role);
+
+    long countByRoleAndCreatedAtBetween(Role role, LocalDateTime start, LocalDateTime end);
 }
