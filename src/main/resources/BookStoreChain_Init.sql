@@ -20,6 +20,7 @@ USE BookStoreChain;
 GO
 
 -- 1. XÓA BẢNG CŨ NẾU ĐÃ TỒN TẠI (THEO THỨ TỰ RÀNG BUỘC KHÓA NGOẠI)
+IF OBJECT_ID(N'dbo.wishlist_item', N'U') IS NOT NULL DROP TABLE dbo.wishlist_item;
 IF OBJECT_ID(N'dbo.review', N'U') IS NOT NULL DROP TABLE dbo.review;
 IF OBJECT_ID(N'dbo.payment', N'U') IS NOT NULL DROP TABLE dbo.payment;
 IF OBJECT_ID(N'dbo.order_item', N'U') IS NOT NULL DROP TABLE dbo.order_item;
@@ -185,6 +186,20 @@ CREATE TABLE dbo.review (
     CONSTRAINT UQ_review_user_book UNIQUE (user_id, book_id),
     CONSTRAINT FK_review_user FOREIGN KEY (user_id) REFERENCES dbo.users(id),
     CONSTRAINT FK_review_book FOREIGN KEY (book_id) REFERENCES dbo.book(id)
+);
+GO
+
+-- Bảng Yêu Thích (wishlist_item): khách đánh dấu đầu sách muốn theo dõi
+CREATE TABLE dbo.wishlist_item (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    user_id BIGINT NOT NULL,
+    book_id BIGINT NOT NULL,
+    CONSTRAINT PK_wishlist_item PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_wishlist_user_book UNIQUE (user_id, book_id),
+    CONSTRAINT FK_wishlist_user FOREIGN KEY (user_id) REFERENCES dbo.users(id),
+    CONSTRAINT FK_wishlist_book FOREIGN KEY (book_id) REFERENCES dbo.book(id)
 );
 GO
 
@@ -501,6 +516,13 @@ INSERT INTO dbo.review (created_at, updated_at, user_id, book_id, rating, commen
 (DATEADD(day, -9, SYSDATETIME()), SYSDATETIME(), 6, 2, 3, N'Nội dung hay nhưng bìa hơi cũ hơn mình tưởng.', 0),
 (DATEADD(day, -7, SYSDATETIME()), SYSDATETIME(), 5, 3, 4, NULL, 0),
 (DATEADD(day, -3, SYSDATETIME()), SYSDATETIME(), 6, 4, 1, N'Nội dung quảng cáo lừa đảo, đừng mua! Liên hệ ngay website xyz để nhận ưu đãi.', 1);
+GO
+
+-- 3.11. Sách yêu thích mẫu
+INSERT INTO dbo.wishlist_item (created_at, updated_at, user_id, book_id) VALUES
+(DATEADD(day, -5, SYSDATETIME()), SYSDATETIME(), 5, 1),
+(DATEADD(day, -2, SYSDATETIME()), SYSDATETIME(), 5, 4),
+(DATEADD(day, -1, SYSDATETIME()), SYSDATETIME(), 6, 2);
 GO
 
 PRINT N'>>> HOÀN TẤT KHỞI TẠO CƠ SỞ DỮ LIỆU BOOKSTORE CHAIN ĐA DẠNG THÀNH CÔNG! <<<';
