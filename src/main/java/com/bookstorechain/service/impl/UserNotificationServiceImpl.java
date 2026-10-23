@@ -16,13 +16,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Clock;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,16 +53,7 @@ public class UserNotificationServiceImpl implements UserNotificationService {
 
         UserNotificationDTO payload = toDTO(saved);
         String username = user.getUsername();
-        if (TransactionSynchronizationManager.isSynchronizationActive()) {
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    push(username, payload);
-                }
-            });
-        } else {
-            push(username, payload);
-        }
+        AfterCommit.run(() -> push(username, payload));
     }
 
     private void push(String username, UserNotificationDTO payload) {
@@ -105,6 +92,12 @@ public class UserNotificationServiceImpl implements UserNotificationService {
 
     @Override
     @Transactional
+    public int markReadByLink(Long userId, String link) {
+        return notificationRepository.markReadByLink(userId, link);
+    }
+
+    @Override
+    @Transactional
     public int markAllRead(Long userId) {
         return notificationRepository.markAllRead(userId);
     }
@@ -131,23 +124,7 @@ public class UserNotificationServiceImpl implements UserNotificationService {
     }
 
     String timeAgo(LocalDateTime createdAt) {
-        if (createdAt == null) {
-            return "";
-        }
-        Duration age = Duration.between(createdAt, LocalDateTime.now(clock));
-        if (age.toMinutes() < 1) {
-            return "Vừa xong";
-        }
-        if (age.toMinutes() < 60) {
-            return age.toMinutes() + " phút trước";
-        }
-        if (age.toHours() < 24) {
-            return age.toHours() + " giờ trước";
-        }
-        if (age.toDays() < 7) {
-            return age.toDays() + " ngày trước";
-        }
-        return createdAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        return RelativeTime.ago(createdAt, LocalDateTime.now(clock));
     }
 
     private String truncate(String text, int max) {

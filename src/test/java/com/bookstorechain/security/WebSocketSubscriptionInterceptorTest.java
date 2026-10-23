@@ -145,6 +145,37 @@ class WebSocketSubscriptionInterceptorTest {
     }
 
     @Test
+    @DisplayName("Chat: mọi người dùng đăng nhập nghe được hàng đợi chat riêng, người chưa đăng nhập thì không")
+    void personalChatQueue() {
+        for (Role role : Role.values()) {
+            assertThat(subscribeAllowed(principal(role, null), "/user/queue/chat")).as(role.name()).isTrue();
+        }
+        assertThat(subscribeAllowed(null, "/user/queue/chat")).isFalse();
+        assertThat(subscribeAllowed(principal(Role.CUSTOMER, null), "/user/bob/queue/chat")).isFalse();
+        assertThat(subscribeAllowed(principal(Role.CUSTOMER, null), "/queue/chat")).isFalse();
+    }
+
+    @Test
+    @DisplayName("Chat chi nhánh: nhân viên chỉ nghe chi nhánh của mình, quản lý/admin nghe được kênh tất cả, khách không nghe được")
+    void chatTopicsFollowStoreRules() {
+        Principal staff = principal(Role.STAFF, 1L);
+        assertThat(subscribeAllowed(staff, "/topic/chat/store/1")).isTrue();
+        assertThat(subscribeAllowed(staff, "/topic/chat/store/2")).isFalse();
+        assertThat(subscribeAllowed(staff, "/topic/chat/all")).isFalse();
+
+        assertThat(subscribeAllowed(principal(Role.MANAGER, 1L), "/topic/chat/all")).isTrue();
+        assertThat(subscribeAllowed(principal(Role.ADMIN, null), "/topic/chat/all")).isTrue();
+        assertThat(subscribeAllowed(principal(Role.ADMIN, null), "/topic/chat/store/9")).isTrue();
+
+        Principal customer = principal(Role.CUSTOMER, null);
+        assertThat(subscribeAllowed(customer, "/topic/chat/store/1")).isFalse();
+        assertThat(subscribeAllowed(customer, "/topic/chat/all")).isFalse();
+        assertThat(subscribeAllowed(null, "/topic/chat/store/1")).isFalse();
+        assertThat(subscribeAllowed(principal(Role.ADMIN, null), "/topic/chat/store/abc")).isFalse();
+        assertThat(subscribeAllowed(principal(Role.ADMIN, null), "/topic/chat/other/1")).isFalse();
+    }
+
+    @Test
     @DisplayName("Chỉ khung SUBSCRIBE bị kiểm tra, các khung khác đi qua nguyên vẹn")
     void otherFramesPassThrough() {
         Message<?> connect = frame(StompCommand.CONNECT, null, null);

@@ -28,4 +28,7 @@ public interface UserNotificationService {
     boolean markRead(Long userId, Long notificationId);
 
     int markAllRead(Long userId);
+
+    /** Đánh dấu đã đọc mọi thông báo chưa đọc của người dùng trỏ tới một liên kết (VD khi khách mở cuộc chat). */
+    int markReadByLink(Long userId, String link);
 }

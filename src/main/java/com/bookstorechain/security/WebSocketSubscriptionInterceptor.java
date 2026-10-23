@@ -22,12 +22,12 @@ import java.util.regex.Pattern;
  *   <li>/topic/notifications: nhân viên, quản lý, quản trị (thông báo thu mua, chuyển kho);</li>
  *   <li>/topic/store/{id}: quản trị mọi chi nhánh; quản lý và nhân viên chỉ chi nhánh của mình;</li>
  *   <li>/topic/store/all: quản trị và quản lý (đơn hàng của mọi chi nhánh);</li>
- *   <li>/user/queue/notifications: mọi người dùng đã đăng nhập, chỉ nhận thông báo gửi riêng cho chính mình
+ *   <li>/topic/chat/store/{id} và /topic/chat/all: chat hỗ trợ, cùng quy tắc với /topic/store/{id} và /topic/store/all;</li>
+ *   <li>/user/queue/notifications và /user/queue/chat: mọi người dùng đã đăng nhập, chỉ nhận tin gửi riêng cho chính mình
  *       (Spring ghép đích này với tên đăng nhập của phiên, nên không nghe được kênh của người khác).</li>
  * </ul>
  * Người chưa đăng nhập không đăng ký được kênh nào, khách hàng chỉ đăng ký được kênh riêng của mình. Khung bị từ chối
- * bị bỏ im lặng thay vì ném lỗi để trình duyệt không rơi vào vòng lặp kết nối lại. Kênh riêng của chat hỗ trợ sẽ
- * được bổ sung cùng tính năng đó.
+ * bị bỏ im lặng thay vì ném lỗi để trình duyệt không rơi vào vòng lặp kết nối lại.
  */
 @Component
 @Slf4j
@@ -35,8 +35,10 @@ public class WebSocketSubscriptionInterceptor implements ChannelInterceptor {
 
     static final String GENERAL_TOPIC = "/topic/notifications";
     static final String ALL_STORES_TOPIC = "/topic/store/all";
+    static final String CHAT_ALL_STORES_TOPIC = "/topic/chat/all";
     static final String PERSONAL_NOTIFICATIONS = "/user/queue/notifications";
-    private static final Pattern STORE_TOPIC = Pattern.compile("^/topic/store/(\\d+)$");
+    static final String PERSONAL_CHAT = "/user/queue/chat";
+    private static final Pattern STORE_TOPIC = Pattern.compile("^/topic/(?:chat/)?store/(\\d+)$");
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -57,7 +59,7 @@ public class WebSocketSubscriptionInterceptor implements ChannelInterceptor {
         if (signedIn == null || destination == null) {
             return false;
         }
-        if (PERSONAL_NOTIFICATIONS.equals(destination)) {
+        if (PERSONAL_NOTIFICATIONS.equals(destination) || PERSONAL_CHAT.equals(destination)) {
             return true;
         }
         CustomUserDetails user = staffOf(signedIn);
@@ -69,7 +71,7 @@ public class WebSocketSubscriptionInterceptor implements ChannelInterceptor {
         if (GENERAL_TOPIC.equals(destination)) {
             return true;
         }
-        if (ALL_STORES_TOPIC.equals(destination)) {
+        if (ALL_STORES_TOPIC.equals(destination) || CHAT_ALL_STORES_TOPIC.equals(destination)) {
             return role == Role.ADMIN || role == Role.MANAGER;
         }
         Matcher store = STORE_TOPIC.matcher(destination);
