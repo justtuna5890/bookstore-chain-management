@@ -37,12 +37,18 @@ public class OrderSummaryDTO {
     private FulfillmentType fulfillmentType;
     private PaymentMethod paymentMethod;
     private PaymentStatus paymentStatus;
+    private String transactionCode;
+    private LocalDateTime paidAt;
     private BigDecimal subtotal;
     private BigDecimal discountAmount;
     private BigDecimal shippingFee;
     private BigDecimal totalAmount;
     private LocalDateTime createdAt;
     private List<OrderLineDTO> lines;
+
+    public String getFormattedPaidAt() {
+        return paidAt == null ? "" : paidAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+    }
 
     public int getItemCount() {
         return lines == null ? 0 : lines.size();

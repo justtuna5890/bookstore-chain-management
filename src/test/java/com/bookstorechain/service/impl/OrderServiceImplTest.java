@@ -71,7 +71,7 @@ class OrderServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new OrderServiceImpl(cartRepository, cartItemRepository, bookCopyRepository,
-                customerOrderRepository, userRepository, new UserLocks(), transactionManager);
+                customerOrderRepository, userRepository, new UserLocks(), transactionManager, new OrderMapper());
         ReflectionTestUtils.setField(service, "deliveryFee", new BigDecimal("25000"));
         lenient().when(transactionManager.getTransaction(any())).thenReturn(mock(TransactionStatus.class));
 

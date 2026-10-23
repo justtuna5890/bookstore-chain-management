@@ -1,7 +1,6 @@
 package com.bookstorechain.service.impl;
 
 import com.bookstorechain.dto.request.CheckoutRequestDTO;
-import com.bookstorechain.dto.response.OrderLineDTO;
 import com.bookstorechain.dto.response.OrderSummaryDTO;
 import com.bookstorechain.entity.BookCopy;
 import com.bookstorechain.entity.Cart;
@@ -55,6 +54,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final UserLocks userLocks;
     private final PlatformTransactionManager transactionManager;
+    private final OrderMapper orderMapper;
 
     @Value("${app.shop.delivery-fee:25000}")
     private BigDecimal deliveryFee;
@@ -76,7 +76,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public List<OrderSummaryDTO> getCustomerOrders(Long userId) {
         return customerOrderRepository.findByCustomerIdOrderByCreatedAtDesc(userId).stream()
-                .map(this::toSummary)
+                .map(orderMapper::toSummary)
                 .collect(Collectors.toList());
     }
 
@@ -84,7 +84,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public OrderSummaryDTO getCustomerOrder(Long userId, String orderCode) {
         return customerOrderRepository.findByOrderCodeAndCustomerId(orderCode, userId)
-                .map(this::toSummary)
+                .map(orderMapper::toSummary)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng " + orderCode));
     }
 
@@ -137,7 +137,7 @@ public class OrderServiceImpl implements OrderService {
         List<OrderSummaryDTO> placed = new ArrayList<>();
         for (List<CartItem> storeItems : itemsByStore.values()) {
             CustomerOrder order = buildOrder(customer, storeItems, request, delivery);
-            placed.add(toSummary(customerOrderRepository.saveAndFlush(order)));
+            placed.add(orderMapper.toSummary(customerOrderRepository.saveAndFlush(order)));
         }
 
         cartItemRepository.deleteAll(purchasable);
@@ -186,39 +186,6 @@ public class OrderServiceImpl implements OrderService {
                 .amount(total)
                 .build());
         return order;
-    }
-
-    private OrderSummaryDTO toSummary(CustomerOrder order) {
-        return OrderSummaryDTO.builder()
-                .orderId(order.getId())
-                .orderCode(order.getOrderCode())
-                .storeId(order.getStore().getId())
-                .storeName(order.getStore().getName())
-                .storeAddress(order.getStore().getAddress())
-                .storePhone(order.getStore().getPhone())
-                .customerName(order.getReceiverName())
-                .receiverPhone(order.getReceiverPhone())
-                .shippingAddress(order.getShippingAddress())
-                .note(order.getNote())
-                .status(order.getStatus())
-                .fulfillmentType(order.getFulfillmentType())
-                .paymentMethod(order.getPayment().getMethod())
-                .paymentStatus(order.getPayment().getStatus())
-                .subtotal(order.getSubtotal())
-                .discountAmount(order.getDiscountAmount())
-                .shippingFee(order.getShippingFee())
-                .totalAmount(order.getTotalAmount())
-                .createdAt(order.getCreatedAt())
-                .lines(order.getItems().stream()
-                        .map(line -> OrderLineDTO.builder()
-                                .copyId(line.getCopy().getId())
-                                .bookId(line.getCopy().getBook().getId())
-                                .title(line.getTitleSnapshot())
-                                .copyCode(line.getCopyCodeSnapshot())
-                                .price(line.getPriceSnapshot())
-                                .build())
-                        .collect(Collectors.toList()))
-                .build();
     }
 
     /** Mã đơn dạng OB-yyyyMMdd-XXXXXX, hậu tố ngẫu nhiên để hai khách đặt cùng lúc không đụng mã. */
