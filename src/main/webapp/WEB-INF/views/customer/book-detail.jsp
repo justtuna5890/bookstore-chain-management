@@ -49,7 +49,13 @@
         <c:if test="${not empty book.category}">
             <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-brand-gold/15 text-brand-gold border border-brand-gold/30">${fn:escapeXml(book.category)}</span>
         </c:if>
-        <h1 class="text-3xl md:text-4xl font-serif font-bold text-white mt-2 leading-tight">${fn:escapeXml(book.title)}</h1>
+        <div class="flex items-start justify-between gap-3 mt-2">
+            <h1 class="text-3xl md:text-4xl font-serif font-bold text-white leading-tight">${fn:escapeXml(book.title)}</h1>
+            <button type="button" data-wishlist-toggle="${book.id}" data-wishlisted="${wishlisted}" aria-pressed="${wishlisted}" title="Yêu thích"
+                    class="shrink-0 mt-1 w-9 h-9 rounded-full glass-panel-subtle hover:bg-white/10 flex items-center justify-center transition ${wishlisted ? 'text-rose-400' : 'text-slate-400'}">
+                <i class="${wishlisted ? 'fa-solid' : 'fa-regular'} fa-heart text-sm"></i>
+            </button>
+        </div>
         <p class="text-sm text-brand-goldLight mt-1"><i class="fa-solid fa-pen-nib me-1"></i>${fn:escapeXml(book.author)}</p>
         <a href="#reviews" class="inline-flex items-center gap-2 mt-2 text-xs text-slate-300 hover:text-brand-gold transition">
             <span class="stars text-base" aria-hidden="true">★★★★★<span style="width:${ratingSummary.starPercent}%">★★★★★</span></span>

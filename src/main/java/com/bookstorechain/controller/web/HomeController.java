@@ -35,6 +35,7 @@ public class HomeController {
     private final PasswordEncoder passwordEncoder;
     private final com.bookstorechain.service.NotificationService notificationService;
     private final com.bookstorechain.service.ReviewService reviewService;
+    private final com.bookstorechain.service.WishlistService wishlistService;
 
     @GetMapping({"/", "/home"})
     public String home(@RequestParam(value = "keyword", required = false) String keyword,
@@ -235,6 +236,8 @@ public class HomeController {
             }
         }
 
+        boolean loggedIn = userDetails != null && userDetails.getUser() != null;
+        model.addAttribute("wishlistedIds", loggedIn ? wishlistService.getBookIds(userDetails.getUser().getId()) : Collections.emptySet());
         model.addAttribute("catalog", catalog);
         model.addAttribute("stores", activeStores);
         model.addAttribute("categories", categories);

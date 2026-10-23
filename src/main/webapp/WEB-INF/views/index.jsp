@@ -262,6 +262,9 @@
                         </c:if>
                     </a>
                     <c:if test="${isLoggedIn}">
+                        <a href="/wishlist" class="relative p-2 rounded-full glass-panel-subtle hover:bg-white/10 transition text-slate-300" title="Sách yêu thích">
+                            <i class="fa-regular fa-heart text-sm"></i>
+                        </a>
                         <a href="/orders" class="relative p-2 rounded-full glass-panel-subtle hover:bg-white/10 transition text-slate-300" title="Đơn hàng của tôi">
                             <i class="fa-solid fa-receipt text-sm"></i>
                         </a>
@@ -375,10 +378,10 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <button class="text-slate-500 hover:text-brand-gold p-1.5 transition shrink-0" title="Lưu sách">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                            <path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" stroke-linecap="round" stroke-linejoin="round"></path>
-                                        </svg>
+                                    <c:set var="isItemWishlisted" value="${wishlistedIds.contains(item.id)}"/>
+                                    <button type="button" data-wishlist-toggle="${item.id}" data-wishlisted="${isItemWishlisted}" aria-pressed="${isItemWishlisted}" title="Yêu thích"
+                                            class="${isItemWishlisted ? 'text-rose-400' : 'text-slate-400'} hover:text-rose-300 p-1.5 transition shrink-0">
+                                        <i class="${isItemWishlisted ? 'fa-solid' : 'fa-regular'} fa-heart text-sm"></i>
                                     </button>
                                 </article>
                             </c:forEach>
@@ -641,10 +644,10 @@
                                                     <fmt:formatNumber value="${book.minPrice}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                                                 </span>
                                             </div>
-                                            <button class="text-slate-400 hover:text-brand-gold transition" title="Lưu sách">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" stroke-linecap="round" stroke-linejoin="round"></path>
-                                                </svg>
+                                            <c:set var="isWishlisted" value="${wishlistedIds.contains(book.id)}"/>
+                                            <button type="button" data-wishlist-toggle="${book.id}" data-wishlisted="${isWishlisted}" aria-pressed="${isWishlisted}" title="Yêu thích"
+                                                    class="${isWishlisted ? 'text-rose-400' : 'text-slate-400'} hover:text-rose-300 transition">
+                                                <i class="${isWishlisted ? 'fa-solid' : 'fa-regular'} fa-heart text-sm"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -897,27 +900,9 @@
     </footer>
     <!-- END: MinimalistFooter -->
 
+    <script src="/js/wishlist.js"></script>
     <script data-purpose="interactive-enhancements">
         document.addEventListener('DOMContentLoaded', () => {
-            // Bookmark button active toggle
-            const bookmarkButtons = document.querySelectorAll('button[title="Lưu sách"]');
-            bookmarkButtons.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const svg = btn.querySelector('svg');
-                    if (btn.classList.contains('text-brand-gold')) {
-                        btn.classList.remove('text-brand-gold');
-                        btn.classList.add('text-slate-400');
-                        svg.setAttribute('fill', 'none');
-                    } else {
-                        btn.classList.add('text-brand-gold');
-                        btn.classList.remove('text-slate-400');
-                        svg.setAttribute('fill', 'currentColor');
-                    }
-                });
-            });
-
             // Quick Search shortcut listener (Cmd+K / Ctrl+K)
             window.addEventListener('keydown', (e) => {
                 if ((e.metaKey || e.ctrlKey) && e.key === 'k') {

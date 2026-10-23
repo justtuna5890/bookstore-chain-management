@@ -6,6 +6,7 @@ import com.bookstorechain.exception.ResourceNotFoundException;
 import com.bookstorechain.security.CustomUserDetails;
 import com.bookstorechain.service.CustomerBookService;
 import com.bookstorechain.service.ReviewService;
+import com.bookstorechain.service.WishlistService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.PessimisticLockingFailureException;
@@ -29,6 +30,7 @@ public class BookDetailController {
 
     private final CustomerBookService customerBookService;
     private final ReviewService reviewService;
+    private final WishlistService wishlistService;
 
     @GetMapping("/books/{id}")
     public String detail(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
@@ -41,6 +43,7 @@ public class BookDetailController {
         model.addAttribute("reviews", reviewService.getReviews(id, REVIEW_LIMIT));
         if (userDetails != null) {
             Long userId = userDetails.getUser().getId();
+            model.addAttribute("wishlisted", wishlistService.getBookIds(userId).contains(id));
             model.addAttribute("canReview", reviewService.canReview(userId, id));
             reviewService.getMyReview(userId, id).ifPresent(mine -> model.addAttribute("myReview", mine));
         }

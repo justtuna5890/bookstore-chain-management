@@ -117,6 +117,9 @@
                         <span data-cart-count class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-brand-gold text-slate-950 text-[10px] font-bold flex items-center justify-center ${empty cartCount || cartCount == 0 ? 'hidden' : ''}">${empty cartCount ? 0 : cartCount}</span>
                     </a>
                     <c:if test="${isLoggedIn}">
+                        <a href="/wishlist" class="relative p-2 rounded-full glass-panel-subtle hover:bg-white/10 transition text-slate-300" title="Sách yêu thích">
+                            <i class="fa-regular fa-heart text-sm"></i>
+                        </a>
                         <a href="/orders" class="relative p-2 rounded-full glass-panel-subtle hover:bg-white/10 transition text-slate-300" title="Đơn hàng của tôi">
                             <i class="fa-solid fa-receipt text-sm"></i>
                         </a>
