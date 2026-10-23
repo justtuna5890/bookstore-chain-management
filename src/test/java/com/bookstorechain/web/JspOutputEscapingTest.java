@@ -25,7 +25,7 @@ class JspOutputEscapingTest {
 
     private static final Path VIEWS = Paths.get("src/main/webapp/WEB-INF/views");
 
-    private static final List<String> SCANNED = List.of("customer", "admin/order", "admin/promotion", "admin/review", "admin/chat", "admin/common/page-top.jsp");
+    private static final List<String> SCANNED = List.of("customer", "admin/order", "admin/promotion", "admin/review", "admin/chat", "admin/common/page-top.jsp", "admin/common/sales-overview.jsp");
 
     /** Biểu thức in thô một thuộc tính (hoặc biến) có tên thường mang chữ do người dùng nhập. */
     private static final String USER_TEXT_PROPERTIES =

@@ -542,6 +542,9 @@
                 </c:choose>
             </div>
 
+<!-- Doanh thu bán hàng online (partial dùng chung) -->
+<jsp:include page="/WEB-INF/views/admin/common/sales-overview.jsp"/>
+
 <!-- 4 Metric Cards - Role Aware -->
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
