@@ -20,6 +20,7 @@ USE BookStoreChain;
 GO
 
 -- 1. XÓA BẢNG CŨ NẾU ĐÃ TỒN TẠI (THEO THỨ TỰ RÀNG BUỘC KHÓA NGOẠI)
+IF OBJECT_ID(N'dbo.review', N'U') IS NOT NULL DROP TABLE dbo.review;
 IF OBJECT_ID(N'dbo.payment', N'U') IS NOT NULL DROP TABLE dbo.payment;
 IF OBJECT_ID(N'dbo.order_item', N'U') IS NOT NULL DROP TABLE dbo.order_item;
 IF OBJECT_ID(N'dbo.customer_order', N'U') IS NOT NULL DROP TABLE dbo.customer_order;
@@ -167,6 +168,23 @@ CREATE TABLE dbo.stock_transfer_item (
     CONSTRAINT PK_stock_transfer_item PRIMARY KEY CLUSTERED (id ASC),
     CONSTRAINT FK_stock_transfer_item_transfer FOREIGN KEY (stock_transfer_id) REFERENCES dbo.stock_transfer(id) ON DELETE CASCADE,
     CONSTRAINT FK_stock_transfer_item_copy FOREIGN KEY (book_copy_id) REFERENCES dbo.book_copy(id)
+);
+GO
+
+-- Bảng Đánh Giá Sách (review): mỗi khách một đánh giá cho mỗi đầu sách, is_hidden do quản trị đặt
+CREATE TABLE dbo.review (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    user_id BIGINT NOT NULL,
+    book_id BIGINT NOT NULL,
+    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment NVARCHAR(1000) NULL,
+    is_hidden BIT NOT NULL DEFAULT 0,
+    CONSTRAINT PK_review PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_review_user_book UNIQUE (user_id, book_id),
+    CONSTRAINT FK_review_user FOREIGN KEY (user_id) REFERENCES dbo.users(id),
+    CONSTRAINT FK_review_book FOREIGN KEY (book_id) REFERENCES dbo.book(id)
 );
 GO
 
@@ -473,6 +491,16 @@ INSERT INTO dbo.promotion (created_at, updated_at, code, description, type, valu
 (SYSDATETIME(), SYSDATETIME(), N'VIPLIMIT', N'Giảm 30.000đ cho 5 khách đầu tiên (đã hết lượt)', N'FIXED', 30000, 0, NULL, DATEADD(day, -20, SYSDATETIME()), DATEADD(day, 20, SYSDATETIME()), 5, 5, 1, NULL, 1),
 (SYSDATETIME(), SYSDATETIME(), N'SAPDIENRA', N'Khuyến mãi sắp diễn ra', N'PERCENT', 25, 200000, 100000, DATEADD(day, 7, SYSDATETIME()), DATEADD(day, 37, SYSDATETIME()), NULL, 0, 1, NULL, 1),
 (SYSDATETIME(), SYSDATETIME(), N'TAMDUNG', N'Mã đang tạm dừng', N'FIXED', 10000, 0, NULL, DATEADD(day, -5, SYSDATETIME()), DATEADD(day, 30, SYSDATETIME()), NULL, 0, 0, NULL, 0);
+GO
+
+-- 3.10. Đánh giá mẫu
+INSERT INTO dbo.review (created_at, updated_at, user_id, book_id, rating, comment, is_hidden) VALUES
+(DATEADD(day, -20, SYSDATETIME()), SYSDATETIME(), 5, 1, 5, N'Bản in đẹp, giấy ngả vàng đúng chất sách cũ. Giao nhận nhanh tại chi nhánh.', 0),
+(DATEADD(day, -12, SYSDATETIME()), SYSDATETIME(), 6, 1, 4, N'Sách sạch sẽ, chỉ có vài nếp gấp nhỏ ở bìa như mô tả.', 0),
+(DATEADD(day, -15, SYSDATETIME()), SYSDATETIME(), 5, 2, 5, N'Đúng tình trạng như mô tả, rất đáng tiền.', 0),
+(DATEADD(day, -9, SYSDATETIME()), SYSDATETIME(), 6, 2, 3, N'Nội dung hay nhưng bìa hơi cũ hơn mình tưởng.', 0),
+(DATEADD(day, -7, SYSDATETIME()), SYSDATETIME(), 5, 3, 4, NULL, 0),
+(DATEADD(day, -3, SYSDATETIME()), SYSDATETIME(), 6, 4, 1, N'Nội dung quảng cáo lừa đảo, đừng mua! Liên hệ ngay website xyz để nhận ưu đãi.', 1);
 GO
 
 PRINT N'>>> HOÀN TẤT KHỞI TẠO CƠ SỞ DỮ LIỆU BOOKSTORE CHAIN ĐA DẠNG THÀNH CÔNG! <<<';
