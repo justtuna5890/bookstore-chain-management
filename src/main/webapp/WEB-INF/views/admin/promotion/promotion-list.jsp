@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="adminTitle" value="Mã Giảm Giá" scope="request"/>
 <c:set var="adminActive" value="promotions" scope="request"/>
@@ -17,7 +18,7 @@
 </div>
 
 <c:if test="${not empty successMessage}">
-    <div class="mb-5 p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2"><i class="fa-solid fa-circle-check"></i><span>${successMessage}</span></div>
+    <div class="mb-5 p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2"><i class="fa-solid fa-circle-check"></i><span>${fn:escapeXml(successMessage)}</span></div>
 </c:if>
 
 <div class="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-lg">
@@ -39,8 +40,8 @@
                 <c:forEach var="promo" items="${promotionPage.content}">
                     <tr class="hover:bg-white/[0.03] transition">
                         <td class="py-3.5 px-4">
-                            <div class="font-mono font-semibold text-amber-300 whitespace-nowrap">${promo.code}</div>
-                            <div class="text-[11px] text-slate-500 max-w-[220px] truncate" title="${promo.description}">${promo.description}</div>
+                            <div class="font-mono font-semibold text-amber-300 whitespace-nowrap">${fn:escapeXml(promo.code)}</div>
+                            <div class="text-[11px] text-slate-500 max-w-[220px] truncate" title="${fn:escapeXml(promo.description)}">${fn:escapeXml(promo.description)}</div>
                         </td>
                         <td class="py-3.5 px-4 whitespace-nowrap">
                             <div class="text-emerald-400 font-bold">${promo.valueLabel}</div>
@@ -59,7 +60,7 @@
                         <td class="py-3.5 px-4 text-center whitespace-nowrap">
                             <span class="text-white font-semibold">${promo.usedCount}</span><span class="text-slate-500"> / ${promo.usageLimit == null ? '∞' : promo.usageLimit}</span>
                         </td>
-                        <td class="py-3.5 px-4 whitespace-nowrap">${promo.scopeLabel}</td>
+                        <td class="py-3.5 px-4 whitespace-nowrap">${fn:escapeXml(promo.scopeLabel)}</td>
                         <td class="py-3.5 px-4"><span class="inline-block whitespace-nowrap px-2.5 py-0.5 rounded-full border text-[10px] font-semibold ${promo.statusClasses}">${promo.statusLabel}</span></td>
                         <td class="py-3.5 px-4 text-right whitespace-nowrap">
                             <a href="/admin/promotions/${promo.id}/edit" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-brand-gold/20 border border-white/10 hover:border-brand-gold/40 text-slate-200 hover:text-brand-gold font-semibold transition"><i class="fa-solid fa-pen-to-square text-[10px]"></i> Sửa</a>

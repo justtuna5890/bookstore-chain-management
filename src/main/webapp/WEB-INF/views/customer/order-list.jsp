@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="pageTitle" value="Đơn hàng của tôi" scope="request"/>
 <jsp:include page="/WEB-INF/views/customer/common/layout-top.jsp"/>
@@ -21,19 +22,19 @@
 
 <div class="mt-6 flex flex-col gap-3">
     <c:forEach var="order" items="${orders}">
-        <a href="/orders/${order.orderCode}" class="group rounded-2xl glass-panel-subtle border border-white/10 p-4 hover:border-brand-gold/40 hover:bg-white/5 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <a href="/orders/${fn:escapeXml(order.orderCode)}" class="group rounded-2xl glass-panel-subtle border border-white/10 p-4 hover:border-brand-gold/40 hover:bg-white/5 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="min-w-0">
                 <div class="flex items-center gap-2.5 flex-wrap">
-                    <span class="font-mono text-sm text-amber-300 font-semibold">${order.orderCode}</span>
+                    <span class="font-mono text-sm text-amber-300 font-semibold">${fn:escapeXml(order.orderCode)}</span>
                     <span class="px-2 py-0.5 rounded-full border text-[10px] font-semibold ${order.statusClasses}">${order.statusLabel}</span>
                 </div>
                 <p class="text-xs text-slate-400 mt-1.5">
-                    <i class="fa-solid fa-store text-brand-gold mr-1"></i>${order.storeName}
+                    <i class="fa-solid fa-store text-brand-gold mr-1"></i>${fn:escapeXml(order.storeName)}
                     <span class="mx-1.5 text-slate-600">·</span>${order.itemCount} cuốn
                     <span class="mx-1.5 text-slate-600">·</span>${order.formattedCreatedAt}
                 </p>
                 <p class="text-[11px] text-slate-500 mt-1 truncate">
-                    <c:forEach var="line" items="${order.lines}" varStatus="st">${line.title}${st.last ? '' : ', '}</c:forEach>
+                    <c:forEach var="line" items="${order.lines}" varStatus="st">${fn:escapeXml(line.title)}${st.last ? '' : ', '}</c:forEach>
                 </p>
             </div>
             <div class="text-right shrink-0">

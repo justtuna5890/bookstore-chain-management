@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="pageTitle" value="Đặt hàng" scope="request"/>
 <jsp:include page="/WEB-INF/views/customer/common/layout-top.jsp"/>
@@ -11,12 +12,12 @@
 
 <c:if test="${not empty checkoutError}">
     <div class="mt-4 p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-200 text-xs flex items-start gap-2.5">
-        <i class="fa-solid fa-circle-exclamation text-rose-400 text-base mt-0.5"></i><span>${checkoutError}</span>
+        <i class="fa-solid fa-circle-exclamation text-rose-400 text-base mt-0.5"></i><span>${fn:escapeXml(checkoutError)}</span>
     </div>
 </c:if>
 <c:if test="${not empty formErrors}">
     <div class="mt-4 p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-200 text-xs">
-        <ul class="list-disc pl-5 space-y-0.5"><c:forEach var="err" items="${formErrors}"><li>${err}</li></c:forEach></ul>
+        <ul class="list-disc pl-5 space-y-0.5"><c:forEach var="err" items="${formErrors}"><li>${fn:escapeXml(err)}</li></c:forEach></ul>
     </div>
 </c:if>
 
@@ -29,10 +30,10 @@
             <h2 class="text-xs uppercase tracking-wider font-semibold text-brand-gold mb-4">Thông tin người nhận</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label class="block text-xs text-slate-300">Họ và tên
-                    <input type="text" name="receiverName" value="${form.receiverName}" maxlength="100" required class="form-field mt-1.5 w-full px-3 py-2 rounded-xl text-sm text-slate-100"/>
+                    <input type="text" name="receiverName" value="${fn:escapeXml(form.receiverName)}" maxlength="100" required class="form-field mt-1.5 w-full px-3 py-2 rounded-xl text-sm text-slate-100"/>
                 </label>
                 <label class="block text-xs text-slate-300">Số điện thoại
-                    <input type="tel" name="receiverPhone" value="${form.receiverPhone}" maxlength="15" required class="form-field mt-1.5 w-full px-3 py-2 rounded-xl text-sm text-slate-100"/>
+                    <input type="tel" name="receiverPhone" value="${fn:escapeXml(form.receiverPhone)}" maxlength="15" required class="form-field mt-1.5 w-full px-3 py-2 rounded-xl text-sm text-slate-100"/>
                 </label>
             </div>
         </section>
@@ -51,7 +52,7 @@
                 </label>
             </div>
             <label id="address-field" class="block text-xs text-slate-300 mt-4 ${form.fulfillmentType == 'DELIVERY' ? '' : 'hidden'}">Địa chỉ giao hàng
-                <textarea name="shippingAddress" rows="2" maxlength="255" class="form-field mt-1.5 w-full px-3 py-2 rounded-xl text-sm text-slate-100">${form.shippingAddress}</textarea>
+                <textarea name="shippingAddress" rows="2" maxlength="255" class="form-field mt-1.5 w-full px-3 py-2 rounded-xl text-sm text-slate-100">${fn:escapeXml(form.shippingAddress)}</textarea>
             </label>
         </section>
 
@@ -69,7 +70,7 @@
                 </label>
             </div>
             <label class="block text-xs text-slate-300 mt-4">Ghi chú cho cửa hàng (không bắt buộc)
-                <textarea name="note" rows="2" maxlength="500" class="form-field mt-1.5 w-full px-3 py-2 rounded-xl text-sm text-slate-100">${form.note}</textarea>
+                <textarea name="note" rows="2" maxlength="500" class="form-field mt-1.5 w-full px-3 py-2 rounded-xl text-sm text-slate-100">${fn:escapeXml(form.note)}</textarea>
             </label>
         </section>
     </div>
@@ -84,11 +85,11 @@
                 <c:forEach var="item" items="${group.items}"><c:if test="${item.available}"><c:set var="hasAvailable" value="true"/></c:if></c:forEach>
                 <c:if test="${hasAvailable}">
                     <div class="mb-4">
-                        <p class="text-[11px] font-semibold text-slate-200 mb-1.5"><i class="fa-solid fa-store text-brand-gold mr-1.5"></i>${group.storeName}</p>
+                        <p class="text-[11px] font-semibold text-slate-200 mb-1.5"><i class="fa-solid fa-store text-brand-gold mr-1.5"></i>${fn:escapeXml(group.storeName)}</p>
                         <ul class="space-y-1 text-xs">
                             <c:forEach var="item" items="${group.items}">
                                 <c:if test="${item.available}">
-                                    <li class="flex justify-between gap-3"><span class="text-slate-300 truncate">${item.title}</span><span class="text-slate-100 shrink-0"><fmt:formatNumber value="${item.price}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span></li>
+                                    <li class="flex justify-between gap-3"><span class="text-slate-300 truncate">${fn:escapeXml(item.title)}</span><span class="text-slate-100 shrink-0"><fmt:formatNumber value="${item.price}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span></li>
                                 </c:if>
                             </c:forEach>
                         </ul>
@@ -101,15 +102,15 @@
             <div class="pt-3 border-t border-white/10 mb-3">
                 <label for="promo-code" class="block text-[11px] text-slate-400 mb-1.5">Mã giảm giá</label>
                 <div class="flex gap-2">
-                    <input type="text" id="promo-code" name="promotionCode" value="${form.promotionCode}" maxlength="30" autocomplete="off" placeholder="Nhập mã" class="form-field flex-1 px-3 py-2 rounded-xl text-sm uppercase placeholder-slate-500"/>
+                    <input type="text" id="promo-code" name="promotionCode" value="${fn:escapeXml(form.promotionCode)}" maxlength="30" autocomplete="off" placeholder="Nhập mã" class="form-field flex-1 px-3 py-2 rounded-xl text-sm uppercase placeholder-slate-500"/>
                     <button type="button" id="promo-apply" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition whitespace-nowrap">Áp dụng</button>
                 </div>
                 <p id="promo-msg" class="text-[11px] mt-1.5 min-h-[1rem]"></p>
                 <c:if test="${not empty availablePromotions}">
                     <div class="mt-2 flex flex-wrap gap-1.5">
                         <c:forEach var="promo" items="${availablePromotions}">
-                            <button type="button" data-promo="${promo.code}" title="${promo.description}" class="px-2.5 py-1 rounded-full border border-brand-gold/40 text-brand-gold hover:bg-brand-gold/10 text-[11px] font-semibold transition">
-                                ${promo.code} <span class="text-slate-400 font-normal">· ${promo.valueLabel}</span>
+                            <button type="button" data-promo="${fn:escapeXml(promo.code)}" title="${fn:escapeXml(promo.description)}" class="px-2.5 py-1 rounded-full border border-brand-gold/40 text-brand-gold hover:bg-brand-gold/10 text-[11px] font-semibold transition">
+                                ${fn:escapeXml(promo.code)} <span class="text-slate-400 font-normal">· ${promo.valueLabel}</span>
                             </button>
                         </c:forEach>
                     </div>

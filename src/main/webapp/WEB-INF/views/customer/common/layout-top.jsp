@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <c:set var="isLoggedIn" value="${pageContext.request.userPrincipal != null}" />
 <c:set var="userRole" value="${isLoggedIn ? pageContext.request.userPrincipal.principal.user.role.name() : ''}" />
 <c:set var="isStaffOrAdmin" value="${userRole == 'ADMIN' || userRole == 'MANAGER' || userRole == 'STAFF'}" />
@@ -133,10 +134,10 @@
                         </c:if>
                         <div class="flex items-center gap-2.5 pl-2 pr-3 py-1 rounded-full glass-panel-subtle border border-white/10 hover:border-brand-gold/40 transition">
                             <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-600 via-brand-gold to-yellow-200 p-[1px] flex items-center justify-center">
-                                <div class="w-full h-full rounded-full bg-[#1e2330] flex items-center justify-center text-xs font-bold text-amber-200">${pageContext.request.userPrincipal.principal.username.substring(0, 1).toUpperCase()}</div>
+                                <div class="w-full h-full rounded-full bg-[#1e2330] flex items-center justify-center text-xs font-bold text-amber-200">${fn:escapeXml(pageContext.request.userPrincipal.principal.username.substring(0, 1).toUpperCase())}</div>
                             </div>
                             <div class="hidden sm:flex flex-col text-left">
-                                <span class="text-xs font-semibold text-slate-200 leading-tight">${pageContext.request.userPrincipal.principal.user.fullName}</span>
+                                <span class="text-xs font-semibold text-slate-200 leading-tight">${fn:escapeXml(pageContext.request.userPrincipal.principal.user.fullName)}</span>
                                 <span class="text-[10px] text-brand-goldLight leading-none">${pageContext.request.userPrincipal.principal.user.role}</span>
                             </div>
                         </div>
