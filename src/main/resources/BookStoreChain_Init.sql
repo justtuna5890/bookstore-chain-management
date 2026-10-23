@@ -331,6 +331,7 @@ CREATE TABLE dbo.customer_order (
     discount_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
     shipping_fee NUMERIC(12,2) NOT NULL DEFAULT 0,
     total_amount NUMERIC(12,2) NOT NULL,
+    completed_at DATETIME2(6) NULL,
     promotion_id BIGINT NULL,
     promotion_code NVARCHAR(30) NULL,
     CONSTRAINT PK_customer_order PRIMARY KEY CLUSTERED (id ASC),
@@ -339,6 +340,9 @@ CREATE TABLE dbo.customer_order (
     CONSTRAINT FK_customer_order_store FOREIGN KEY (store_id) REFERENCES dbo.store(id),
     CONSTRAINT FK_customer_order_promotion FOREIGN KEY (promotion_id) REFERENCES dbo.promotion(id)
 );
+GO
+-- Thống kê doanh thu lọc theo trạng thái và ngày hoàn tất
+CREATE INDEX IX_customer_order_status_completed ON dbo.customer_order (status, completed_at);
 GO
 
 -- Bảng Chi Tiết Đơn Hàng (order_item): lưu snapshot giá và tên sách tại thời điểm đặt
@@ -605,6 +609,74 @@ INSERT INTO dbo.chat_message (created_at, updated_at, conversation_id, sender_id
 GO
 INSERT INTO dbo.user_notification (created_at, updated_at, user_id, type, title, message, link, is_read) VALUES
 (DATEADD(minute, -40, SYSDATETIME()), SYSDATETIME(), 5, 'CHAT', N'Tin nhắn mới từ OldBook Hà Nội — Tràng Tiền', N'Dạ bản này còn, bạn ghé chi nhánh trước 20h nhé.', '/chat?conversation=1', 0);
+GO
+
+-- 3.14. Lịch sử bán hàng online mẫu (để dashboard và báo cáo doanh thu có dữ liệu khi trình diễn)
+-- 24 đơn đã hoàn tất rải trong 30 ngày qua ở 4 chi nhánh, cộng 3 đơn đang xử lý. Mỗi đơn bán một bản sách riêng
+-- (tạo thêm bản sao OB-SOLD-xx: SOLD cho đơn đã bán, RESERVED cho đơn còn đang xử lý) nên không đụng tới tồn kho mẫu.
+DECLARE @i INT = 1;
+WHILE @i <= 27
+BEGIN
+    DECLARE @open BIT = CASE WHEN @i > 24 THEN 1 ELSE 0 END;
+    DECLARE @storeId BIGINT = (@i % 4) + 1;
+    DECLARE @customerId BIGINT = CHOOSE((@i % 8) + 1, 5, 6, 10, 11, 12, 13, 14, 15);
+    DECLARE @bookId BIGINT = ((@i * 5) % 7) + 1;
+    DECLARE @price NUMERIC(12,2) = 45000 + ((@i * 37) % 9) * 18000;
+    DECLARE @delivery BIT = CASE WHEN @i % 3 = 0 THEN 1 ELSE 0 END;
+    DECLARE @bank BIT = CASE WHEN @i % 2 = 0 THEN 1 ELSE 0 END;
+    DECLARE @discount NUMERIC(12,2) = CASE WHEN @i % 5 = 0 THEN ROUND(@price * 0.10, 0) ELSE 0 END;
+    DECLARE @ship NUMERIC(12,2) = CASE WHEN @delivery = 1 THEN 25000 ELSE 0 END;
+    DECLARE @total NUMERIC(12,2) = @price - @discount + @ship;
+    DECLARE @daysAgo INT = (@i * 7) % 30;
+    DECLARE @placed DATETIME2(6);
+    DECLARE @done DATETIME2(6);
+    DECLARE @status NVARCHAR(20);
+
+    IF @open = 1
+    BEGIN
+        SET @placed = CASE @i WHEN 25 THEN DATEADD(MINUTE, -10, SYSDATETIME()) WHEN 26 THEN DATEADD(HOUR, -3, SYSDATETIME()) ELSE DATEADD(DAY, -1, SYSDATETIME()) END;
+        SET @done = NULL;
+        SET @status = CASE @i WHEN 25 THEN N'PENDING' WHEN 26 THEN N'CONFIRMED' ELSE N'READY_FOR_PICKUP' END;
+    END
+    ELSE
+    BEGIN
+        -- Các đơn i = 8, 16, 24 hoàn tất trong hôm nay (vài chục phút trước); còn lại hoàn tất từ 9h đến 18h các ngày trước
+        IF @i % 8 = 0
+            SET @done = DATEADD(MINUTE, -(@i * 3), SYSDATETIME());
+        ELSE
+            SET @done = DATEADD(HOUR, 9 + (@i % 10), CAST(CAST(DATEADD(DAY, -CASE WHEN @daysAgo = 0 THEN 1 ELSE @daysAgo END, SYSDATETIME()) AS DATE) AS DATETIME2(6)));
+        SET @placed = DATEADD(HOUR, -20, @done);
+        SET @status = N'COMPLETED';
+    END
+
+    DECLARE @title NVARCHAR(200) = (SELECT title FROM dbo.book WHERE id = @bookId);
+    DECLARE @copyCode NVARCHAR(50) = N'OB-SOLD-' + RIGHT('00' + CAST(@i AS VARCHAR(3)), 2);
+    DECLARE @receiver NVARCHAR(100) = (SELECT full_name FROM dbo.users WHERE id = @customerId);
+    DECLARE @orderCode NVARCHAR(30) = N'OB-' + CONVERT(CHAR(8), ISNULL(@done, @placed), 112) + N'-S' + RIGHT('00' + CAST(@i AS VARCHAR(3)), 2);
+
+    INSERT INTO dbo.book_copy (created_at, updated_at, copy_code, book_id, store_id, book_condition, price, status, note)
+    VALUES (@placed, SYSDATETIME(), @copyCode, @bookId, @storeId, N'GOOD', @price, CASE WHEN @open = 1 THEN N'RESERVED' ELSE N'SOLD' END, NULL);
+    DECLARE @copyId BIGINT = SCOPE_IDENTITY();
+
+    INSERT INTO dbo.customer_order (created_at, updated_at, order_code, user_id, store_id, status, fulfillment_type, receiver_name, receiver_phone,
+                                    shipping_address, subtotal, discount_amount, shipping_fee, total_amount, completed_at, promotion_code)
+    VALUES (@placed, ISNULL(@done, @placed), @orderCode, @customerId, @storeId, @status, CASE WHEN @delivery = 1 THEN N'DELIVERY' ELSE N'PICKUP' END,
+            @receiver, N'0900000' + RIGHT('000' + CAST(@i AS VARCHAR(3)), 3),
+            CASE WHEN @delivery = 1 THEN N'12 Phố Huế, Hai Bà Trưng, Hà Nội' ELSE NULL END,
+            @price, @discount, @ship, @total, @done, CASE WHEN @discount > 0 THEN N'WELCOME10' ELSE NULL END);
+    DECLARE @orderId BIGINT = SCOPE_IDENTITY();
+
+    INSERT INTO dbo.order_item (created_at, updated_at, order_id, book_copy_id, price_snapshot, title_snapshot, copy_code_snapshot)
+    VALUES (@placed, @placed, @orderId, @copyId, @price, @title, @copyCode);
+
+    INSERT INTO dbo.payment (created_at, updated_at, order_id, method, status, amount, transaction_code, paid_at)
+    VALUES (@placed, ISNULL(@done, @placed), @orderId, CASE WHEN @bank = 1 THEN N'BANK_TRANSFER' ELSE N'COD' END,
+            CASE WHEN @status = N'COMPLETED' OR (@bank = 1 AND @status <> N'PENDING') THEN N'PAID' ELSE N'UNPAID' END, @total,
+            CASE WHEN @bank = 1 AND (@status = N'COMPLETED' OR @status <> N'PENDING') THEN N'FT2610' + RIGHT('0000' + CAST(@i AS VARCHAR(4)), 4) ELSE NULL END,
+            CASE WHEN @status = N'COMPLETED' OR (@bank = 1 AND @status <> N'PENDING') THEN ISNULL(@done, @placed) ELSE NULL END);
+
+    SET @i += 1;
+END
 GO
 
 PRINT N'>>> HOÀN TẤT KHỞI TẠO CƠ SỞ DỮ LIỆU BOOKSTORE CHAIN ĐA DẠNG THÀNH CÔNG! <<<';

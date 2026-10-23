@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 
 @Service
@@ -35,6 +36,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     private final OrderMapper orderMapper;
     private final PromotionService promotionService;
     private final UserNotificationService userNotificationService;
+    private final Clock clock;
 
     @Override
     @Transactional(readOnly = true)
@@ -95,10 +97,11 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                 throw new BusinessException("Chưa xác nhận đã nhận tiền chuyển khoản. Hãy xác nhận thanh toán trước khi hoàn tất đơn.");
             }
             payment.setStatus(PaymentStatus.PAID);
-            payment.setPaidAt(LocalDateTime.now());
+            payment.setPaidAt(LocalDateTime.now(clock));
         }
         order.getItems().forEach(item -> item.getCopy().setStatus(CopyStatus.SOLD));
         order.setStatus(OrderStatus.COMPLETED);
+        order.setCompletedAt(LocalDateTime.now(clock));
         notifyCustomer(order, "Đơn " + order.getOrderCode() + " đã hoàn tất",
                 "Cảm ơn bạn đã mua sách. Hãy để lại đánh giá cho những cuốn bạn vừa nhận.");
     }
@@ -128,7 +131,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 
         payment.setStatus(PaymentStatus.PAID);
         payment.setTransactionCode(code);
-        payment.setPaidAt(LocalDateTime.now());
+        payment.setPaidAt(LocalDateTime.now(clock));
         notifyCustomer(order, "Đã nhận thanh toán đơn " + order.getOrderCode(),
                 "Chi nhánh đã xác nhận khoản chuyển khoản của bạn.");
     }

@@ -47,6 +47,7 @@ import static org.mockito.Mockito.when;
 class AdminOrderServiceImplTest {
 
     private static final long ORDER_ID = 50L;
+    private static final java.time.Clock CLOCK = java.time.Clock.fixed(java.time.Instant.parse("2026-10-23T10:00:00Z"), java.time.ZoneId.of("UTC"));
 
     @Mock private CustomerOrderRepository customerOrderRepository;
     @Mock private PromotionService promotionService;
@@ -60,7 +61,8 @@ class AdminOrderServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new AdminOrderServiceImpl(customerOrderRepository, new OrderMapper(), promotionService, userNotificationService);
+        service = new AdminOrderServiceImpl(customerOrderRepository, new OrderMapper(), promotionService, userNotificationService,
+                CLOCK);
         hanoi = TestData.store(1L, "OldBook Ha Noi");
         book = TestData.book(100L, "Hoang Tu Be");
         copy1 = TestData.copy(1L, "OB-HN-001", "60000", hanoi, book, CopyStatus.RESERVED);
@@ -139,7 +141,8 @@ class AdminOrderServiceImplTest {
         assertThat(copy1.getStatus()).isEqualTo(CopyStatus.SOLD);
         assertThat(copy2.getStatus()).isEqualTo(CopyStatus.SOLD);
         assertThat(order.getPayment().getStatus()).isEqualTo(PaymentStatus.PAID);
-        assertThat(order.getPayment().getPaidAt()).isNotNull();
+        assertThat(order.getPayment().getPaidAt()).isEqualTo(java.time.LocalDateTime.of(2026, 10, 23, 10, 0));
+        assertThat(order.getCompletedAt()).as("doanh thu tính theo ngày hoàn tất").isEqualTo(java.time.LocalDateTime.of(2026, 10, 23, 10, 0));
         verify(userNotificationService).notify(eq(7L), eq(UserNotificationType.ORDER),
                 eq("Đơn OB-20261023-ABCDEF đã hoàn tất"), contains("đánh giá"), eq("/orders/OB-20261023-ABCDEF"));
     }
@@ -155,6 +158,7 @@ class AdminOrderServiceImplTest {
         assertThat(order.getStatus()).isEqualTo(OrderStatus.READY_FOR_PICKUP);
         assertThat(copy1.getStatus()).isEqualTo(CopyStatus.RESERVED);
         verifyNoInteractions(userNotificationService);
+        assertThat(order.getCompletedAt()).isNull();
     }
 
     @Test
