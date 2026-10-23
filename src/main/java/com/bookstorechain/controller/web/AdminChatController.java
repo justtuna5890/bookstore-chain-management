@@ -9,12 +9,14 @@ import com.bookstorechain.exception.BusinessException;
 import com.bookstorechain.exception.ResourceNotFoundException;
 import com.bookstorechain.security.CustomUserDetails;
 import com.bookstorechain.service.ChatService;
+import com.bookstorechain.service.StoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +39,28 @@ import java.util.Map;
 public class AdminChatController {
 
     private final ChatService chatService;
+    private final StoreService storeService;
+
+    @GetMapping
+    public String page(@RequestParam(value = "conversation", required = false) Long conversation,
+                       @AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        model.addAttribute("initialConversationId", conversation);
+        if (userDetails.getUser().getRole() == Role.STAFF) {
+            Store store = userDetails.getUser().getStore();
+            if (store == null) {
+                model.addAttribute("unassignedStoreWarning", true);
+                return "admin/chat/chat";
+            }
+            model.addAttribute("isStaffScoped", true);
+            model.addAttribute("currentStoreName", store.getName());
+            // Nhân viên nghe kênh chi nhánh của mình; quản lý và quản trị nghe kênh tất cả chi nhánh
+            model.addAttribute("chatTopics", "[\"/topic/chat/store/" + store.getId() + "\"]");
+        } else {
+            model.addAttribute("stores", storeService.getAllStores());
+            model.addAttribute("chatTopics", "[\"/topic/chat/all\"]");
+        }
+        return "admin/chat/chat";
+    }
 
     @GetMapping("/api/conversations")
     @ResponseBody

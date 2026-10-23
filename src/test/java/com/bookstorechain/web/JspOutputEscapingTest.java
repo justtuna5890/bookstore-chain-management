@@ -25,7 +25,7 @@ class JspOutputEscapingTest {
 
     private static final Path VIEWS = Paths.get("src/main/webapp/WEB-INF/views");
 
-    private static final List<String> SCANNED = List.of("customer", "admin/order", "admin/promotion", "admin/review", "admin/common/page-top.jsp");
+    private static final List<String> SCANNED = List.of("customer", "admin/order", "admin/promotion", "admin/review", "admin/chat", "admin/common/page-top.jsp");
 
     /** Biểu thức in thô một thuộc tính (hoặc biến) có tên thường mang chữ do người dùng nhập. */
     private static final String USER_TEXT_PROPERTIES =
@@ -65,6 +65,19 @@ class JspOutputEscapingTest {
             }
         }
         assertThat(offenders).as("biểu thức in thô cần bọc fn:escapeXml").isEmpty();
+    }
+
+    @Test
+    @DisplayName("Thanh điều hướng quản trị escape tiêu đề và nội dung thông báo WebSocket trước khi đưa vào innerHTML")
+    void navDockEscapesPushedNotificationText() throws IOException {
+        // Thông báo chat mang theo tên và tin nhắn do khách nhập, nên mọi chỗ in data.title / data.message phải qua escapeHtml
+        String nav = Files.readString(VIEWS.resolve("admin/common/nav-dock.jsp"));
+        for (String field : List.of("data.title", "data.message")) {
+            int all = nav.split(Pattern.quote(field), -1).length - 1;
+            int escaped = nav.split(Pattern.quote("escapeHtml(" + field), -1).length - 1;
+            assertThat(all).as("số lần dùng " + field).isPositive();
+            assertThat(escaped).as(field + " phải luôn nằm trong escapeHtml(...)").isEqualTo(all);
+        }
     }
 
     @Test

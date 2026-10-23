@@ -2,15 +2,18 @@ package com.bookstorechain.controller.web;
 
 import com.bookstorechain.dto.response.ChatConversationDTO;
 import com.bookstorechain.dto.response.ChatMessageDTO;
+import com.bookstorechain.dto.response.StoreResponseDTO;
 import com.bookstorechain.exception.BusinessException;
 import com.bookstorechain.exception.ResourceNotFoundException;
 import com.bookstorechain.security.CustomUserDetails;
 import com.bookstorechain.service.ChatService;
+import com.bookstorechain.service.StoreService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /** Chat hỗ trợ phía khách: trang chat và các điểm cuối JSON mà trang gọi. Tin mới của nhân viên về qua /user/queue/chat. */
 @Controller
@@ -29,6 +33,19 @@ import java.util.Map;
 public class ChatController {
 
     private final ChatService chatService;
+    private final StoreService storeService;
+
+    /** conversation mở sẵn một cuộc trò chuyện; store chọn sẵn một chi nhánh để bắt đầu (VD từ trang đơn hàng). */
+    @GetMapping
+    public String page(@RequestParam(value = "conversation", required = false) Long conversation,
+                       @RequestParam(value = "store", required = false) Long store, Model model) {
+        List<StoreResponseDTO> activeStores = storeService.getAllStores().stream()
+                .filter(StoreResponseDTO::isActive).collect(Collectors.toList());
+        model.addAttribute("stores", activeStores);
+        model.addAttribute("initialConversationId", conversation);
+        model.addAttribute("initialStoreId", store);
+        return "customer/chat";
+    }
 
     @GetMapping("/api/conversations")
     @ResponseBody
