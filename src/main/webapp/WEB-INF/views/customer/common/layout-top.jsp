@@ -135,7 +135,7 @@
                                 <i class="fa-solid fa-gauge text-[11px]"></i><span>Quản Trị</span>
                             </a>
                         </c:if>
-                        <div class="flex items-center gap-2.5 pl-2 pr-3 py-1 rounded-full glass-panel-subtle border border-white/10 hover:border-brand-gold/40 transition">
+                        <a href="/account" title="Tài khoản của tôi" class="flex items-center gap-2.5 pl-2 pr-3 py-1 rounded-full glass-panel-subtle border border-white/10 hover:border-brand-gold/40 transition">
                             <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-600 via-brand-gold to-yellow-200 p-[1px] flex items-center justify-center">
                                 <div class="w-full h-full rounded-full bg-[#1e2330] flex items-center justify-center text-xs font-bold text-amber-200">${fn:escapeXml(pageContext.request.userPrincipal.principal.username.substring(0, 1).toUpperCase())}</div>
                             </div>
@@ -143,7 +143,7 @@
                                 <span class="text-xs font-semibold text-slate-200 leading-tight">${fn:escapeXml(pageContext.request.userPrincipal.principal.user.fullName)}</span>
                                 <span class="text-[10px] text-brand-goldLight leading-none">${pageContext.request.userPrincipal.principal.user.role}</span>
                             </div>
-                        </div>
+                        </a>
                     </c:if>
                 </div>
             </header>

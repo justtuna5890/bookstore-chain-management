@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <c:set var="isLoggedIn" value="${pageContext.request.userPrincipal != null}" />
 <c:set var="userRole" value="${isLoggedIn ? pageContext.request.userPrincipal.principal.user.role.name() : ''}" />
@@ -294,21 +295,21 @@
                                 <span>Quản Trị</span>
                             </a>
                         </c:if>
-                        <div class="flex items-center gap-2.5 pl-2 pr-3 py-1 rounded-full glass-panel-subtle border border-white/10 hover:border-brand-gold/40 transition">
+                        <a href="/account" title="Tài khoản của tôi" class="flex items-center gap-2.5 pl-2 pr-3 py-1 rounded-full glass-panel-subtle border border-white/10 hover:border-brand-gold/40 transition">
                             <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-600 via-brand-gold to-yellow-200 p-[1px] flex items-center justify-center">
                                 <div class="w-full h-full rounded-full bg-[#1e2330] flex items-center justify-center text-xs font-bold text-amber-200">
-                                    ${pageContext.request.userPrincipal.principal.username.substring(0, 1).toUpperCase()}
+                                    ${fn:escapeXml(pageContext.request.userPrincipal.principal.username.substring(0, 1).toUpperCase())}
                                 </div>
                             </div>
                             <div class="hidden sm:flex flex-col text-left">
                                 <span class="text-xs font-semibold text-slate-200 leading-tight">
-                                    ${pageContext.request.userPrincipal.principal.user.fullName}
+                                    ${fn:escapeXml(pageContext.request.userPrincipal.principal.user.fullName)}
                                 </span>
                                 <span class="text-[10px] text-brand-goldLight leading-none">
                                     ${pageContext.request.userPrincipal.principal.user.role}
                                 </span>
                             </div>
-                        </div>
+                        </a>
                     </c:if>
                 </div>
             </header>
@@ -782,25 +783,25 @@
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <label class="block text-[11px] font-medium text-slate-300 mb-1">Họ tên của bạn (*)</label>
-                                            <input name="customerName" value="${buybackForm.customerName}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" required placeholder="Nguyễn Văn A"/>
+                                            <input name="customerName" value="${fn:escapeXml(buybackForm.customerName)}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" required placeholder="Nguyễn Văn A"/>
                                         </div>
                                         <div>
                                             <label class="block text-[11px] font-medium text-slate-300 mb-1">Email liên hệ (*)</label>
-                                            <input name="customerEmail" value="${buybackForm.customerEmail}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" required placeholder="email@domain.com"/>
+                                            <input name="customerEmail" value="${fn:escapeXml(buybackForm.customerEmail)}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" required placeholder="email@domain.com"/>
                                         </div>
                                     </div>
 
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <label class="block text-[11px] font-medium text-slate-300 mb-1">Số điện thoại</label>
-                                            <input name="customerPhone" value="${buybackForm.customerPhone}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" placeholder="09xxxxxxxx"/>
+                                            <input name="customerPhone" value="${fn:escapeXml(buybackForm.customerPhone)}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" placeholder="09xxxxxxxx"/>
                                         </div>
                                         <div>
                                             <label class="block text-[11px] font-medium text-slate-300 mb-1">Chi nhánh tiếp nhận (*)</label>
                                             <select name="storeId" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 bg-[#161a22]" required>
                                                 <option value="">-- Chọn chi nhánh gần bạn --</option>
                                                 <c:forEach var="st" items="${stores}">
-                                                    <option value="${st.id}" ${buybackForm.storeId == st.id ? 'selected' : ''}>${st.name}</option>
+                                                    <option value="${st.id}" ${buybackForm.storeId == st.id ? 'selected' : ''}>${fn:escapeXml(st.name)}</option>
                                                 </c:forEach>
                                             </select>
                                         </div>
@@ -809,7 +810,7 @@
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <label class="block text-[11px] font-medium text-slate-300 mb-1">Tựa sách muốn bán (*)</label>
-                                            <input name="bookTitle" value="${buybackForm.bookTitle}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" required placeholder="VD: Chiến Tranh và Hòa Bình"/>
+                                            <input name="bookTitle" value="${fn:escapeXml(buybackForm.bookTitle)}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" required placeholder="VD: Chiến Tranh và Hòa Bình"/>
                                         </div>
                                         <div>
                                             <label class="block text-[11px] font-medium text-slate-300 mb-1">Tình trạng sách ước tính (*)</label>
@@ -823,7 +824,7 @@
 
                                     <div>
                                         <label class="block text-[11px] font-medium text-slate-300 mb-1">Ghi chú tình trạng sách</label>
-                                        <textarea name="note" rows="2" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" placeholder="VD: Sách bìa cứng năm 1990, gáy còn nguyên...">${buybackForm.note}</textarea>
+                                        <textarea name="note" rows="2" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" placeholder="VD: Sách bìa cứng năm 1990, gáy còn nguyên...">${fn:escapeXml(buybackForm.note)}</textarea>
                                     </div>
 
                                     <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-gold to-yellow-500 hover:from-yellow-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-glow-gold transition">
