@@ -83,6 +83,10 @@
             <i class="fa-solid fa-boxes-stacked text-xs"></i>
             <span>Kho Bản Sách</span>
         </a>
+        <a href="/admin/orders" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex items-center gap-1.5 ${param.active == 'orders' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">
+            <i class="fa-solid fa-bag-shopping text-xs"></i>
+            <span>Đơn Hàng</span>
+        </a>
         <a href="/admin/buybacks" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex items-center gap-1.5 ${param.active == 'buybacks' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">
             <i class="fa-solid fa-hand-holding-dollar text-xs"></i>
             <span>Thu Mua</span>
@@ -144,6 +148,13 @@
            href="/admin/book-copies" title="Quản lý bản sao tồn kho">
             <i class="fa-solid fa-boxes-stacked text-base"></i>
             <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Kho Bản Sách</span>
+        </a>
+
+        <!-- Đơn hàng của khách -->
+        <a class="p-2.5 rounded-full transition group relative ${param.active == 'orders' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
+           href="/admin/orders" title="Đơn hàng của khách">
+            <i class="fa-solid fa-bag-shopping text-base"></i>
+            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Đơn Hàng</span>
         </a>
 
         <!-- Thu mua -->
