@@ -197,6 +197,7 @@ CREATE TABLE dbo.wishlist_item (
     updated_at DATETIME2(6) NULL,
     user_id BIGINT NOT NULL,
     book_id BIGINT NOT NULL,
+    in_stock_notified BIT NOT NULL DEFAULT 0,
     CONSTRAINT PK_wishlist_item PRIMARY KEY CLUSTERED (id ASC),
     CONSTRAINT UQ_wishlist_user_book UNIQUE (user_id, book_id),
     CONSTRAINT FK_wishlist_user FOREIGN KEY (user_id) REFERENCES dbo.users(id),
@@ -538,10 +539,11 @@ INSERT INTO dbo.review (created_at, updated_at, user_id, book_id, rating, commen
 GO
 
 -- 3.11. Sách yêu thích mẫu
-INSERT INTO dbo.wishlist_item (created_at, updated_at, user_id, book_id) VALUES
-(DATEADD(day, -5, SYSDATETIME()), SYSDATETIME(), 5, 1),
-(DATEADD(day, -2, SYSDATETIME()), SYSDATETIME(), 5, 4),
-(DATEADD(day, -1, SYSDATETIME()), SYSDATETIME(), 6, 2);
+-- in_stock_notified = 1 vì các sách này đang có hàng (chỉ báo "có hàng lại" khi sách hết rồi có lại)
+INSERT INTO dbo.wishlist_item (created_at, updated_at, user_id, book_id, in_stock_notified) VALUES
+(DATEADD(day, -5, SYSDATETIME()), SYSDATETIME(), 5, 1, 1),
+(DATEADD(day, -2, SYSDATETIME()), SYSDATETIME(), 5, 4, 1),
+(DATEADD(day, -1, SYSDATETIME()), SYSDATETIME(), 6, 2, 1);
 GO
 
 -- 3.12. Thông báo riêng mẫu cho khách hàng 'customer'
