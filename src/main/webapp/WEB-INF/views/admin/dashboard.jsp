@@ -8,7 +8,7 @@
 
 <!DOCTYPE html>
 
-<html class="dark" lang="vi">
+<html class="dark" data-bs-theme="dark" lang="vi">
 
 <head>
 
@@ -18,6 +18,9 @@
 
     <title>Bảng Điều Khiển Quản Trị — OldBook</title>
 
+        <!-- Bootstrap 5.3.3 Framework (Dark Theme Native) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Tailwind CSS v3 with Plugins -->
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -1342,6 +1345,46 @@
 
     </script>
 
+    <!-- Bootstrap 5 Modal: Quy Chuẩn Vận Hành Chuỗi -->
+    <div class="modal fade" id="operationalGuideModal" tabindex="-1" aria-labelledby="operationalGuideModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-slate-900 border border-slate-700 text-slate-100 shadow-2xl rounded-2xl">
+                <div class="modal-header border-b border-slate-800 p-4">
+                    <h5 class="modal-title font-bold text-amber-400 flex items-center gap-2 text-base" id="operationalGuideModalLabel">
+                        <i class="fa-solid fa-book-bookmark"></i> Quy Chuẩn Xử Lý Sự Vụ Tắc Nghẽn Vận Hành Chuỗi (SLA)
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-xs space-y-3 p-4">
+                    <div class="p-3 rounded-xl bg-slate-800/80 border border-rose-500/30 flex items-start gap-3">
+                        <span class="badge bg-danger text-white uppercase px-2 py-1">Khẩn cấp</span>
+                        <div>
+                            <strong class="text-white block mb-0.5">Đơn thu mua sách cũ chờ duyệt quá 24h:</strong>
+                            <p class="text-slate-300">Nhân viên tiếp nhận cần thẩm định chất lượng sách, chốt giá đề xuất hoặc thông báo lý do từ chối để tránh ảnh hưởng độ hài lòng của khách hàng.</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-800/80 border border-amber-500/30 flex items-start gap-3">
+                        <span class="badge bg-warning text-dark uppercase px-2 py-1 font-bold">Cảnh báo</span>
+                        <div>
+                            <strong class="text-white block mb-0.5">Phiếu điều chuyển kho liên chi nhánh quá 48h:</strong>
+                            <p class="text-slate-300">Thủ kho chi nhánh gửi và chi nhánh nhận cần kiểm tra tình trạng vận chuyển nội bộ, đối soát mã vạch bản sách và hoàn tất nghiệm thu nhập kho.</p>
+                        </div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-slate-800/80 border border-sky-500/30 flex items-start gap-3">
+                        <span class="badge bg-info text-dark uppercase px-2 py-1 font-bold">Tồn kho</span>
+                        <div>
+                            <strong class="text-white block mb-0.5">Đầu sách sắp cạn kho (&le; 2 cuốn) hoặc tồn lâu (> 90 ngày):</strong>
+                            <p class="text-slate-300">Hệ thống gợi ý tạo phiếu luân chuyển từ cơ sở thừa sang cơ sở thiếu, hoặc áp dụng chính sách giảm giá ưu đãi để đẩy nhanh vòng quay tồn kho.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-t border-slate-800 p-3 flex justify-between items-center">
+                    <span class="text-[11px] text-slate-400">Tích hợp Bootstrap 5.3 Modal Component</span>
+                    <button type="button" class="btn btn-secondary btn-sm text-xs px-4 py-1.5 rounded-lg" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
