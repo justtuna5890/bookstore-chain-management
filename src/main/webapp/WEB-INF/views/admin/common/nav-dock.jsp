@@ -93,6 +93,12 @@
                 <span>Khuyến Mãi</span>
             </a>
         </c:if>
+        <c:if test="${isAdmin || isManager}">
+            <a href="/admin/reviews" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex items-center gap-1.5 ${param.active == 'reviews' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">
+                <i class="fa-solid fa-star-half-stroke text-xs"></i>
+                <span>Đánh Giá</span>
+            </a>
+        </c:if>
         <a href="/admin/buybacks" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex items-center gap-1.5 ${param.active == 'buybacks' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">
             <i class="fa-solid fa-hand-holding-dollar text-xs"></i>
             <span>Thu Mua</span>
@@ -169,6 +175,15 @@
                href="/admin/promotions" title="Mã giảm giá">
                 <i class="fa-solid fa-ticket text-base"></i>
                 <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Khuyến Mãi</span>
+            </a>
+        </c:if>
+
+        <!-- Kiểm duyệt đánh giá (ADMIN & MANAGER) -->
+        <c:if test="${isAdmin || isManager}">
+            <a class="p-2.5 rounded-full transition group relative ${param.active == 'reviews' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}"
+               href="/admin/reviews" title="Kiểm duyệt đánh giá">
+                <i class="fa-solid fa-star-half-stroke text-base"></i>
+                <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Kiểm duyệt đánh giá</span>
             </a>
         </c:if>
 
