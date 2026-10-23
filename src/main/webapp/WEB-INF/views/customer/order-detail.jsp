@@ -64,7 +64,7 @@
         <dl class="p-4 border-t border-white/10 space-y-1.5 text-xs">
             <div class="flex justify-between"><dt class="text-slate-400">Tạm tính</dt><dd class="text-slate-100"><fmt:formatNumber value="${order.subtotal}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></dd></div>
             <c:if test="${order.discountAmount.signum() > 0}">
-                <div class="flex justify-between"><dt class="text-slate-400">Giảm giá</dt><dd class="text-emerald-300">-<fmt:formatNumber value="${order.discountAmount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></dd></div>
+                <div class="flex justify-between"><dt class="text-slate-400">Giảm giá<c:if test="${not empty order.promotionCode}"> (${order.promotionCode})</c:if></dt><dd class="text-emerald-300">-<fmt:formatNumber value="${order.discountAmount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></dd></div>
             </c:if>
             <div class="flex justify-between"><dt class="text-slate-400">Phí giao hàng</dt><dd class="text-slate-100">${order.shippingFee.signum() > 0 ? '' : 'Miễn phí'}<c:if test="${order.shippingFee.signum() > 0}"><fmt:formatNumber value="${order.shippingFee}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></c:if></dd></div>
             <div class="flex justify-between pt-2 border-t border-white/10 text-sm"><dt class="text-slate-200 font-semibold">Tổng cộng</dt><dd class="text-emerald-400 font-bold"><fmt:formatNumber value="${order.totalAmount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></dd></div>

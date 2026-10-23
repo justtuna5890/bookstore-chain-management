@@ -2,15 +2,20 @@ package com.bookstorechain.controller.web;
 
 import com.bookstorechain.dto.request.CheckoutRequestDTO;
 import com.bookstorechain.dto.response.CartDTO;
+import com.bookstorechain.dto.response.CartItemDTO;
+import com.bookstorechain.dto.response.CartStoreGroupDTO;
 import com.bookstorechain.dto.response.OrderSummaryDTO;
+import com.bookstorechain.dto.response.PromotionApplicationDTO;
 import com.bookstorechain.entity.User;
 import com.bookstorechain.exception.BusinessException;
 import com.bookstorechain.security.CustomUserDetails;
 import com.bookstorechain.service.CartService;
 import com.bookstorechain.service.OrderService;
+import com.bookstorechain.service.PromotionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.PessimisticLockingFailureException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,9 +25,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -32,6 +42,7 @@ public class CheckoutController {
 
     private final CartService cartService;
     private final OrderService orderService;
+    private final PromotionService promotionService;
 
     @GetMapping
     public String showCheckout(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
@@ -84,6 +95,22 @@ public class CheckoutController {
         return "customer/checkout";
     }
 
+    /** Xem trước giảm giá của một mã trên giỏ hiện tại. Kết quả chỉ để hiển thị, lúc đặt hàng mã được kiểm tra lại. */
+    @GetMapping("/promotion")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> previewPromotion(@RequestParam("code") String code,
+                                                                @AuthenticationPrincipal CustomUserDetails userDetails) {
+        Long userId = userDetails.getUser().getId();
+        try {
+            PromotionApplicationDTO application = promotionService.evaluate(code, userId, subtotalByStore(cartService.getCart(userId)));
+            return ResponseEntity.ok(Map.of("valid", true, "code", application.getCode(),
+                    "discount", application.getTotalDiscount(),
+                    "message", "Đã áp dụng mã " + application.getCode()));
+        } catch (BusinessException e) {
+            return ResponseEntity.ok(Map.of("valid", false, "discount", BigDecimal.ZERO, "message", e.getMessage()));
+        }
+    }
+
     @GetMapping("/success")
     public String success(Model model) {
         if (!model.containsAttribute("placedOrders")) {
@@ -92,9 +119,21 @@ public class CheckoutController {
         return "customer/checkout-success";
     }
 
+    /** Tổng tạm tính các sách còn khả dụng theo chi nhánh, tức là các đơn sẽ được tạo. */
+    private Map<Long, BigDecimal> subtotalByStore(CartDTO cart) {
+        Map<Long, BigDecimal> result = new LinkedHashMap<>();
+        for (CartStoreGroupDTO group : cart.getGroups()) {
+            if (group.getItems().stream().anyMatch(CartItemDTO::isAvailable)) {
+                result.put(group.getStoreId(), group.getSubtotal());
+            }
+        }
+        return result;
+    }
+
     private void populate(Model model, CartDTO cart, CheckoutRequestDTO form) {
         model.addAttribute("cart", cart);
         model.addAttribute("form", form);
         model.addAttribute("deliveryFee", orderService.getDeliveryFee());
+        model.addAttribute("availablePromotions", promotionService.getAvailablePromotions(subtotalByStore(cart).keySet()));
     }
 }

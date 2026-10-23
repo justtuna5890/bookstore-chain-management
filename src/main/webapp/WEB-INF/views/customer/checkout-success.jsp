@@ -27,6 +27,9 @@
                     </c:forEach>
                 </ul>
                 <dl class="mt-3 pt-3 border-t border-white/10 space-y-1.5">
+                    <c:if test="${order.discountAmount.signum() > 0}">
+                        <div class="flex justify-between"><dt class="text-slate-400">Giảm giá (${order.promotionCode})</dt><dd class="text-emerald-300">-<fmt:formatNumber value="${order.discountAmount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></dd></div>
+                    </c:if>
                     <div class="flex justify-between"><dt class="text-slate-400">Nhận hàng</dt><dd class="text-slate-100">${order.fulfillmentType == 'DELIVERY' ? 'Giao tận nơi' : 'Nhận tại chi nhánh'}</dd></div>
                     <div class="flex justify-between"><dt class="text-slate-400">Thanh toán</dt><dd class="text-slate-100">${order.paymentMethod == 'COD' ? 'Tiền mặt khi nhận hàng' : 'Chuyển khoản'}</dd></div>
                     <div class="flex justify-between text-sm pt-1"><dt class="text-slate-200 font-semibold">Tổng cộng</dt><dd class="text-emerald-400 font-bold"><fmt:formatNumber value="${order.totalAmount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></dd></div>

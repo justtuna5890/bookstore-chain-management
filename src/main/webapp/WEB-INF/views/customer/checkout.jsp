@@ -98,8 +98,26 @@
             <c:if test="${cart.hasUnavailable}">
                 <p class="text-[11px] text-amber-300 mb-3"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Sách không còn khả dụng sẽ được giữ lại trong giỏ, không đưa vào đơn.</p>
             </c:if>
+            <div class="pt-3 border-t border-white/10 mb-3">
+                <label for="promo-code" class="block text-[11px] text-slate-400 mb-1.5">Mã giảm giá</label>
+                <div class="flex gap-2">
+                    <input type="text" id="promo-code" name="promotionCode" value="${form.promotionCode}" maxlength="30" autocomplete="off" placeholder="Nhập mã" class="form-field flex-1 px-3 py-2 rounded-xl text-sm uppercase placeholder-slate-500"/>
+                    <button type="button" id="promo-apply" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-white transition whitespace-nowrap">Áp dụng</button>
+                </div>
+                <p id="promo-msg" class="text-[11px] mt-1.5 min-h-[1rem]"></p>
+                <c:if test="${not empty availablePromotions}">
+                    <div class="mt-2 flex flex-wrap gap-1.5">
+                        <c:forEach var="promo" items="${availablePromotions}">
+                            <button type="button" data-promo="${promo.code}" title="${promo.description}" class="px-2.5 py-1 rounded-full border border-brand-gold/40 text-brand-gold hover:bg-brand-gold/10 text-[11px] font-semibold transition">
+                                ${promo.code} <span class="text-slate-400 font-normal">· ${promo.valueLabel}</span>
+                            </button>
+                        </c:forEach>
+                    </div>
+                </c:if>
+            </div>
             <dl class="space-y-2 text-xs pt-3 border-t border-white/10">
                 <div class="flex justify-between"><dt class="text-slate-400">Tạm tính</dt><dd class="text-slate-100" id="sum-subtotal"></dd></div>
+                <div class="flex justify-between hidden" id="sum-discount-row"><dt class="text-slate-400">Giảm giá (<span id="sum-promo-code"></span>)</dt><dd class="text-emerald-300" id="sum-discount"></dd></div>
                 <div class="flex justify-between"><dt class="text-slate-400">Phí giao hàng (<span id="sum-orders">${cart.orderCount}</span> đơn)</dt><dd class="text-slate-100" id="sum-shipping"></dd></div>
                 <div class="flex justify-between pt-2 border-t border-white/10 text-sm"><dt class="text-slate-200 font-semibold">Tổng cộng</dt><dd class="text-emerald-400 font-bold" id="sum-total"></dd></div>
             </dl>
@@ -120,6 +138,10 @@
         var addressField = document.getElementById('address-field');
         var form = document.getElementById('checkout-form');
 
+        var discount = 0;
+        var promoInput = document.getElementById('promo-code');
+        var promoMsg = document.getElementById('promo-msg');
+
         function money(n) { return '₫' + Math.round(n).toLocaleString('en-US'); }
 
         function refresh() {
@@ -128,13 +150,46 @@
             addressField.classList.toggle('hidden', !delivery);
             addressField.querySelector('textarea').required = delivery;
             document.getElementById('sum-subtotal').textContent = money(subtotal);
+            document.getElementById('sum-discount-row').classList.toggle('hidden', discount <= 0);
+            document.getElementById('sum-promo-code').textContent = promoInput.value.trim().toUpperCase();
+            document.getElementById('sum-discount').textContent = '-' + money(discount);
             document.getElementById('sum-shipping').textContent = delivery ? money(shipping) : 'Miễn phí';
-            document.getElementById('sum-total').textContent = money(subtotal + shipping);
+            document.getElementById('sum-total').textContent = money(subtotal - discount + shipping);
         }
+
+        // Xem trước giảm giá; số tiền cuối cùng do máy chủ tính lại khi đặt hàng
+        function applyPromotion() {
+            var code = promoInput.value.trim();
+            if (!code) {
+                discount = 0;
+                promoMsg.textContent = '';
+                refresh();
+                return;
+            }
+            fetch('/checkout/promotion?code=' + encodeURIComponent(code))
+                .then(function (response) { return response.json(); })
+                .then(function (data) {
+                    discount = data.valid ? Number(data.discount) : 0;
+                    promoMsg.textContent = data.valid ? data.message + ': giảm ' + money(discount) : data.message;
+                    promoMsg.className = 'text-[11px] mt-1.5 min-h-[1rem] ' + (data.valid ? 'text-emerald-300' : 'text-rose-300');
+                    refresh();
+                })
+                .catch(function () {
+                    promoMsg.textContent = 'Không kiểm tra được mã lúc này, bạn vẫn có thể đặt hàng.';
+                    promoMsg.className = 'text-[11px] mt-1.5 min-h-[1rem] text-amber-300';
+                });
+        }
+
+        document.getElementById('promo-apply').addEventListener('click', applyPromotion);
+        promoInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); applyPromotion(); } });
+        form.querySelectorAll('[data-promo]').forEach(function (chip) {
+            chip.addEventListener('click', function () { promoInput.value = chip.dataset.promo; applyPromotion(); });
+        });
 
         form.querySelectorAll('input[name="fulfillmentType"]').forEach(function (r) { r.addEventListener('change', refresh); });
         form.addEventListener('submit', function () { document.getElementById('place-order').disabled = true; });
         refresh();
+        if (promoInput.value.trim()) { applyPromotion(); }
     })();
 </script>
 

@@ -31,6 +31,7 @@ public class OrderMapper {
                 .paidAt(order.getPayment().getPaidAt())
                 .subtotal(order.getSubtotal())
                 .discountAmount(order.getDiscountAmount())
+                .promotionCode(order.getPromotionCode())
                 .shippingFee(order.getShippingFee())
                 .totalAmount(order.getTotalAmount())
                 .createdAt(order.getCreatedAt())

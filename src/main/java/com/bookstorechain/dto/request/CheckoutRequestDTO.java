@@ -40,4 +40,7 @@ public class CheckoutRequestDTO {
 
     @Size(max = 500, message = "Ghi chú tối đa 500 ký tự")
     private String note;
+
+    @Size(max = 30, message = "Mã giảm giá tối đa 30 ký tự")
+    private String promotionCode;
 }

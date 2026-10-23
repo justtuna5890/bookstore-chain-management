@@ -2,12 +2,14 @@ package com.bookstorechain.service.impl;
 
 import com.bookstorechain.dto.request.CheckoutRequestDTO;
 import com.bookstorechain.dto.response.OrderSummaryDTO;
+import com.bookstorechain.dto.response.PromotionApplicationDTO;
 import com.bookstorechain.entity.BookCopy;
 import com.bookstorechain.entity.Cart;
 import com.bookstorechain.entity.CartItem;
 import com.bookstorechain.entity.CustomerOrder;
 import com.bookstorechain.entity.OrderItem;
 import com.bookstorechain.entity.Payment;
+import com.bookstorechain.entity.Promotion;
 import com.bookstorechain.entity.Store;
 import com.bookstorechain.entity.User;
 import com.bookstorechain.enums.CopyStatus;
@@ -20,9 +22,11 @@ import com.bookstorechain.repository.BookCopyRepository;
 import com.bookstorechain.repository.CartItemRepository;
 import com.bookstorechain.repository.CartRepository;
 import com.bookstorechain.repository.CustomerOrderRepository;
+import com.bookstorechain.repository.PromotionRepository;
 import com.bookstorechain.repository.UserRepository;
 import com.bookstorechain.service.OrderNotificationService;
 import com.bookstorechain.service.OrderService;
+import com.bookstorechain.service.PromotionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -57,6 +61,8 @@ public class OrderServiceImpl implements OrderService {
     private final PlatformTransactionManager transactionManager;
     private final OrderMapper orderMapper;
     private final OrderNotificationService orderNotificationService;
+    private final PromotionService promotionService;
+    private final PromotionRepository promotionRepository;
 
     @Value("${app.shop.delivery-fee:25000}")
     private BigDecimal deliveryFee;
@@ -104,6 +110,9 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setStatus(OrderStatus.CANCELLED);
+        if (order.getPromotion() != null) {
+            promotionService.releaseUsage(order.getPromotion().getId());
+        }
         for (OrderItem item : order.getItems()) {
             BookCopy copy = item.getCopy();
             if (copy.getStatus() == CopyStatus.RESERVED) {
@@ -140,9 +149,22 @@ public class OrderServiceImpl implements OrderService {
             itemsByStore.computeIfAbsent(item.getCopy().getStore().getId(), id -> new ArrayList<>()).add(item);
         }
 
+        // Mã giảm giá được kiểm tra và trừ lượt trong cùng transaction với việc giữ chỗ nên lỗi nào cũng hoàn tác tất cả
+        PromotionApplicationDTO promotion = null;
+        if (!isBlank(request.getPromotionCode())) {
+            Map<Long, BigDecimal> subtotalByStore = new LinkedHashMap<>();
+            itemsByStore.forEach((storeId, items) -> subtotalByStore.put(storeId, items.stream()
+                    .map(item -> item.getCopy().getPrice()).reduce(BigDecimal.ZERO, BigDecimal::add)));
+            promotion = promotionService.redeem(request.getPromotionCode(), userId, subtotalByStore);
+        }
+
         List<OrderSummaryDTO> placed = new ArrayList<>();
-        for (List<CartItem> storeItems : itemsByStore.values()) {
-            CustomerOrder order = buildOrder(customer, storeItems, request, delivery);
+        for (Map.Entry<Long, List<CartItem>> entry : itemsByStore.entrySet()) {
+            BigDecimal discount = promotion == null ? BigDecimal.ZERO
+                    : promotion.getDiscountByStoreId().getOrDefault(entry.getKey(), BigDecimal.ZERO);
+            Promotion promotionRef = discount.signum() > 0 ? promotionRepository.getReferenceById(promotion.getPromotionId()) : null;
+            CustomerOrder order = buildOrder(customer, entry.getValue(), request, delivery, discount, promotionRef,
+                    promotionRef == null ? null : promotion.getCode());
             placed.add(orderMapper.toSummary(customerOrderRepository.saveAndFlush(order)));
         }
 
@@ -150,13 +172,14 @@ public class OrderServiceImpl implements OrderService {
         return placed;
     }
 
-    private CustomerOrder buildOrder(User customer, List<CartItem> storeItems, CheckoutRequestDTO request, boolean delivery) {
+    private CustomerOrder buildOrder(User customer, List<CartItem> storeItems, CheckoutRequestDTO request, boolean delivery,
+                                     BigDecimal discount, Promotion promotion, String promotionCode) {
         Store store = storeItems.get(0).getCopy().getStore();
         BigDecimal subtotal = storeItems.stream()
                 .map(item -> item.getCopy().getPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         BigDecimal shippingFee = delivery ? deliveryFee : BigDecimal.ZERO;
-        BigDecimal total = subtotal.add(shippingFee);
+        BigDecimal total = subtotal.subtract(discount).add(shippingFee);
 
         CustomerOrder order = CustomerOrder.builder()
                 .orderCode(generateOrderCode())
@@ -169,7 +192,9 @@ public class OrderServiceImpl implements OrderService {
                 .shippingAddress(delivery ? request.getShippingAddress().trim() : null)
                 .note(isBlank(request.getNote()) ? null : request.getNote().trim())
                 .subtotal(subtotal)
-                .discountAmount(BigDecimal.ZERO)
+                .discountAmount(discount)
+                .promotion(promotion)
+                .promotionCode(promotionCode)
                 .shippingFee(shippingFee)
                 .totalAmount(total)
                 .build();
