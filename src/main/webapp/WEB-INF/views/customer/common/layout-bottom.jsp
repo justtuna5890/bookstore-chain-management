@@ -7,5 +7,6 @@
     </footer>
     <script src="/js/cart.js"></script>
     <script src="/js/wishlist.js"></script>
+    <script src="/js/notifications.js"></script>
 </body>
 </html>
