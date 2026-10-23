@@ -23,6 +23,7 @@ import com.bookstorechain.repository.CartItemRepository;
 import com.bookstorechain.repository.CartRepository;
 import com.bookstorechain.repository.CustomerOrderRepository;
 import com.bookstorechain.repository.UserRepository;
+import com.bookstorechain.service.OrderNotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,7 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,6 +62,7 @@ class OrderServiceImplTest {
     @Mock private CustomerOrderRepository customerOrderRepository;
     @Mock private UserRepository userRepository;
     @Mock private PlatformTransactionManager transactionManager;
+    @Mock private OrderNotificationService orderNotificationService;
 
     private OrderServiceImpl service;
     private User customer;
@@ -71,7 +74,7 @@ class OrderServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new OrderServiceImpl(cartRepository, cartItemRepository, bookCopyRepository,
-                customerOrderRepository, userRepository, new UserLocks(), transactionManager, new OrderMapper());
+                customerOrderRepository, userRepository, new UserLocks(), transactionManager, new OrderMapper(), orderNotificationService);
         ReflectionTestUtils.setField(service, "deliveryFee", new BigDecimal("25000"));
         lenient().when(transactionManager.getTransaction(any())).thenReturn(mock(TransactionStatus.class));
 
@@ -141,6 +144,8 @@ class OrderServiceImplTest {
         verify(bookCopyRepository).reserveIfAvailable(reserved.capture());
         assertThat(reserved.getValue()).containsExactly(1L, 2L, 7L);
         verify(cartItemRepository).deleteAll(List.of(i1, i2, i3));
+        verify(orderNotificationService).notifyNewOrder(placed.get(0));
+        verify(orderNotificationService).notifyNewOrder(placed.get(1));
     }
 
     @Test
@@ -180,6 +185,7 @@ class OrderServiceImplTest {
         verify(cartItemRepository, never()).deleteAll(any());
         verify(transactionManager).rollback(any());
         verify(transactionManager, never()).commit(any());
+        verifyNoInteractions(orderNotificationService);
     }
 
     @Test

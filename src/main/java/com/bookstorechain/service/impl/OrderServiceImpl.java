@@ -21,6 +21,7 @@ import com.bookstorechain.repository.CartItemRepository;
 import com.bookstorechain.repository.CartRepository;
 import com.bookstorechain.repository.CustomerOrderRepository;
 import com.bookstorechain.repository.UserRepository;
+import com.bookstorechain.service.OrderNotificationService;
 import com.bookstorechain.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -55,6 +56,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserLocks userLocks;
     private final PlatformTransactionManager transactionManager;
     private final OrderMapper orderMapper;
+    private final OrderNotificationService orderNotificationService;
 
     @Value("${app.shop.delivery-fee:25000}")
     private BigDecimal deliveryFee;
@@ -66,10 +68,14 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderSummaryDTO> checkout(Long userId, CheckoutRequestDTO request) {
+        List<OrderSummaryDTO> placed;
         // Khoá ngoài transaction để bấm đặt hàng hai lần liên tiếp không tạo trùng đơn
         synchronized (userLocks.lockFor(userId)) {
-            return new TransactionTemplate(transactionManager).execute(status -> doCheckout(userId, request));
+            placed = new TransactionTemplate(transactionManager).execute(status -> doCheckout(userId, request));
         }
+        // Chỉ báo nhân viên sau khi đơn đã commit, để không có thông báo cho đơn bị rollback
+        placed.forEach(orderNotificationService::notifyNewOrder);
+        return placed;
     }
 
     @Override
