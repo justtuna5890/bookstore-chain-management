@@ -34,7 +34,7 @@ public class DashboardServiceImpl implements DashboardService {
         Map<String, Long> stats = new HashMap<>();
         stats.put("totalStores", storeRepository.count());
         stats.put("totalBooks", bookRepository.count());
-        stats.put("totalBookCopies", bookCopyRepository.count());
+        stats.put("totalBookCopies", bookCopyRepository.countInStock());
         stats.put("totalBuybacks", buybackRequestRepository.count());
         stats.put("totalTransfers", stockTransferRepository.count());
         return stats;

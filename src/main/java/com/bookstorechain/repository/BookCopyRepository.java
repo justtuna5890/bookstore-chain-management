@@ -51,6 +51,10 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, Long> {
     @Query("SELECT bc.bookCondition, COUNT(bc) FROM BookCopy bc WHERE bc.store.id = :storeId AND bc.status <> com.bookstorechain.enums.CopyStatus.SOLD GROUP BY bc.bookCondition")
     List<Object[]> countByConditionAndStore(@Param("storeId") Long storeId);
 
+    /** Số bản sao còn trong kho toàn chuỗi (không tính sách đã bán cho khách). */
+    @Query("SELECT COUNT(bc) FROM BookCopy bc WHERE bc.status <> com.bookstorechain.enums.CopyStatus.SOLD")
+    long countInStock();
+
     /** Số bản sao còn trong kho của chi nhánh (không tính sách đã bán cho khách). */
     @Query("SELECT COUNT(bc) FROM BookCopy bc WHERE bc.store.id = :storeId AND bc.status <> com.bookstorechain.enums.CopyStatus.SOLD")
     long countByStoreId(@Param("storeId") Long storeId);

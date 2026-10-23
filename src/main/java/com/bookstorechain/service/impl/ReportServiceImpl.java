@@ -147,7 +147,7 @@ public class ReportServiceImpl implements ReportService {
             totalCopies = bookCopyRepository.countByStoreId(storeId);
             totalInventoryVal = storeValues.getOrDefault(storeName, BigDecimal.ZERO);
         } else {
-            totalCopies = bookCopyRepository.count();
+            totalCopies = bookCopyRepository.countInStock();
             for (BigDecimal val : storeValues.values()) {
                 if (val != null) {
                     totalInventoryVal = totalInventoryVal.add(val);
