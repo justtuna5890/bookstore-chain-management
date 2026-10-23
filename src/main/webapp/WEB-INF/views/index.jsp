@@ -629,7 +629,14 @@
                                         <p class="text-[11px] text-slate-400 truncate">${book.author}</p>
                                         <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-white/5">
                                             <div class="flex items-center gap-1">
-                                                <span class="text-[10px] text-amber-400 font-semibold">★ 4.9</span>
+                                                <c:choose>
+                                                    <c:when test="${book.rating.count > 0}">
+                                                        <span class="text-[10px] text-amber-400 font-semibold" title="${book.rating.count} đánh giá">★ ${book.rating.averageLabel}</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="text-[10px] text-slate-500" title="Chưa có đánh giá">☆ —</span>
+                                                    </c:otherwise>
+                                                </c:choose>
                                                 <span class="text-[11px] font-bold text-emerald-400 ml-1">
                                                     <fmt:formatNumber value="${book.minPrice}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                                                 </span>

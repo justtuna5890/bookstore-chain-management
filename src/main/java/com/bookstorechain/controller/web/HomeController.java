@@ -34,6 +34,7 @@ public class HomeController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final com.bookstorechain.service.NotificationService notificationService;
+    private final com.bookstorechain.service.ReviewService reviewService;
 
     @GetMapping({"/", "/home"})
     public String home(@RequestParam(value = "keyword", required = false) String keyword,
@@ -133,6 +134,9 @@ public class HomeController {
                 .filter(c -> c.getBook() != null)
                 .collect(Collectors.groupingBy(c -> c.getBook().getId()));
 
+        Map<Long, com.bookstorechain.dto.response.RatingSummaryDTO> ratings = reviewService.getSummaries(
+                allActiveBooks.stream().map(Book::getId).collect(Collectors.toList()));
+
         List<BookCatalogItemDTO> catalog = new ArrayList<>();
         for (Book b : allActiveBooks) {
             List<BookCopy> copies = copiesByBookId.getOrDefault(b.getId(), Collections.emptyList());
@@ -211,6 +215,7 @@ public class HomeController {
                     .maxPrice(maxPrice)
                     .storeNames(storeNames)
                     .copies(copyDTOs)
+                    .rating(ratings.get(b.getId()))
                     .build());
         }
 

@@ -5,6 +5,16 @@
 <c:set var="pageTitle" value="${fn:escapeXml(book.title)}" scope="request"/>
 <jsp:include page="/WEB-INF/views/customer/common/layout-top.jsp"/>
 
+<style>
+    .stars { position: relative; display: inline-block; color: #475569; letter-spacing: 2px; line-height: 1; }
+    .stars > span { position: absolute; top: 0; left: 0; bottom: 0; overflow: hidden; white-space: nowrap; color: #fbbf24; }
+    .rate-input { display: inline-flex; flex-direction: row-reverse; gap: 4px; }
+    .rate-input input { position: absolute; opacity: 0; pointer-events: none; }
+    .rate-input label { font-size: 28px; line-height: 1; color: #475569; cursor: pointer; transition: color .15s; }
+    .rate-input input:checked ~ label, .rate-input label:hover, .rate-input label:hover ~ label { color: #fbbf24; }
+    .rate-input input:focus-visible + label { outline: 2px solid #D4AF37; border-radius: 4px; }
+</style>
+
 <nav class="mt-5 text-xs text-slate-400 flex items-center gap-2 flex-wrap">
     <a href="/" class="hover:text-brand-gold transition">Trang chủ</a>
     <i class="fa-solid fa-chevron-right text-[9px] text-slate-600"></i>
@@ -41,6 +51,13 @@
         </c:if>
         <h1 class="text-3xl md:text-4xl font-serif font-bold text-white mt-2 leading-tight">${fn:escapeXml(book.title)}</h1>
         <p class="text-sm text-brand-goldLight mt-1"><i class="fa-solid fa-pen-nib me-1"></i>${fn:escapeXml(book.author)}</p>
+        <a href="#reviews" class="inline-flex items-center gap-2 mt-2 text-xs text-slate-300 hover:text-brand-gold transition">
+            <span class="stars text-base" aria-hidden="true">★★★★★<span style="width:${ratingSummary.starPercent}%">★★★★★</span></span>
+            <c:choose>
+                <c:when test="${ratingSummary.rated}"><strong class="text-amber-400">${ratingSummary.averageLabel}</strong><span>(${ratingSummary.count} đánh giá)</span></c:when>
+                <c:otherwise><span class="text-slate-500">Chưa có đánh giá</span></c:otherwise>
+            </c:choose>
+        </a>
 
         <dl class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 text-xs">
             <div class="p-3 rounded-xl glass-panel-subtle">
@@ -67,7 +84,7 @@
         </dl>
 
         <p class="text-sm text-slate-300 mt-5 leading-relaxed font-light">
-            ${not empty book.description ? book.description : 'Bản in quý hiếm được lưu giữ tại hệ thống chuỗi cửa hàng OldBook.'}
+            ${not empty book.description ? fn:escapeXml(book.description) : 'Bản in quý hiếm được lưu giữ tại hệ thống chuỗi cửa hàng OldBook.'}
         </p>
 
         <!-- Danh sách bản sao -->
@@ -124,6 +141,105 @@
         </div>
     </div>
 </div>
+
+<!-- Đánh giá của khách -->
+<section id="reviews" class="mt-10 scroll-mt-6">
+    <h2 class="text-xs uppercase tracking-wider font-semibold text-brand-gold mb-3">Đánh giá của khách hàng</h2>
+
+    <c:if test="${not empty reviewSuccess}">
+        <div class="mb-3 p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-200 text-xs flex items-start gap-2.5">
+            <i class="fa-solid fa-circle-check text-emerald-400 text-base mt-0.5"></i><span>${fn:escapeXml(reviewSuccess)}</span>
+        </div>
+    </c:if>
+    <c:if test="${not empty reviewError}">
+        <div class="mb-3 p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-200 text-xs flex items-start gap-2.5">
+            <i class="fa-solid fa-circle-exclamation text-rose-400 text-base mt-0.5"></i><span>${fn:escapeXml(reviewError)}</span>
+        </div>
+    </c:if>
+
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <!-- Tổng quan -->
+        <div class="md:col-span-4 p-5 rounded-2xl glass-panel-subtle">
+            <div class="flex items-end gap-3">
+                <span class="text-4xl font-serif font-bold ${ratingSummary.rated ? 'text-white' : 'text-slate-600'}">${ratingSummary.averageLabel}</span>
+                <span class="text-xs text-slate-400 pb-1">/ 5 · ${ratingSummary.count} đánh giá</span>
+            </div>
+            <span class="stars text-xl mt-1" aria-hidden="true">★★★★★<span style="width:${ratingSummary.starPercent}%">★★★★★</span></span>
+            <ul class="mt-4 space-y-1.5">
+                <c:forEach var="bar" items="${ratingSummary.bars}">
+                    <li class="flex items-center gap-2 text-[11px] text-slate-400">
+                        <span class="w-6 text-right">${bar.star}★</span>
+                        <span class="flex-1 h-1.5 rounded-full bg-white/10 overflow-hidden"><span class="block h-full bg-amber-400" style="width:${bar.percent}%"></span></span>
+                        <span class="w-6">${bar.count}</span>
+                    </li>
+                </c:forEach>
+            </ul>
+        </div>
+
+        <div class="md:col-span-8">
+            <!-- Biểu mẫu: chỉ khách đã nhận hàng cuốn này -->
+            <c:choose>
+                <c:when test="${canReview}">
+                    <form action="/books/${book.id}/reviews" method="post" class="p-5 rounded-2xl glass-panel-subtle mb-4">
+                        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                        <p class="text-xs font-semibold text-slate-200 mb-2">${empty myReview ? 'Viết đánh giá của bạn' : 'Sửa đánh giá của bạn'}</p>
+                        <div class="rate-input relative" role="radiogroup" aria-label="Số sao">
+                            <c:forEach var="star" begin="1" end="5">
+                                <c:set var="s" value="${6 - star}"/>
+                                <input type="radio" id="rate-${s}" name="rating" value="${s}" required ${myReview.rating == s ? 'checked' : ''}/>
+                                <label for="rate-${s}" title="${s} sao">★</label>
+                            </c:forEach>
+                        </div>
+                        <textarea name="comment" rows="3" maxlength="1000" placeholder="Chia sẻ tình trạng sách, giao nhận... (không bắt buộc)"
+                                  class="form-field w-full mt-3 px-3 py-2 text-xs rounded-xl">${fn:escapeXml(myReview.comment)}</textarea>
+                        <div class="flex items-center justify-between mt-3">
+                            <button type="submit" class="px-4 py-2 rounded-full bg-gradient-to-r from-brand-gold to-yellow-500 text-slate-950 font-bold text-xs hover:from-yellow-400 hover:to-amber-500 transition">
+                                <i class="fa-solid fa-paper-plane mr-1"></i>${empty myReview ? 'Gửi đánh giá' : 'Cập nhật'}
+                            </button>
+                            <c:if test="${not empty myReview}">
+                                <button type="submit" formaction="/books/${book.id}/reviews/delete" formnovalidate class="text-[11px] text-rose-300 hover:text-rose-200 transition">Xoá đánh giá</button>
+                            </c:if>
+                        </div>
+                        <c:if test="${myReview.hidden}">
+                            <p class="text-[11px] text-amber-300 mt-2"><i class="fa-solid fa-eye-slash mr-1"></i>Đánh giá của bạn đang bị quản trị viên ẩn vì vi phạm quy định.</p>
+                        </c:if>
+                    </form>
+                </c:when>
+                <c:otherwise>
+                    <p class="p-3.5 rounded-2xl glass-panel-subtle mb-4 text-[11px] text-slate-400">
+                        <i class="fa-solid fa-circle-info mr-1"></i>
+                        <c:choose>
+                            <c:when test="${empty pageContext.request.userPrincipal}">Hãy <a href="/login" class="text-brand-gold hover:underline">đăng nhập</a> để đánh giá sau khi mua và nhận sách.</c:when>
+                            <c:otherwise>Bạn có thể đánh giá cuốn sách này sau khi đơn hàng chứa nó được giao thành công.</c:otherwise>
+                        </c:choose>
+                    </p>
+                </c:otherwise>
+            </c:choose>
+
+            <!-- Danh sách đánh giá -->
+            <ul class="space-y-3">
+                <c:forEach var="rv" items="${reviews}">
+                    <li class="p-4 rounded-2xl glass-panel-subtle">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <span class="w-7 h-7 shrink-0 rounded-full bg-brand-gold/15 text-brand-gold text-[11px] font-bold flex items-center justify-center">${fn:escapeXml(fn:toUpperCase(fn:substring(rv.reviewerName, 0, 1)))}</span>
+                                <span class="text-xs font-semibold text-slate-100 truncate">${fn:escapeXml(rv.reviewerName)}</span>
+                            </div>
+                            <span class="text-[11px] text-slate-500 shrink-0">${rv.formattedCreatedAt}</span>
+                        </div>
+                        <span class="stars text-sm mt-1.5" aria-label="${rv.rating} sao">★★★★★<span style="width:${rv.starPercent}%">★★★★★</span></span>
+                        <c:if test="${not empty rv.comment}">
+                            <p class="text-xs text-slate-300 mt-2 leading-relaxed whitespace-pre-line">${fn:escapeXml(rv.comment)}</p>
+                        </c:if>
+                    </li>
+                </c:forEach>
+                <c:if test="${empty reviews}">
+                    <li class="p-6 rounded-2xl glass-panel-subtle text-center text-xs text-slate-500">Chưa có đánh giá nào. Hãy là người đầu tiên!</li>
+                </c:if>
+            </ul>
+        </div>
+    </div>
+</section>
 
 <!-- Sách cùng thể loại -->
 <c:if test="${not empty book.relatedBooks}">

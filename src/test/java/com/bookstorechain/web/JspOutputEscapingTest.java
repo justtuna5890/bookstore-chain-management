@@ -28,11 +28,16 @@ class JspOutputEscapingTest {
     private static final List<String> SCANNED = List.of("customer", "admin/order", "admin/promotion", "admin/review", "admin/common/page-top.jsp");
 
     /** Biểu thức in thô một thuộc tính (hoặc biến) có tên thường mang chữ do người dùng nhập. */
-    private static final Pattern RAW_TEXT = Pattern.compile(
-            "\\$\\{\\s*(?:[\\w]+\\.)*(?:title|author|category|coverImage|publisher|description|copyCode|storeName|storeAddress|storePhone|"
+    private static final String USER_TEXT_PROPERTIES =
+            "title|author|category|coverImage|publisher|description|copyCode|storeName|storeAddress|storePhone|"
                     + "note|receiverName|receiverPhone|shippingAddress|customerName|promotionCode|transactionCode|code|comment|reviewerName|"
                     + "fullName|username|email|phone|name|message|err|bookTitle|orderCode|"
-                    + "cartNotice|checkoutError|orderSuccess|orderError|successMessage|errorMessage|selectedKeyword|currentStoreName)\\s*\\}");
+                    + "cartNotice|checkoutError|orderSuccess|orderError|reviewSuccess|reviewError|successMessage|errorMessage|selectedKeyword|currentStoreName";
+
+    private static final Pattern RAW_TEXT = Pattern.compile(
+            "\\$\\{\\s*(?:[\\w]+\\.)*(?:" + USER_TEXT_PROPERTIES + ")\\s*\\}"
+                    // nhánh của biểu thức điều kiện: ${cond ? a.title : 'x'} hoặc ${cond ? 'x' : a.title}
+                    + "|[?:]\\s*(?:\\w+\\.)+(?:" + USER_TEXT_PROPERTIES + ")\\s*[:}]");
 
     @Test
     @DisplayName("Các trang khách và trang quản trị bán hàng không in thô chuỗi do người dùng nhập")
@@ -69,5 +74,8 @@ class JspOutputEscapingTest {
         assertThat(RAW_TEXT.matcher("value=\"${form.receiverName}\"").find()).isTrue();
         assertThat(RAW_TEXT.matcher("<td>${fn:escapeXml(order.customerName)}</td>").find()).isFalse();
         assertThat(RAW_TEXT.matcher("<td>${order.itemCount}</td>").find()).isFalse();
+        assertThat(RAW_TEXT.matcher("${not empty book.description ? book.description : 'mac dinh'}").find()).isTrue();
+        assertThat(RAW_TEXT.matcher("${empty book.publisher ? 'Dang cap nhat' : book.publisher}").find()).isTrue();
+        assertThat(RAW_TEXT.matcher("${not empty book.description ? fn:escapeXml(book.description) : 'mac dinh'}").find()).isFalse();
     }
 }
