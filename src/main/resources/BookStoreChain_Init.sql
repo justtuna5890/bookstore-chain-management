@@ -20,6 +20,8 @@ USE BookStoreChain;
 GO
 
 -- 1. XÓA BẢNG CŨ NẾU ĐÃ TỒN TẠI (THEO THỨ TỰ RÀNG BUỘC KHÓA NGOẠI)
+IF OBJECT_ID(N'dbo.chat_message', N'U') IS NOT NULL DROP TABLE dbo.chat_message;
+IF OBJECT_ID(N'dbo.chat_conversation', N'U') IS NOT NULL DROP TABLE dbo.chat_conversation;
 IF OBJECT_ID(N'dbo.user_notification', N'U') IS NOT NULL DROP TABLE dbo.user_notification;
 IF OBJECT_ID(N'dbo.wishlist_item', N'U') IS NOT NULL DROP TABLE dbo.wishlist_item;
 IF OBJECT_ID(N'dbo.review', N'U') IS NOT NULL DROP TABLE dbo.review;
@@ -211,7 +213,7 @@ CREATE TABLE dbo.user_notification (
     created_at DATETIME2(6) NULL,
     updated_at DATETIME2(6) NULL,
     user_id BIGINT NOT NULL,
-    type NVARCHAR(20) NOT NULL CHECK (type IN ('ORDER', 'WISHLIST', 'BUYBACK', 'REVIEW')),
+    type NVARCHAR(20) NOT NULL CHECK (type IN ('ORDER', 'WISHLIST', 'BUYBACK', 'REVIEW', 'CHAT')),
     title NVARCHAR(150) NOT NULL,
     message NVARCHAR(500) NOT NULL,
     link NVARCHAR(255) NULL,
@@ -221,6 +223,44 @@ CREATE TABLE dbo.user_notification (
 );
 GO
 CREATE INDEX IX_user_notification_user_read ON dbo.user_notification (user_id, is_read, created_at DESC);
+GO
+
+-- Bảng Cuộc Trò Chuyện Hỗ Trợ (chat_conversation): mỗi cặp (khách, chi nhánh) một cuộc
+CREATE TABLE dbo.chat_conversation (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    customer_id BIGINT NOT NULL,
+    store_id BIGINT NOT NULL,
+    status NVARCHAR(10) NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'CLOSED')),
+    last_message_at DATETIME2(6) NULL,
+    last_message_preview NVARCHAR(100) NULL,
+    customer_unread INT NOT NULL DEFAULT 0,
+    staff_unread INT NOT NULL DEFAULT 0,
+    CONSTRAINT PK_chat_conversation PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_chat_customer_store UNIQUE (customer_id, store_id),
+    CONSTRAINT FK_chat_conversation_customer FOREIGN KEY (customer_id) REFERENCES dbo.users(id),
+    CONSTRAINT FK_chat_conversation_store FOREIGN KEY (store_id) REFERENCES dbo.store(id)
+);
+GO
+CREATE INDEX IX_chat_conversation_store_last ON dbo.chat_conversation (store_id, last_message_at DESC);
+GO
+
+-- Bảng Tin Nhắn Hỗ Trợ (chat_message)
+CREATE TABLE dbo.chat_message (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    conversation_id BIGINT NOT NULL,
+    sender_id BIGINT NOT NULL,
+    from_customer BIT NOT NULL,
+    content NVARCHAR(1000) NOT NULL,
+    CONSTRAINT PK_chat_message PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT FK_chat_message_conversation FOREIGN KEY (conversation_id) REFERENCES dbo.chat_conversation(id),
+    CONSTRAINT FK_chat_message_sender FOREIGN KEY (sender_id) REFERENCES dbo.users(id)
+);
+GO
+CREATE INDEX IX_chat_message_conversation_created ON dbo.chat_message (conversation_id, created_at DESC);
 GO
 
 -- Bảng Giỏ Hàng (cart): mỗi khách hàng có đúng một giỏ
@@ -551,6 +591,20 @@ INSERT INTO dbo.user_notification (created_at, updated_at, user_id, type, title,
 (DATEADD(hour, -2, SYSDATETIME()), SYSDATETIME(), 5, 'WISHLIST', N'Sách yêu thích đã có hàng', N'"Chiến Tranh Và Hòa Bình" vừa có hàng trở lại. Đặt sớm kẻo hết.', '/books/4', 0),
 (DATEADD(day, -1, SYSDATETIME()), SYSDATETIME(), 5, 'ORDER', N'Đơn hàng sẵn sàng nhận', N'Đơn hàng của bạn đã sẵn sàng, mời bạn đến chi nhánh nhận sách.', '/orders', 0),
 (DATEADD(day, -4, SYSDATETIME()), SYSDATETIME(), 5, 'BUYBACK', N'Yêu cầu thu mua đã được duyệt', N'Nhân viên đã định giá sách bạn gửi. Mời bạn mang sách đến chi nhánh.', NULL, 1);
+GO
+
+-- 3.13. Chat hỗ trợ mẫu
+INSERT INTO dbo.chat_conversation (created_at, updated_at, customer_id, store_id, status, last_message_at, last_message_preview, customer_unread, staff_unread) VALUES
+(DATEADD(hour, -3, SYSDATETIME()), SYSDATETIME(), 5, 1, 'OPEN', DATEADD(minute, -40, SYSDATETIME()), N'Dạ bản này còn, bạn ghé chi nhánh trước 20h nhé.', 1, 0),
+(DATEADD(minute, -25, SYSDATETIME()), SYSDATETIME(), 6, 2, 'OPEN', DATEADD(minute, -25, SYSDATETIME()), N'Chi nhánh mình có nhận đổi sách cũ lấy sách mới không ạ?', 0, 1);
+GO
+INSERT INTO dbo.chat_message (created_at, updated_at, conversation_id, sender_id, from_customer, content) VALUES
+(DATEADD(hour, -3, SYSDATETIME()), SYSDATETIME(), 1, 5, 1, N'Cho mình hỏi cuốn "Hoàng Tử Bé" bản bìa cứng còn không ạ?'),
+(DATEADD(minute, -40, SYSDATETIME()), SYSDATETIME(), 1, 3, 0, N'Dạ bản này còn, bạn ghé chi nhánh trước 20h nhé.'),
+(DATEADD(minute, -25, SYSDATETIME()), SYSDATETIME(), 2, 6, 1, N'Chi nhánh mình có nhận đổi sách cũ lấy sách mới không ạ?');
+GO
+INSERT INTO dbo.user_notification (created_at, updated_at, user_id, type, title, message, link, is_read) VALUES
+(DATEADD(minute, -40, SYSDATETIME()), SYSDATETIME(), 5, 'CHAT', N'Tin nhắn mới từ OldBook Hà Nội — Tràng Tiền', N'Dạ bản này còn, bạn ghé chi nhánh trước 20h nhé.', '/chat?conversation=1', 0);
 GO
 
 PRINT N'>>> HOÀN TẤT KHỞI TẠO CƠ SỞ DỮ LIỆU BOOKSTORE CHAIN ĐA DẠNG THÀNH CÔNG! <<<';

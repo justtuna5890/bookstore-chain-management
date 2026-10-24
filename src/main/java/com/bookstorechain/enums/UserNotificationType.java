@@ -5,5 +5,6 @@ public enum UserNotificationType {
     ORDER,      // Đơn hàng đổi trạng thái hoặc thanh toán
     WISHLIST,   // Sách yêu thích có hàng lại
     BUYBACK,    // Yêu cầu thu mua sách cũ được xử lý
-    REVIEW      // Đánh giá của khách bị quản trị ẩn
+    REVIEW,     // Đánh giá của khách bị quản trị ẩn
+    CHAT        // Nhân viên chi nhánh trả lời tin nhắn hỗ trợ
 }

@@ -24,4 +24,12 @@ public interface UserNotificationRepository extends JpaRepository<UserNotificati
     @Modifying(clearAutomatically = true)
     @Query("UPDATE UserNotification n SET n.read = true WHERE n.user.id = :userId AND n.read = false")
     int markAllRead(@Param("userId") Long userId);
+
+    /**
+     * Không xoá persistence context: được gọi giữa một nghiệp vụ khác (mở cuộc chat) đang giữ các thực thể liên quan,
+     * xoá context sẽ làm chúng bị tách và lần truy cập lazy sau đó báo LazyInitializationException.
+     */
+    @Modifying
+    @Query("UPDATE UserNotification n SET n.read = true WHERE n.user.id = :userId AND n.link = :link AND n.read = false")
+    int markReadByLink(@Param("userId") Long userId, @Param("link") String link);
 }

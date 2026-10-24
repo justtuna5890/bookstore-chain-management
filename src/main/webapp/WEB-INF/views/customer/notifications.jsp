@@ -36,6 +36,7 @@
                         <c:when test="${n.type == 'ORDER'}"><i class="fa-solid fa-receipt text-sm"></i></c:when>
                         <c:when test="${n.type == 'WISHLIST'}"><i class="fa-solid fa-heart text-sm"></i></c:when>
                         <c:when test="${n.type == 'BUYBACK'}"><i class="fa-solid fa-hand-holding-dollar text-sm"></i></c:when>
+                        <c:when test="${n.type == 'CHAT'}"><i class="fa-solid fa-comments text-sm"></i></c:when>
                         <c:otherwise><i class="fa-solid fa-star text-sm"></i></c:otherwise>
                     </c:choose>
                 </span>

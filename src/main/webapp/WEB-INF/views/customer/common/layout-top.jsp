@@ -118,6 +118,9 @@
                     </a>
                     <c:if test="${isLoggedIn}">
                         <jsp:include page="/WEB-INF/views/customer/common/notification-bell.jsp"/>
+                        <a href="/chat" class="relative p-2 rounded-full glass-panel-subtle hover:bg-white/10 transition text-slate-300" title="Chat với chi nhánh">
+                            <i class="fa-regular fa-comments text-sm"></i>
+                        </a>
                         <a href="/wishlist" class="relative p-2 rounded-full glass-panel-subtle hover:bg-white/10 transition text-slate-300" title="Sách yêu thích">
                             <i class="fa-regular fa-heart text-sm"></i>
                         </a>

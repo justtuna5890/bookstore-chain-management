@@ -8,7 +8,7 @@
     var list = bell.querySelector('[data-notification-list]');
     var badge = bell.querySelector('[data-notification-badge]');
     var MAX_ITEMS = 8;
-    var ICONS = { ORDER: 'fa-receipt', WISHLIST: 'fa-heart', BUYBACK: 'fa-hand-holding-dollar', REVIEW: 'fa-star' };
+    var ICONS = { ORDER: 'fa-receipt', WISHLIST: 'fa-heart', BUYBACK: 'fa-hand-holding-dollar', REVIEW: 'fa-star', CHAT: 'fa-comments' };
 
     function csrfToken() {
         var meta = document.querySelector('meta[name="_csrf"]');
@@ -176,6 +176,9 @@
             }
         });
     }
+
+    // Trang khác (VD chat) báo đã thay đổi thông báo phía máy chủ
+    window.addEventListener('notifications:refresh', load);
 
     toggle.addEventListener('click', function (event) {
         event.stopPropagation();

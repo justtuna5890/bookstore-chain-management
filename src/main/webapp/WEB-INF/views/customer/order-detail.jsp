@@ -50,7 +50,10 @@
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
     <!-- Sách trong đơn -->
     <section class="lg:col-span-7 rounded-2xl glass-panel-subtle border border-white/10 overflow-hidden self-start">
-        <div class="px-4 py-3 bg-white/5 text-xs font-semibold text-brand-gold"><i class="fa-solid fa-store mr-1.5"></i>${fn:escapeXml(order.storeName)}</div>
+        <div class="px-4 py-3 bg-white/5 text-xs font-semibold text-brand-gold flex items-center justify-between gap-3">
+            <span><i class="fa-solid fa-store mr-1.5"></i>${fn:escapeXml(order.storeName)}</span>
+            <a href="/chat?store=${order.storeId}" class="shrink-0 px-2.5 py-1 rounded-full border border-brand-gold/40 text-[11px] hover:bg-brand-gold/10 transition"><i class="fa-regular fa-comments mr-1"></i>Nhắn cho chi nhánh</a>
+        </div>
         <ul class="divide-y divide-white/5">
             <c:forEach var="line" items="${order.lines}">
                 <li class="p-4 flex items-center justify-between gap-4">
