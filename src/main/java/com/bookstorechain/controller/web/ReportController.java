@@ -6,6 +6,7 @@ import com.bookstorechain.security.CustomUserDetails;
 import com.bookstorechain.service.PdfExportService;
 import com.bookstorechain.service.ReportService;
 import com.bookstorechain.service.StoreService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -31,6 +32,7 @@ public class ReportController {
     private final ReportService reportService;
     private final StoreService storeService;
     private final PdfExportService pdfExportService;
+    private final ObjectMapper objectMapper;
 
     @GetMapping
     public String showReports(@AuthenticationPrincipal CustomUserDetails userDetails,
@@ -61,6 +63,11 @@ public class ReportController {
         ReportSummaryDTO summary = reportService.generateReport(startDate, endDate, storeId);
 
         model.addAttribute("summary", summary);
+        if (summary.getSales() != null) {
+            model.addAttribute("salesDailyJson", ScriptJson.of(objectMapper, summary.getSales().getDaily(), "[]"));
+            model.addAttribute("salesPaymentJson", ScriptJson.of(objectMapper, summary.getSales().getRevenueByPayment(), "{}"));
+            model.addAttribute("salesStoreJson", ScriptJson.of(objectMapper, summary.getSales().getRevenueByStore(), "{}"));
+        }
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
         model.addAttribute("selectedStoreId", storeId);
@@ -115,7 +122,7 @@ public class ReportController {
 
     /**
      * Chi nhánh mà nhân viên được xem báo cáo. Nhân viên chưa gán chi nhánh bị từ chối: truyền null xuống tầng báo cáo
-     * nghĩa là toàn chuỗi, sẽ lộ số liệu của mọi chi nhánh.
+     * nghĩa là toàn chuỗi, sẽ lộ số liệu và doanh thu của mọi chi nhánh.
      */
     private Long staffStoreIdOrDeny(CustomUserDetails userDetails) {
         if (userDetails.getUser().getStore() == null) {

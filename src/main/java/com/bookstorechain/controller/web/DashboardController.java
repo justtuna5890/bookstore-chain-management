@@ -200,19 +200,9 @@ public class DashboardController {
         model.addAttribute("salesReport", report);
         model.addAttribute("salesScopeLabel", isStaff ? userDetails.getUser().getStore().getName() : "Toàn chuỗi");
         model.addAttribute("salesShowStores", !isStaff);
-        model.addAttribute("salesDailyJson", scriptSafeJson(report.getDaily(), "[]"));
-        model.addAttribute("salesPaymentJson", scriptSafeJson(report.getRevenueByPayment(), "{}"));
-        model.addAttribute("salesStoreJson", scriptSafeJson(report.getRevenueByStore(), "{}"));
-    }
-
-    /** JSON để nhúng thẳng vào thẻ script: thoát dấu '<' để tên chi nhánh chứa "</script>" không phá được trang. */
-    private String scriptSafeJson(Object value, String fallback) {
-        try {
-            return objectMapper.writeValueAsString(value).replace("<", "\\u003c");
-        } catch (JsonProcessingException e) {
-            log.error("Lỗi chuyển đổi dữ liệu doanh thu sang JSON", e);
-            return fallback;
-        }
+        model.addAttribute("salesDailyJson", ScriptJson.of(objectMapper, report.getDaily(), "[]"));
+        model.addAttribute("salesPaymentJson", ScriptJson.of(objectMapper, report.getRevenueByPayment(), "{}"));
+        model.addAttribute("salesStoreJson", ScriptJson.of(objectMapper, report.getRevenueByStore(), "{}"));
     }
 
     private void setDefaultChartData(Model model) {
