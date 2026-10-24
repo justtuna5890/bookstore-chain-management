@@ -7,6 +7,10 @@ import com.bookstorechain.enums.UserNotificationType;
 import com.bookstorechain.repository.BookCopyRepository;
 import com.bookstorechain.repository.BookRepository;
 import com.bookstorechain.repository.BuybackRequestRepository;
+import com.bookstorechain.repository.StoreRepository;
+import com.bookstorechain.repository.UserRepository;
+import com.bookstorechain.service.NotificationService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import com.bookstorechain.service.UserNotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,12 +39,17 @@ class BuybackServiceImplTest {
     @Mock private BookCopyRepository bookCopyRepository;
     @Mock private BookRepository bookRepository;
     @Mock private UserNotificationService userNotificationService;
+    @Mock private StoreRepository storeRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private PasswordEncoder passwordEncoder;
+    @Mock private NotificationService notificationService;
 
     private BuybackServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service = new BuybackServiceImpl(buybackRequestRepository, bookCopyRepository, bookRepository, userNotificationService);
+        service = new BuybackServiceImpl(buybackRequestRepository, bookCopyRepository, bookRepository, userNotificationService,
+                storeRepository, userRepository, passwordEncoder, notificationService);
     }
 
     private BuybackRequest request(BuybackStatus status) {
