@@ -1,10 +1,12 @@
 package com.bookstorechain.service.impl;
 
+import com.bookstorechain.dto.request.CustomerBuybackDTO;
 import com.bookstorechain.dto.response.BuybackResponseDTO;
 import com.bookstorechain.entity.*;
 import com.bookstorechain.enums.BookCondition;
 import com.bookstorechain.enums.CopyStatus;
 import com.bookstorechain.enums.BuybackStatus;
+import com.bookstorechain.enums.Role;
 import com.bookstorechain.exception.ResourceNotFoundException;
 import com.bookstorechain.repository.BookCopyRepository;
 import com.bookstorechain.repository.BookRepository;
@@ -12,16 +14,21 @@ import com.bookstorechain.repository.BuybackRequestRepository;
 import com.bookstorechain.enums.UserNotificationType;
 import com.bookstorechain.service.BuybackService;
 import com.bookstorechain.service.UserNotificationService;
+import com.bookstorechain.repository.StoreRepository;
+import com.bookstorechain.repository.UserRepository;
+import com.bookstorechain.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +39,10 @@ public class BuybackServiceImpl implements BuybackService {
     private final BookCopyRepository bookCopyRepository;
     private final BookRepository bookRepository;
     private final UserNotificationService userNotificationService;
+    private final StoreRepository storeRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -53,8 +64,20 @@ public class BuybackServiceImpl implements BuybackService {
         BuybackRequest request = getRequestById(requestId);
         BuybackStatus currentStatus = request.getStatus();
 
+        // Chặn sửa đổi khi đơn đã đóng
         if (currentStatus == BuybackStatus.COMPLETED || currentStatus == BuybackStatus.REJECTED) {
             throw new IllegalStateException("Đơn thu mua đã " + currentStatus + ", không thể thay đổi trạng thái!");
+        }
+
+        // Ràng buộc quy trình cỗ máy trạng thái (State Machine):
+        // 1. Phải qua APPROVED trước khi sang COMPLETED
+        if (status == BuybackStatus.COMPLETED && currentStatus != BuybackStatus.APPROVED) {
+            throw new IllegalStateException("Đơn thu mua phải qua bước phê duyệt (APPROVED) và định giá trước khi Hoàn tất (COMPLETED)!");
+        }
+
+        // 2. Không cho phép quay lui về PENDING
+        if (status == BuybackStatus.PENDING && currentStatus != BuybackStatus.PENDING) {
+            throw new IllegalStateException("Không thể quay lui trạng thái về Chờ duyệt (PENDING)!");
         }
 
         request.setStatus(status);
@@ -101,6 +124,62 @@ public class BuybackServiceImpl implements BuybackService {
                     "Yêu cầu thu mua " + code + " đã hoàn tất", "Cảm ơn bạn đã bán sách cho " + storeName + "." + note, null);
             default -> { }
         }
+    }
+
+    @Override
+    @Transactional
+    public BuybackRequest createCustomerBuyback(CustomerBuybackDTO dto, User loggedInUser) {
+        User customer;
+        if (loggedInUser != null) {
+            customer = loggedInUser;
+        } else {
+            String email = dto.getCustomerEmail() != null ? dto.getCustomerEmail().trim() : "";
+            if (email.isEmpty()) {
+                throw new IllegalArgumentException("Email không được để trống khi gửi yêu cầu thu mua!");
+            }
+
+            customer = userRepository.findByEmail(email)
+                    .orElseGet(() -> {
+                        User newUser = User.builder()
+                                .username(email)
+                                .email(email)
+                                .fullName(dto.getCustomerName() != null && !dto.getCustomerName().isBlank()
+                                        ? dto.getCustomerName() : "Khách Hàng " + email.split("@")[0])
+                                .phone(dto.getCustomerPhone())
+                                .password(passwordEncoder.encode(UUID.randomUUID().toString().substring(0, 8)))
+                                .role(Role.CUSTOMER)
+                                .isActive(true)
+                                .build();
+                        return userRepository.save(newUser);
+                    });
+        }
+
+        Store store = storeRepository.findById(dto.getStoreId())
+                .orElseThrow(() -> new ResourceNotFoundException("Chi nhánh tiếp nhận không tồn tại!"));
+
+        BuybackRequest request = BuybackRequest.builder()
+                .customer(customer)
+                .store(store)
+                .status(BuybackStatus.PENDING)
+                .staffNote("Yêu cầu gửi từ cổng khách hàng trực tuyến. Ghi chú: " +
+                        (dto.getNote() != null ? dto.getNote() : "Không có"))
+                .build();
+
+        BuybackItem item = BuybackItem.builder()
+                .buybackRequest(request)
+                .bookTitle(dto.getBookTitle())
+                .bookAuthor(dto.getBookAuthor() != null && !dto.getBookAuthor().isBlank()
+                        ? dto.getBookAuthor() : "Chưa rõ")
+                .proposedCondition(dto.getCondition())
+                .build();
+
+        request.getItems().add(item);
+        BuybackRequest saved = buybackRequestRepository.save(request);
+
+        // Phát thông báo thời gian thực WebSocket tới nhân viên chi nhánh
+        notificationService.notifyNewBuyback(saved);
+
+        return saved;
     }
 
     /**
