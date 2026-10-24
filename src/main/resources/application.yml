@@ -1,36 +1,43 @@
 server:
-  port: 8080
+    port: 8080
 
 spring:
-  application:
-    name: bookstore-chain
+    datasource:
+        url: jdbc:sqlserver://localhost:1433;databaseName=BookStoreChain;encrypt=true;trustServerCertificate=true
+        username: ${DB_USERNAME:sa}
+        password: ${DB_PASSWORD:123456}
+        driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
-  datasource:
-    url: jdbc:mysql://localhost:3306/bookstore_chain?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    jpa:
+        hibernate:
+            ddl-auto: update
+        show-sql: true
+        properties:
+            hibernate:
+                format_sql: true
+                dialect: org.hibernate.dialect.SQLServerDialect
+                use_nationalized_character_data: true
 
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-    open-in-view: false
+    mvc:
+        view:
+            prefix: /WEB-INF/views/
+            suffix: .jsp
 
-  mvc:
-    view:
-      prefix: /WEB-INF/views/
-      suffix: .jsp
+    servlet:
+        multipart:
+            max-file-size: 5MB
+            max-request-size: 20MB
 
 app:
-  jwt:
-    secret: ${JWT_SECRET:change-this-to-a-long-random-secret-at-least-32-characters}
-    expiration-ms: 86400000
+    jwt:
+        secret: ${JWT_SECRET:OldBookDarkLuxuryReadingRoomSecretKey2026SuperSecureKey}
+        expiration-ms: 86400000
 
 cloudinary:
-  cloud-name: ${CLOUDINARY_CLOUD_NAME:}
-  api-key: ${CLOUDINARY_API_KEY:}
-  api-secret: ${CLOUDINARY_API_SECRET:}
+    cloud-name: ${CLOUDINARY_CLOUD_NAME:demo}
+    api-key: ${CLOUDINARY_API_KEY:demo}
+    api-secret: ${CLOUDINARY_API_SECRET:demo}
+
+logging:
+    level:
+        org.springframework.security: DEBUG

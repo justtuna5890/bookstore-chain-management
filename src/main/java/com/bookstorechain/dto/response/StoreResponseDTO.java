@@ -1,0 +1,18 @@
+package com.bookstorechain.dto.response;
+
+import lombok.Builder;
+import lombok.Getter;
+
+import java.time.LocalDateTime;
+
+@Getter
+@Builder
+public class StoreResponseDTO {
+    private Long id;
+    private String name;
+    private String address;
+    private String phone;
+    private boolean isActive;
+    private int employeeCount;
+    private LocalDateTime createdAt;
+}
