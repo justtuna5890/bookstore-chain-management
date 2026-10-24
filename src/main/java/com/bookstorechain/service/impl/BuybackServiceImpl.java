@@ -9,7 +9,9 @@ import com.bookstorechain.exception.ResourceNotFoundException;
 import com.bookstorechain.repository.BookCopyRepository;
 import com.bookstorechain.repository.BookRepository;
 import com.bookstorechain.repository.BuybackRequestRepository;
+import com.bookstorechain.enums.UserNotificationType;
 import com.bookstorechain.service.BuybackService;
+import com.bookstorechain.service.UserNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -29,6 +31,7 @@ public class BuybackServiceImpl implements BuybackService {
     private final BuybackRequestRepository buybackRequestRepository;
     private final BookCopyRepository bookCopyRepository;
     private final BookRepository bookRepository;
+    private final UserNotificationService userNotificationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -77,6 +80,27 @@ public class BuybackServiceImpl implements BuybackService {
         }
 
         buybackRequestRepository.save(request);
+
+        if (status != currentStatus) {
+            notifyCustomer(request, status, staffNote);
+        }
+    }
+
+    /** Báo cho khách gửi yêu cầu khi nhân viên duyệt, từ chối hoặc hoàn tất; trạng thái chờ tiếp nhận thì không cần báo. */
+    private void notifyCustomer(BuybackRequest request, BuybackStatus status, String staffNote) {
+        String code = "#BB-" + request.getId();
+        String note = staffNote == null || staffNote.isBlank() ? "" : " Ghi chú: " + staffNote.trim();
+        String storeName = request.getStore().getName();
+        switch (status) {
+            case APPROVED -> userNotificationService.notify(request.getCustomer().getId(), UserNotificationType.BUYBACK,
+                    "Yêu cầu thu mua " + code + " đã được duyệt",
+                    "Nhân viên đã định giá sách bạn gửi. Mời bạn mang sách đến " + storeName + "." + note, null);
+            case REJECTED -> userNotificationService.notify(request.getCustomer().getId(), UserNotificationType.BUYBACK,
+                    "Yêu cầu thu mua " + code + " bị từ chối", "Rất tiếc " + storeName + " chưa thể thu mua sách này." + note, null);
+            case COMPLETED -> userNotificationService.notify(request.getCustomer().getId(), UserNotificationType.BUYBACK,
+                    "Yêu cầu thu mua " + code + " đã hoàn tất", "Cảm ơn bạn đã bán sách cho " + storeName + "." + note, null);
+            default -> { }
+        }
     }
 
     /**

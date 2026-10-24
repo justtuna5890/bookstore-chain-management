@@ -83,9 +83,29 @@
             <i class="fa-solid fa-boxes-stacked text-xs"></i>
             <span>Kho Bản Sách</span>
         </a>
+        <a href="/admin/orders" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex items-center gap-1.5 ${param.active == 'orders' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">
+            <i class="fa-solid fa-bag-shopping text-xs"></i>
+            <span>Đơn Hàng</span>
+        </a>
+        <c:if test="${isAdmin || isManager}">
+            <a href="/admin/promotions" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex items-center gap-1.5 ${param.active == 'promotions' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">
+                <i class="fa-solid fa-ticket text-xs"></i>
+                <span>Khuyến Mãi</span>
+            </a>
+        </c:if>
+        <c:if test="${isAdmin || isManager}">
+            <a href="/admin/reviews" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex items-center gap-1.5 ${param.active == 'reviews' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">
+                <i class="fa-solid fa-star-half-stroke text-xs"></i>
+                <span>Đánh Giá</span>
+            </a>
+        </c:if>
         <a href="/admin/buybacks" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex items-center gap-1.5 ${param.active == 'buybacks' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">
             <i class="fa-solid fa-hand-holding-dollar text-xs"></i>
             <span>Thu Mua</span>
+        </a>
+        <a href="/admin/chat" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex items-center gap-1.5 ${param.active == 'chat' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">
+            <i class="fa-solid fa-comments text-xs"></i>
+            <span>Chat Hỗ Trợ</span>
         </a>
         <a href="/admin/transfers" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex items-center gap-1.5 ${param.active == 'transfers' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">
             <i class="fa-solid fa-truck-ramp-box text-xs"></i>
@@ -146,11 +166,43 @@
             <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Kho Bản Sách</span>
         </a>
 
+        <!-- Đơn hàng của khách -->
+        <a class="p-2.5 rounded-full transition group relative ${param.active == 'orders' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
+           href="/admin/orders" title="Đơn hàng của khách">
+            <i class="fa-solid fa-bag-shopping text-base"></i>
+            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Đơn Hàng</span>
+        </a>
+
+        <!-- Mã giảm giá (ADMIN & MANAGER) -->
+        <c:if test="${isAdmin || isManager}">
+            <a class="p-2.5 rounded-full transition group relative ${param.active == 'promotions' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
+               href="/admin/promotions" title="Mã giảm giá">
+                <i class="fa-solid fa-ticket text-base"></i>
+                <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Khuyến Mãi</span>
+            </a>
+        </c:if>
+
+        <!-- Kiểm duyệt đánh giá (ADMIN & MANAGER) -->
+        <c:if test="${isAdmin || isManager}">
+            <a class="p-2.5 rounded-full transition group relative ${param.active == 'reviews' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}"
+               href="/admin/reviews" title="Kiểm duyệt đánh giá">
+                <i class="fa-solid fa-star-half-stroke text-base"></i>
+                <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Kiểm duyệt đánh giá</span>
+            </a>
+        </c:if>
+
         <!-- Thu mua -->
         <a class="p-2.5 rounded-full transition group relative ${param.active == 'buybacks' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
            href="/admin/buybacks" title="Duyệt thu mua sách cũ">
             <i class="fa-solid fa-hand-holding-dollar text-base"></i>
             <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Duyệt Thu Mua</span>
+        </a>
+
+        <!-- Chat hỗ trợ khách hàng -->
+        <a class="p-2.5 rounded-full transition group relative ${param.active == 'chat' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}"
+           href="/admin/chat" title="Chat hỗ trợ">
+            <i class="fa-solid fa-comments text-base"></i>
+            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Chat hỗ trợ</span>
         </a>
 
         <!-- Chuyển kho -->
@@ -242,6 +294,13 @@
 
 <script>
     let stompClient = null;
+    // Nội dung thông báo có thể chứa chữ do khách nhập (tên, tin nhắn): luôn escape trước khi đưa vào innerHTML
+    function escapeHtml(value) {
+        return String(value).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
     let unreadCount = 0;
 
     // 1. Âm thanh chuông báo (Web Audio API Synthesizer - không phụ thuộc file ngoài, không lo 404)
@@ -324,9 +383,9 @@
         // Thêm vào danh sách Dropdown
         const notifList = document.getElementById('notifList');
         if (notifList) {
-            const isBuyback = data.type === 'BUYBACK';
-            const icon = isBuyback ? 'fa-hand-holding-dollar text-amber-400' : 'fa-truck-ramp-box text-blue-400';
-            const borderCol = isBuyback ? 'border-amber-500/30' : 'border-blue-500/30';
+            const isBuyback = data.type === 'BUYBACK'; const isChat = data.type === 'CHAT';
+            const icon = data.type === 'ORDER' ? 'fa-bag-shopping text-emerald-400' : (isBuyback ? 'fa-hand-holding-dollar text-amber-400' : (isChat ? 'fa-comments text-sky-400' : 'fa-truck-ramp-box text-blue-400'));
+            const borderCol = data.type === 'ORDER' ? 'border-emerald-500/30' : (isBuyback ? 'border-amber-500/30' : (isChat ? 'border-sky-500/30' : 'border-blue-500/30'));
 
             const item = document.createElement('a');
             item.href = data.targetUrl || '#';
@@ -334,8 +393,8 @@
             item.innerHTML = '<div class="flex items-start gap-2.5">' +
                 '<i class="fa-solid ' + icon + ' text-sm mt-0.5 shrink-0"></i>' +
                 '<div class="flex-1">' +
-                    '<div class="font-semibold text-white leading-tight">' + (data.title || 'Thông báo mới') + '</div>' +
-                    '<p class="text-slate-300 text-[11px] mt-0.5 leading-snug">' + (data.message || '') + '</p>' +
+                    '<div class="font-semibold text-white leading-tight">' + escapeHtml(data.title || 'Thông báo mới') + '</div>' +
+                    '<p class="text-slate-300 text-[11px] mt-0.5 leading-snug">' + escapeHtml(data.message || '') + '</p>' +
                     '<span class="text-[10px] text-brand-gold block mt-1"><i class="fa-regular fa-clock mr-1"></i>Vừa xong</span>' +
                 '</div>' +
             '</div>';
@@ -352,9 +411,9 @@
         const container = document.getElementById('toastContainer');
         if (!container) return;
 
-        const isBuyback = data.type === 'BUYBACK';
-        const icon = isBuyback ? 'fa-hand-holding-dollar text-amber-400' : 'fa-truck-ramp-box text-blue-400';
-        const borderColor = isBuyback ? 'border-amber-500/40' : 'border-blue-500/40';
+        const isBuyback = data.type === 'BUYBACK'; const isChat = data.type === 'CHAT';
+        const icon = data.type === 'ORDER' ? 'fa-bag-shopping text-emerald-400' : (isBuyback ? 'fa-hand-holding-dollar text-amber-400' : (isChat ? 'fa-comments text-sky-400' : 'fa-truck-ramp-box text-blue-400'));
+        const borderColor = data.type === 'ORDER' ? 'border-emerald-500/40' : (isBuyback ? 'border-amber-500/40' : (isChat ? 'border-sky-500/40' : 'border-blue-500/40'));
 
         const toast = document.createElement('div');
         toast.className = 'pointer-events-auto p-4 rounded-2xl glass-panel shadow-glass-elevated border ' + borderColor + ' transition-all duration-300 transform translate-y-3 opacity-0';
@@ -364,12 +423,12 @@
             '</div>' +
             '<div class="flex-1">' +
                 '<div class="flex items-center justify-between">' +
-                    '<h4 class="text-xs font-bold text-white uppercase tracking-wider">' + (isBuyback ? 'Thu Mua Mới' : 'Điều Chuyển Kho') + '</h4>' +
+                    '<h4 class="text-xs font-bold text-white uppercase tracking-wider">' + (data.type === 'ORDER' ? 'Đơn Hàng Mới' : (isBuyback ? 'Thu Mua Mới' : (isChat ? 'Tin Nhắn Hỗ Trợ' : 'Điều Chuyển Kho'))) + '</h4>' +
                     '<span class="text-[10px] text-slate-400">Vừa xong</span>' +
                 '</div>' +
-                '<p class="text-xs text-slate-200 font-medium mt-1 leading-snug">' + (data.message || '') + '</p>' +
+                '<p class="text-xs text-slate-200 font-medium mt-1 leading-snug">' + escapeHtml(data.message || '') + '</p>' +
                 '<div class="mt-2.5 flex items-center gap-2">' +
-                    '<a href="' + (data.targetUrl || '#') + '" class="px-2.5 py-1 rounded-lg bg-brand-gold text-slate-950 font-bold text-[10px] hover:bg-yellow-400 transition">Xem Chi Tiết</a>' +
+                    '<a href="' + escapeHtml(data.targetUrl || '#') + '" class="px-2.5 py-1 rounded-lg bg-brand-gold text-slate-950 font-bold text-[10px] hover:bg-yellow-400 transition">Xem Chi Tiết</a>' +
                     '<button type="button" onclick="this.closest(\'.pointer-events-auto\').remove()" class="px-2 py-1 rounded-lg text-slate-400 hover:text-white text-[10px]">Đóng</button>' +
                 '</div>' +
             '</div>' +
@@ -423,6 +482,16 @@
                             handleIncomingNotification(notif);
                         } catch (e) {
                             console.error("Lỗi parse thông báo chi nhánh:", e);
+                        }
+                    });
+                </c:if>
+                // Quản trị chưa gán chi nhánh nhận đơn hàng mới của mọi chi nhánh
+                <c:if test="${empty uStoreId}">
+                    stompClient.subscribe('/topic/store/all', function (res) {
+                        try {
+                            handleIncomingNotification(JSON.parse(res.body));
+                        } catch (e) {
+                            console.error("Lỗi parse thông báo đơn hàng:", e);
                         }
                     });
                 </c:if>

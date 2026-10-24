@@ -52,6 +52,9 @@ public class ReportSummaryDTO {
     private long newCustomersInPeriod;
     private List<CustomerActivityDTO> customerActivities;
 
+    // Phân hệ Doanh thu bán hàng online; null khi khoảng thời gian dài hơn mức hỗ trợ
+    private SalesReportDTO sales;
+
     @Getter
     @Setter
     @NoArgsConstructor

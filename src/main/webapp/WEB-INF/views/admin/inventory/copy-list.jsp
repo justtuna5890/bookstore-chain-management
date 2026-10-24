@@ -112,13 +112,13 @@
                     <a href="/admin/export/excel/inventory${not empty selectedStoreId ? '?storeId='.concat(selectedStoreId) : ''}" 
                        class="px-3.5 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-semibold text-xs border border-emerald-500/30 transition flex items-center gap-2 shadow-sm">
                         <i class="fa-solid fa-file-excel text-emerald-400"></i>
-                        <c:choose>
-                            <c:when test="${isStaffScoped}">
-                                <span>Xuất Tồn Kho Chi Nhánh</span>
-                            </c:when>
-                            <c:otherwise>
-                                <span>Xuất Excel Tồn Kho</span>
-                            </c:otherwise>
+                        <c:choose>
+                            <c:when test="${isStaffScoped}">
+                                <span>Xuất Tồn Kho Chi Nhánh</span>
+                            </c:when>
+                            <c:otherwise>
+                                <span>Xuất Excel Tồn Kho</span>
+                            </c:otherwise>
                         </c:choose>
                     </a>
                     <a href="/admin/book-copies/new" 
@@ -170,17 +170,17 @@
                 </form>
             </div>
 
-            <!-- Cảnh báo nếu nhân viên chưa được gán chi nhánh -->
-            <c:if test="${unassignedStoreWarning}">
-                <div class="mb-5 p-4 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs flex items-center gap-3 shadow-lg">
-                    <i class="fa-solid fa-triangle-exclamation text-amber-400 text-xl shrink-0"></i>
-                    <div>
-                        <strong class="font-bold block text-sm mb-0.5">Tài khoản chưa được phân bổ chi nhánh công tác!</strong>
-                        <span class="text-slate-300 leading-relaxed">Bạn không thể xem hoặc quản lý bản sách của toàn chuỗi khi chưa được gán chi nhánh. Vui lòng liên hệ Quản trị viên để được phân bổ chi nhánh làm việc.</span>
-                    </div>
-                </div>
-            </c:if>
-
+            <!-- Cảnh báo nếu nhân viên chưa được gán chi nhánh -->
+            <c:if test="${unassignedStoreWarning}">
+                <div class="mb-5 p-4 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs flex items-center gap-3 shadow-lg">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-400 text-xl shrink-0"></i>
+                    <div>
+                        <strong class="font-bold block text-sm mb-0.5">Tài khoản chưa được phân bổ chi nhánh công tác!</strong>
+                        <span class="text-slate-300 leading-relaxed">Bạn không thể xem hoặc quản lý bản sách của toàn chuỗi khi chưa được gán chi nhánh. Vui lòng liên hệ Quản trị viên để được phân bổ chi nhánh làm việc.</span>
+                    </div>
+                </div>
+            </c:if>
+
             <!-- Feedback Messages -->
             <c:if test="${not empty successMessage}">
                 <div class="mb-5 p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center justify-between">
@@ -259,6 +259,11 @@
                                             <c:when test="${copy.status == 'HOLDING'}">
                                                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/15 border border-purple-500/30 text-purple-400">
                                                     Tạm giữ
+                                                </span>
+                                            </c:when>
+                                            <c:when test="${copy.status == 'RESERVED'}">
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-sky-500/15 border border-sky-500/30 text-sky-400">
+                                                    Khách đã đặt
                                                 </span>
                                             </c:when>
                                             <c:otherwise>

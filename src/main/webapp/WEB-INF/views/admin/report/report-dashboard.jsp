@@ -513,6 +513,11 @@
                     <i class="fa-solid fa-table-cells-large"></i>
                     <span>Tổng Hợp Số Liệu</span>
                 </a>
+                <a href="/admin/reports?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}&tab=sales"
+                   class="px-4 py-2.5 text-xs font-semibold transition border-b-2 whitespace-nowrap flex items-center gap-2 ${currentTab == 'sales' ? 'border-brand-gold text-brand-gold' : 'border-transparent text-slate-400 hover:text-white'}">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span>Doanh Thu Bán Hàng<c:if test="${summary.sales != null}"> (${summary.sales.orderCount})</c:if></span>
+                </a>
                 <a href="/admin/reports?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}&tab=buybacks" 
                    class="px-4 py-2.5 text-xs font-semibold transition border-b-2 whitespace-nowrap flex items-center gap-2 ${currentTab == 'buybacks' ? 'border-brand-gold text-brand-gold' : 'border-transparent text-slate-400 hover:text-white'}">
                     <i class="fa-solid fa-hand-holding-dollar"></i>
@@ -710,6 +715,12 @@
                         </div>
 
                     </div>
+
+                </c:when>
+
+                <c:when test="${currentTab == 'sales'}">
+
+                    <jsp:include page="/WEB-INF/views/admin/report/sales-tab.jsp"/>
 
                 </c:when>
 
@@ -1039,6 +1050,7 @@
                                                 <c:choose>
                                                     <c:when test="${entry.key == 'AVAILABLE'}"><span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check text-[10px] mr-1"></i>Sẵn sàng bán (AVAILABLE)</span></c:when>
                                                     <c:when test="${entry.key == 'HOLDING'}"><span class="text-amber-300 font-bold"><i class="fa-solid fa-hand text-[10px] mr-1"></i>Đang giữ hàng (HOLDING)</span></c:when>
+                                                    <c:when test="${entry.key == 'RESERVED'}"><span class="text-sky-300 font-bold"><i class="fa-solid fa-cart-shopping text-[10px] mr-1"></i>Khách đã đặt (RESERVED)</span></c:when>
                                                     <c:when test="${entry.key == 'IN_TRANSIT'}"><span class="text-sky-400 font-bold"><i class="fa-solid fa-truck text-[10px] mr-1"></i>Đang chuyển kho (IN TRANSIT)</span></c:when>
                                                     <c:when test="${entry.key == 'SOLD'}"><span class="text-slate-400 font-bold"><i class="fa-solid fa-bag-shopping text-[10px] mr-1"></i>Đã bán (SOLD)</span></c:when>
                                                     <c:otherwise>${entry.key}</c:otherwise>

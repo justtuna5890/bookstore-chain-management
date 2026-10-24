@@ -20,6 +20,17 @@ USE BookStoreChain;
 GO
 
 -- 1. XÓA BẢNG CŨ NẾU ĐÃ TỒN TẠI (THEO THỨ TỰ RÀNG BUỘC KHÓA NGOẠI)
+IF OBJECT_ID(N'dbo.chat_message', N'U') IS NOT NULL DROP TABLE dbo.chat_message;
+IF OBJECT_ID(N'dbo.chat_conversation', N'U') IS NOT NULL DROP TABLE dbo.chat_conversation;
+IF OBJECT_ID(N'dbo.user_notification', N'U') IS NOT NULL DROP TABLE dbo.user_notification;
+IF OBJECT_ID(N'dbo.wishlist_item', N'U') IS NOT NULL DROP TABLE dbo.wishlist_item;
+IF OBJECT_ID(N'dbo.review', N'U') IS NOT NULL DROP TABLE dbo.review;
+IF OBJECT_ID(N'dbo.payment', N'U') IS NOT NULL DROP TABLE dbo.payment;
+IF OBJECT_ID(N'dbo.order_item', N'U') IS NOT NULL DROP TABLE dbo.order_item;
+IF OBJECT_ID(N'dbo.customer_order', N'U') IS NOT NULL DROP TABLE dbo.customer_order;
+IF OBJECT_ID(N'dbo.promotion', N'U') IS NOT NULL DROP TABLE dbo.promotion;
+IF OBJECT_ID(N'dbo.cart_item', N'U') IS NOT NULL DROP TABLE dbo.cart_item;
+IF OBJECT_ID(N'dbo.cart', N'U') IS NOT NULL DROP TABLE dbo.cart;
 IF OBJECT_ID(N'dbo.stock_transfer_item', N'U') IS NOT NULL DROP TABLE dbo.stock_transfer_item;
 IF OBJECT_ID(N'dbo.stock_transfer', N'U') IS NOT NULL DROP TABLE dbo.stock_transfer;
 IF OBJECT_ID(N'dbo.buyback_item', N'U') IS NOT NULL DROP TABLE dbo.buyback_item;
@@ -92,7 +103,7 @@ CREATE TABLE dbo.book_copy (
     copy_code NVARCHAR(50) NOT NULL,
     book_condition NVARCHAR(20) NOT NULL CHECK (book_condition IN (N'LIKE_NEW', N'GOOD', N'FAIR', N'POOR')),
     price NUMERIC(12,2) NOT NULL,
-    status NVARCHAR(20) NOT NULL CHECK (status IN (N'AVAILABLE', N'SOLD', N'IN_TRANSIT', N'HOLDING')),
+    status NVARCHAR(20) NOT NULL CHECK (status IN (N'AVAILABLE', N'SOLD', N'IN_TRANSIT', N'HOLDING', N'RESERVED')),
     note NVARCHAR(MAX) NULL,
     book_id BIGINT NOT NULL,
     store_id BIGINT NOT NULL,
@@ -161,6 +172,209 @@ CREATE TABLE dbo.stock_transfer_item (
     CONSTRAINT PK_stock_transfer_item PRIMARY KEY CLUSTERED (id ASC),
     CONSTRAINT FK_stock_transfer_item_transfer FOREIGN KEY (stock_transfer_id) REFERENCES dbo.stock_transfer(id) ON DELETE CASCADE,
     CONSTRAINT FK_stock_transfer_item_copy FOREIGN KEY (book_copy_id) REFERENCES dbo.book_copy(id)
+);
+GO
+
+-- Bảng Đánh Giá Sách (review): mỗi khách một đánh giá cho mỗi đầu sách, is_hidden do quản trị đặt
+CREATE TABLE dbo.review (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    user_id BIGINT NOT NULL,
+    book_id BIGINT NOT NULL,
+    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment NVARCHAR(1000) NULL,
+    is_hidden BIT NOT NULL DEFAULT 0,
+    CONSTRAINT PK_review PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_review_user_book UNIQUE (user_id, book_id),
+    CONSTRAINT FK_review_user FOREIGN KEY (user_id) REFERENCES dbo.users(id),
+    CONSTRAINT FK_review_book FOREIGN KEY (book_id) REFERENCES dbo.book(id)
+);
+GO
+
+-- Bảng Yêu Thích (wishlist_item): khách đánh dấu đầu sách muốn theo dõi
+CREATE TABLE dbo.wishlist_item (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    user_id BIGINT NOT NULL,
+    book_id BIGINT NOT NULL,
+    in_stock_notified BIT NOT NULL DEFAULT 0,
+    CONSTRAINT PK_wishlist_item PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_wishlist_user_book UNIQUE (user_id, book_id),
+    CONSTRAINT FK_wishlist_user FOREIGN KEY (user_id) REFERENCES dbo.users(id),
+    CONSTRAINT FK_wishlist_book FOREIGN KEY (book_id) REFERENCES dbo.book(id)
+);
+GO
+
+-- Bảng Thông Báo Riêng (user_notification): thông báo gửi cho từng người dùng, lưu lại để xem sau
+CREATE TABLE dbo.user_notification (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    user_id BIGINT NOT NULL,
+    type NVARCHAR(20) NOT NULL CHECK (type IN ('ORDER', 'WISHLIST', 'BUYBACK', 'REVIEW', 'CHAT')),
+    title NVARCHAR(150) NOT NULL,
+    message NVARCHAR(500) NOT NULL,
+    link NVARCHAR(255) NULL,
+    is_read BIT NOT NULL DEFAULT 0,
+    CONSTRAINT PK_user_notification PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT FK_user_notification_user FOREIGN KEY (user_id) REFERENCES dbo.users(id)
+);
+GO
+CREATE INDEX IX_user_notification_user_read ON dbo.user_notification (user_id, is_read, created_at DESC);
+GO
+
+-- Bảng Cuộc Trò Chuyện Hỗ Trợ (chat_conversation): mỗi cặp (khách, chi nhánh) một cuộc
+CREATE TABLE dbo.chat_conversation (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    customer_id BIGINT NOT NULL,
+    store_id BIGINT NOT NULL,
+    status NVARCHAR(10) NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'CLOSED')),
+    last_message_at DATETIME2(6) NULL,
+    last_message_preview NVARCHAR(100) NULL,
+    customer_unread INT NOT NULL DEFAULT 0,
+    staff_unread INT NOT NULL DEFAULT 0,
+    CONSTRAINT PK_chat_conversation PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_chat_customer_store UNIQUE (customer_id, store_id),
+    CONSTRAINT FK_chat_conversation_customer FOREIGN KEY (customer_id) REFERENCES dbo.users(id),
+    CONSTRAINT FK_chat_conversation_store FOREIGN KEY (store_id) REFERENCES dbo.store(id)
+);
+GO
+CREATE INDEX IX_chat_conversation_store_last ON dbo.chat_conversation (store_id, last_message_at DESC);
+GO
+
+-- Bảng Tin Nhắn Hỗ Trợ (chat_message)
+CREATE TABLE dbo.chat_message (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    conversation_id BIGINT NOT NULL,
+    sender_id BIGINT NOT NULL,
+    from_customer BIT NOT NULL,
+    content NVARCHAR(1000) NOT NULL,
+    CONSTRAINT PK_chat_message PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT FK_chat_message_conversation FOREIGN KEY (conversation_id) REFERENCES dbo.chat_conversation(id),
+    CONSTRAINT FK_chat_message_sender FOREIGN KEY (sender_id) REFERENCES dbo.users(id)
+);
+GO
+CREATE INDEX IX_chat_message_conversation_created ON dbo.chat_message (conversation_id, created_at DESC);
+GO
+
+-- Bảng Giỏ Hàng (cart): mỗi khách hàng có đúng một giỏ
+CREATE TABLE dbo.cart (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    user_id BIGINT NOT NULL,
+    CONSTRAINT PK_cart PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_cart_user UNIQUE (user_id),
+    CONSTRAINT FK_cart_user FOREIGN KEY (user_id) REFERENCES dbo.users(id)
+);
+GO
+
+-- Bảng Chi Tiết Giỏ Hàng (cart_item): mỗi bản sách là duy nhất nên không có số lượng
+CREATE TABLE dbo.cart_item (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    cart_id BIGINT NOT NULL,
+    book_copy_id BIGINT NOT NULL,
+    CONSTRAINT PK_cart_item PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_cart_item_cart_copy UNIQUE (cart_id, book_copy_id),
+    CONSTRAINT FK_cart_item_cart FOREIGN KEY (cart_id) REFERENCES dbo.cart(id) ON DELETE CASCADE,
+    CONSTRAINT FK_cart_item_copy FOREIGN KEY (book_copy_id) REFERENCES dbo.book_copy(id)
+);
+GO
+
+-- Bảng Mã Giảm Giá (promotion): code luôn chữ hoa, store_id NULL là áp dụng toàn chuỗi
+CREATE TABLE dbo.promotion (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    code NVARCHAR(30) NOT NULL,
+    description NVARCHAR(255) NULL,
+    type NVARCHAR(20) NOT NULL CHECK (type IN (N'PERCENT', N'FIXED')),
+    value NUMERIC(12,2) NOT NULL,
+    min_order_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+    max_discount_amount NUMERIC(12,2) NULL,
+    starts_at DATETIME2(6) NOT NULL,
+    ends_at DATETIME2(6) NOT NULL,
+    usage_limit INT NULL,
+    used_count INT NOT NULL DEFAULT 0,
+    one_per_customer BIT NOT NULL DEFAULT 1,
+    store_id BIGINT NULL,
+    is_active BIT NOT NULL DEFAULT 1,
+    CONSTRAINT PK_promotion PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_promotion_code UNIQUE (code),
+    CONSTRAINT FK_promotion_store FOREIGN KEY (store_id) REFERENCES dbo.store(id)
+);
+GO
+
+-- Bảng Đơn Hàng Của Khách (customer_order): mỗi đơn thuộc đúng một chi nhánh
+CREATE TABLE dbo.customer_order (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    order_code NVARCHAR(30) NOT NULL,
+    user_id BIGINT NOT NULL,
+    store_id BIGINT NOT NULL,
+    status NVARCHAR(20) NOT NULL CHECK (status IN (N'PENDING', N'CONFIRMED', N'READY_FOR_PICKUP', N'SHIPPING', N'COMPLETED', N'CANCELLED')),
+    fulfillment_type NVARCHAR(20) NOT NULL CHECK (fulfillment_type IN (N'PICKUP', N'DELIVERY')),
+    receiver_name NVARCHAR(100) NOT NULL,
+    receiver_phone NVARCHAR(20) NOT NULL,
+    shipping_address NVARCHAR(255) NULL,
+    note NVARCHAR(MAX) NULL,
+    subtotal NUMERIC(12,2) NOT NULL,
+    discount_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+    shipping_fee NUMERIC(12,2) NOT NULL DEFAULT 0,
+    total_amount NUMERIC(12,2) NOT NULL,
+    completed_at DATETIME2(6) NULL,
+    promotion_id BIGINT NULL,
+    promotion_code NVARCHAR(30) NULL,
+    CONSTRAINT PK_customer_order PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_customer_order_code UNIQUE (order_code),
+    CONSTRAINT FK_customer_order_user FOREIGN KEY (user_id) REFERENCES dbo.users(id),
+    CONSTRAINT FK_customer_order_store FOREIGN KEY (store_id) REFERENCES dbo.store(id),
+    CONSTRAINT FK_customer_order_promotion FOREIGN KEY (promotion_id) REFERENCES dbo.promotion(id)
+);
+GO
+-- Thống kê doanh thu lọc theo trạng thái và ngày hoàn tất
+CREATE INDEX IX_customer_order_status_completed ON dbo.customer_order (status, completed_at);
+GO
+
+-- Bảng Chi Tiết Đơn Hàng (order_item): lưu snapshot giá và tên sách tại thời điểm đặt
+CREATE TABLE dbo.order_item (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    order_id BIGINT NOT NULL,
+    book_copy_id BIGINT NOT NULL,
+    price_snapshot NUMERIC(12,2) NOT NULL,
+    title_snapshot NVARCHAR(200) NOT NULL,
+    copy_code_snapshot NVARCHAR(50) NOT NULL,
+    CONSTRAINT PK_order_item PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT FK_order_item_order FOREIGN KEY (order_id) REFERENCES dbo.customer_order(id) ON DELETE CASCADE,
+    CONSTRAINT FK_order_item_copy FOREIGN KEY (book_copy_id) REFERENCES dbo.book_copy(id)
+);
+GO
+
+-- Bảng Thanh Toán (payment): một đơn có đúng một bản ghi thanh toán
+CREATE TABLE dbo.payment (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    order_id BIGINT NOT NULL,
+    method NVARCHAR(20) NOT NULL CHECK (method IN (N'COD', N'BANK_TRANSFER')),
+    status NVARCHAR(20) NOT NULL CHECK (status IN (N'UNPAID', N'PAID', N'REFUNDED')),
+    amount NUMERIC(12,2) NOT NULL,
+    transaction_code NVARCHAR(100) NULL,
+    paid_at DATETIME2(6) NULL,
+    CONSTRAINT PK_payment PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_payment_order UNIQUE (order_id),
+    CONSTRAINT FK_payment_order FOREIGN KEY (order_id) REFERENCES dbo.customer_order(id) ON DELETE CASCADE
 );
 GO
 
@@ -345,6 +559,124 @@ INSERT INTO dbo.stock_transfer_item (id, created_at, updated_at, stock_transfer_
 (6, DATEADD(day, -15, SYSDATETIME()), SYSDATETIME(), 6, 26),
 (7, DATEADD(hour, -3, SYSDATETIME()), SYSDATETIME(), 7, 21);
 SET IDENTITY_INSERT dbo.stock_transfer_item OFF;
+GO
+
+-- 3.9. Mã giảm giá mẫu: đủ các trạng thái để thử (đang chạy, theo chi nhánh, hết hạn, hết lượt, sắp diễn ra, tạm dừng)
+INSERT INTO dbo.promotion (created_at, updated_at, code, description, type, value, min_order_amount, max_discount_amount, starts_at, ends_at, usage_limit, used_count, one_per_customer, store_id, is_active) VALUES
+(SYSDATETIME(), SYSDATETIME(), N'WELCOME10', N'Giảm 10% cho đơn từ 100.000đ, tối đa 50.000đ', N'PERCENT', 10, 100000, 50000, DATEADD(day, -30, SYSDATETIME()), DATEADD(day, 90, SYSDATETIME()), NULL, 0, 1, NULL, 1),
+(SYSDATETIME(), SYSDATETIME(), N'GIAM20K', N'Giảm 20.000đ cho đơn từ 150.000đ', N'FIXED', 20000, 150000, NULL, DATEADD(day, -10, SYSDATETIME()), DATEADD(day, 60, SYSDATETIME()), 100, 0, 1, NULL, 1),
+(SYSDATETIME(), SYSDATETIME(), N'HANOI15', N'Giảm 15% cho đơn tại chi nhánh Hà Nội, tối đa 80.000đ', N'PERCENT', 15, 0, 80000, DATEADD(day, -5, SYSDATETIME()), DATEADD(day, 30, SYSDATETIME()), 50, 0, 1, 1, 1),
+(SYSDATETIME(), SYSDATETIME(), N'TETXUAN', N'Khuyến mãi Tết đã kết thúc', N'PERCENT', 20, 0, NULL, DATEADD(day, -90, SYSDATETIME()), DATEADD(day, -30, SYSDATETIME()), NULL, 12, 1, NULL, 1),
+(SYSDATETIME(), SYSDATETIME(), N'VIPLIMIT', N'Giảm 30.000đ cho 5 khách đầu tiên (đã hết lượt)', N'FIXED', 30000, 0, NULL, DATEADD(day, -20, SYSDATETIME()), DATEADD(day, 20, SYSDATETIME()), 5, 5, 1, NULL, 1),
+(SYSDATETIME(), SYSDATETIME(), N'SAPDIENRA', N'Khuyến mãi sắp diễn ra', N'PERCENT', 25, 200000, 100000, DATEADD(day, 7, SYSDATETIME()), DATEADD(day, 37, SYSDATETIME()), NULL, 0, 1, NULL, 1),
+(SYSDATETIME(), SYSDATETIME(), N'TAMDUNG', N'Mã đang tạm dừng', N'FIXED', 10000, 0, NULL, DATEADD(day, -5, SYSDATETIME()), DATEADD(day, 30, SYSDATETIME()), NULL, 0, 0, NULL, 0);
+GO
+
+-- 3.10. Đánh giá mẫu
+INSERT INTO dbo.review (created_at, updated_at, user_id, book_id, rating, comment, is_hidden) VALUES
+(DATEADD(day, -20, SYSDATETIME()), SYSDATETIME(), 5, 1, 5, N'Bản in đẹp, giấy ngả vàng đúng chất sách cũ. Giao nhận nhanh tại chi nhánh.', 0),
+(DATEADD(day, -12, SYSDATETIME()), SYSDATETIME(), 6, 1, 4, N'Sách sạch sẽ, chỉ có vài nếp gấp nhỏ ở bìa như mô tả.', 0),
+(DATEADD(day, -15, SYSDATETIME()), SYSDATETIME(), 5, 2, 5, N'Đúng tình trạng như mô tả, rất đáng tiền.', 0),
+(DATEADD(day, -9, SYSDATETIME()), SYSDATETIME(), 6, 2, 3, N'Nội dung hay nhưng bìa hơi cũ hơn mình tưởng.', 0),
+(DATEADD(day, -7, SYSDATETIME()), SYSDATETIME(), 5, 3, 4, NULL, 0),
+(DATEADD(day, -3, SYSDATETIME()), SYSDATETIME(), 6, 4, 1, N'Nội dung quảng cáo lừa đảo, đừng mua! Liên hệ ngay website xyz để nhận ưu đãi.', 1);
+GO
+
+-- 3.11. Sách yêu thích mẫu
+-- in_stock_notified = 1 vì các sách này đang có hàng (chỉ báo "có hàng lại" khi sách hết rồi có lại)
+INSERT INTO dbo.wishlist_item (created_at, updated_at, user_id, book_id, in_stock_notified) VALUES
+(DATEADD(day, -5, SYSDATETIME()), SYSDATETIME(), 5, 1, 1),
+(DATEADD(day, -2, SYSDATETIME()), SYSDATETIME(), 5, 4, 1),
+(DATEADD(day, -1, SYSDATETIME()), SYSDATETIME(), 6, 2, 1);
+GO
+
+-- 3.12. Thông báo riêng mẫu cho khách hàng 'customer'
+INSERT INTO dbo.user_notification (created_at, updated_at, user_id, type, title, message, link, is_read) VALUES
+(DATEADD(hour, -2, SYSDATETIME()), SYSDATETIME(), 5, 'WISHLIST', N'Sách yêu thích đã có hàng', N'"Chiến Tranh Và Hòa Bình" vừa có hàng trở lại. Đặt sớm kẻo hết.', '/books/4', 0),
+(DATEADD(day, -1, SYSDATETIME()), SYSDATETIME(), 5, 'ORDER', N'Đơn hàng sẵn sàng nhận', N'Đơn hàng của bạn đã sẵn sàng, mời bạn đến chi nhánh nhận sách.', '/orders', 0),
+(DATEADD(day, -4, SYSDATETIME()), SYSDATETIME(), 5, 'BUYBACK', N'Yêu cầu thu mua đã được duyệt', N'Nhân viên đã định giá sách bạn gửi. Mời bạn mang sách đến chi nhánh.', NULL, 1);
+GO
+
+-- 3.13. Chat hỗ trợ mẫu
+INSERT INTO dbo.chat_conversation (created_at, updated_at, customer_id, store_id, status, last_message_at, last_message_preview, customer_unread, staff_unread) VALUES
+(DATEADD(hour, -3, SYSDATETIME()), SYSDATETIME(), 5, 1, 'OPEN', DATEADD(minute, -40, SYSDATETIME()), N'Dạ bản này còn, bạn ghé chi nhánh trước 20h nhé.', 1, 0),
+(DATEADD(minute, -25, SYSDATETIME()), SYSDATETIME(), 6, 2, 'OPEN', DATEADD(minute, -25, SYSDATETIME()), N'Chi nhánh mình có nhận đổi sách cũ lấy sách mới không ạ?', 0, 1);
+GO
+INSERT INTO dbo.chat_message (created_at, updated_at, conversation_id, sender_id, from_customer, content) VALUES
+(DATEADD(hour, -3, SYSDATETIME()), SYSDATETIME(), 1, 5, 1, N'Cho mình hỏi cuốn "Hoàng Tử Bé" bản bìa cứng còn không ạ?'),
+(DATEADD(minute, -40, SYSDATETIME()), SYSDATETIME(), 1, 3, 0, N'Dạ bản này còn, bạn ghé chi nhánh trước 20h nhé.'),
+(DATEADD(minute, -25, SYSDATETIME()), SYSDATETIME(), 2, 6, 1, N'Chi nhánh mình có nhận đổi sách cũ lấy sách mới không ạ?');
+GO
+INSERT INTO dbo.user_notification (created_at, updated_at, user_id, type, title, message, link, is_read) VALUES
+(DATEADD(minute, -40, SYSDATETIME()), SYSDATETIME(), 5, 'CHAT', N'Tin nhắn mới từ OldBook Hà Nội — Tràng Tiền', N'Dạ bản này còn, bạn ghé chi nhánh trước 20h nhé.', '/chat?conversation=1', 0);
+GO
+
+-- 3.14. Lịch sử bán hàng online mẫu (để dashboard và báo cáo doanh thu có dữ liệu khi trình diễn)
+-- 24 đơn đã hoàn tất rải trong 30 ngày qua ở 4 chi nhánh, cộng 3 đơn đang xử lý. Mỗi đơn bán một bản sách riêng
+-- (tạo thêm bản sao OB-SOLD-xx: SOLD cho đơn đã bán, RESERVED cho đơn còn đang xử lý) nên không đụng tới tồn kho mẫu.
+DECLARE @i INT = 1;
+WHILE @i <= 27
+BEGIN
+    DECLARE @open BIT = CASE WHEN @i > 24 THEN 1 ELSE 0 END;
+    DECLARE @storeId BIGINT = (@i % 4) + 1;
+    DECLARE @customerId BIGINT = CHOOSE((@i % 8) + 1, 5, 6, 10, 11, 12, 13, 14, 15);
+    DECLARE @bookId BIGINT = ((@i * 5) % 7) + 1;
+    DECLARE @price NUMERIC(12,2) = 45000 + ((@i * 37) % 9) * 18000;
+    DECLARE @delivery BIT = CASE WHEN @i % 3 = 0 THEN 1 ELSE 0 END;
+    DECLARE @bank BIT = CASE WHEN @i % 2 = 0 THEN 1 ELSE 0 END;
+    DECLARE @discount NUMERIC(12,2) = CASE WHEN @i % 5 = 0 THEN ROUND(@price * 0.10, 0) ELSE 0 END;
+    DECLARE @ship NUMERIC(12,2) = CASE WHEN @delivery = 1 THEN 25000 ELSE 0 END;
+    DECLARE @total NUMERIC(12,2) = @price - @discount + @ship;
+    DECLARE @daysAgo INT = (@i * 7) % 30;
+    DECLARE @placed DATETIME2(6);
+    DECLARE @done DATETIME2(6);
+    DECLARE @status NVARCHAR(20);
+
+    IF @open = 1
+    BEGIN
+        SET @placed = CASE @i WHEN 25 THEN DATEADD(MINUTE, -10, SYSDATETIME()) WHEN 26 THEN DATEADD(HOUR, -3, SYSDATETIME()) ELSE DATEADD(DAY, -1, SYSDATETIME()) END;
+        SET @done = NULL;
+        SET @status = CASE @i WHEN 25 THEN N'PENDING' WHEN 26 THEN N'CONFIRMED' ELSE N'READY_FOR_PICKUP' END;
+    END
+    ELSE
+    BEGIN
+        -- Các đơn i = 8, 16, 24 hoàn tất trong hôm nay (vài chục phút trước); còn lại hoàn tất từ 9h đến 18h các ngày trước
+        IF @i % 8 = 0
+            SET @done = DATEADD(MINUTE, -(@i * 3), SYSDATETIME());
+        ELSE
+            SET @done = DATEADD(HOUR, 9 + (@i % 10), CAST(CAST(DATEADD(DAY, -CASE WHEN @daysAgo = 0 THEN 1 ELSE @daysAgo END, SYSDATETIME()) AS DATE) AS DATETIME2(6)));
+        SET @placed = DATEADD(HOUR, -20, @done);
+        SET @status = N'COMPLETED';
+    END
+
+    DECLARE @title NVARCHAR(200) = (SELECT title FROM dbo.book WHERE id = @bookId);
+    DECLARE @copyCode NVARCHAR(50) = N'OB-SOLD-' + RIGHT('00' + CAST(@i AS VARCHAR(3)), 2);
+    DECLARE @receiver NVARCHAR(100) = (SELECT full_name FROM dbo.users WHERE id = @customerId);
+    DECLARE @orderCode NVARCHAR(30) = N'OB-' + CONVERT(CHAR(8), ISNULL(@done, @placed), 112) + N'-S' + RIGHT('00' + CAST(@i AS VARCHAR(3)), 2);
+
+    INSERT INTO dbo.book_copy (created_at, updated_at, copy_code, book_id, store_id, book_condition, price, status, note)
+    VALUES (@placed, SYSDATETIME(), @copyCode, @bookId, @storeId, N'GOOD', @price, CASE WHEN @open = 1 THEN N'RESERVED' ELSE N'SOLD' END, NULL);
+    DECLARE @copyId BIGINT = SCOPE_IDENTITY();
+
+    INSERT INTO dbo.customer_order (created_at, updated_at, order_code, user_id, store_id, status, fulfillment_type, receiver_name, receiver_phone,
+                                    shipping_address, subtotal, discount_amount, shipping_fee, total_amount, completed_at, promotion_code)
+    VALUES (@placed, ISNULL(@done, @placed), @orderCode, @customerId, @storeId, @status, CASE WHEN @delivery = 1 THEN N'DELIVERY' ELSE N'PICKUP' END,
+            @receiver, N'0900000' + RIGHT('000' + CAST(@i AS VARCHAR(3)), 3),
+            CASE WHEN @delivery = 1 THEN N'12 Phố Huế, Hai Bà Trưng, Hà Nội' ELSE NULL END,
+            @price, @discount, @ship, @total, @done, CASE WHEN @discount > 0 THEN N'WELCOME10' ELSE NULL END);
+    DECLARE @orderId BIGINT = SCOPE_IDENTITY();
+
+    INSERT INTO dbo.order_item (created_at, updated_at, order_id, book_copy_id, price_snapshot, title_snapshot, copy_code_snapshot)
+    VALUES (@placed, @placed, @orderId, @copyId, @price, @title, @copyCode);
+
+    INSERT INTO dbo.payment (created_at, updated_at, order_id, method, status, amount, transaction_code, paid_at)
+    VALUES (@placed, ISNULL(@done, @placed), @orderId, CASE WHEN @bank = 1 THEN N'BANK_TRANSFER' ELSE N'COD' END,
+            CASE WHEN @status = N'COMPLETED' OR (@bank = 1 AND @status <> N'PENDING') THEN N'PAID' ELSE N'UNPAID' END, @total,
+            CASE WHEN @bank = 1 AND (@status = N'COMPLETED' OR @status <> N'PENDING') THEN N'FT2610' + RIGHT('0000' + CAST(@i AS VARCHAR(4)), 4) ELSE NULL END,
+            CASE WHEN @status = N'COMPLETED' OR (@bank = 1 AND @status <> N'PENDING') THEN ISNULL(@done, @placed) ELSE NULL END);
+
+    SET @i += 1;
+END
 GO
 
 PRINT N'>>> HOÀN TẤT KHỞI TẠO CƠ SỞ DỮ LIỆU BOOKSTORE CHAIN ĐA DẠNG THÀNH CÔNG! <<<';
