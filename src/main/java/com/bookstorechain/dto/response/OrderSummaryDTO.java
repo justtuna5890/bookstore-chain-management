@@ -37,12 +37,18 @@ public class OrderSummaryDTO {
     private FulfillmentType fulfillmentType;
     private PaymentMethod paymentMethod;
     private PaymentStatus paymentStatus;
+    private String transactionCode;
+    private LocalDateTime paidAt;
     private BigDecimal subtotal;
     private BigDecimal discountAmount;
     private BigDecimal shippingFee;
     private BigDecimal totalAmount;
     private LocalDateTime createdAt;
     private List<OrderLineDTO> lines;
+
+    public String getFormattedPaidAt() {
+        return paidAt == null ? "" : paidAt.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+    }
 
     public int getItemCount() {
         return lines == null ? 0 : lines.size();
@@ -58,15 +64,7 @@ public class OrderSummaryDTO {
     }
 
     public String getStatusLabel() {
-        switch (status) {
-            case PENDING: return "Chờ xác nhận";
-            case CONFIRMED: return "Đã xác nhận";
-            case READY_FOR_PICKUP: return "Sẵn sàng nhận hàng";
-            case SHIPPING: return "Đang giao";
-            case COMPLETED: return "Hoàn tất";
-            case CANCELLED: return "Đã huỷ";
-            default: return status.name();
-        }
+        return status.getLabel();
     }
 
     /** Lớp Tailwind cho huy hiệu trạng thái. */
@@ -85,6 +83,25 @@ public class OrderSummaryDTO {
         String method = paymentMethod == PaymentMethod.COD ? "Tiền mặt khi nhận hàng" : "Chuyển khoản";
         return method + (paymentStatus == PaymentStatus.PAID ? " · Đã thanh toán"
                 : paymentStatus == PaymentStatus.REFUNDED ? " · Đã hoàn tiền" : " · Chưa thanh toán");
+    }
+
+    public String getPaymentMethodLabel() {
+        return paymentMethod == PaymentMethod.COD ? "Tiền mặt khi nhận hàng" : "Chuyển khoản";
+    }
+
+    public String getPaymentStatusLabel() {
+        return paymentStatus == PaymentStatus.PAID ? "Đã thanh toán"
+                : paymentStatus == PaymentStatus.REFUNDED ? "Đã hoàn tiền" : "Chưa thanh toán";
+    }
+
+    public String getPaymentStatusClasses() {
+        return paymentStatus == PaymentStatus.PAID ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                : paymentStatus == PaymentStatus.REFUNDED ? "bg-slate-500/15 border-slate-500/30 text-slate-300"
+                : "bg-amber-500/15 border-amber-500/30 text-amber-300";
+    }
+
+    public String getFulfillmentLabel() {
+        return fulfillmentType == FulfillmentType.DELIVERY ? "Giao tận nơi" : "Nhận tại chi nhánh";
     }
 
     /** Các mốc xử lý đơn (không gồm trạng thái huỷ) để hiển thị tiến trình. */

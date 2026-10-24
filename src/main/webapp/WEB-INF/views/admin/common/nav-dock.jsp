@@ -83,6 +83,10 @@
             <i class="fa-solid fa-boxes-stacked text-xs"></i>
             <span>Kho Bản Sách</span>
         </a>
+        <a href="/admin/orders" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex items-center gap-1.5 ${param.active == 'orders' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">
+            <i class="fa-solid fa-bag-shopping text-xs"></i>
+            <span>Đơn Hàng</span>
+        </a>
         <a href="/admin/buybacks" class="px-3 py-1.5 rounded-xl whitespace-nowrap transition flex items-center gap-1.5 ${param.active == 'buybacks' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">
             <i class="fa-solid fa-hand-holding-dollar text-xs"></i>
             <span>Thu Mua</span>
@@ -144,6 +148,13 @@
            href="/admin/book-copies" title="Quản lý bản sao tồn kho">
             <i class="fa-solid fa-boxes-stacked text-base"></i>
             <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Kho Bản Sách</span>
+        </a>
+
+        <!-- Đơn hàng của khách -->
+        <a class="p-2.5 rounded-full transition group relative ${param.active == 'orders' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
+           href="/admin/orders" title="Đơn hàng của khách">
+            <i class="fa-solid fa-bag-shopping text-base"></i>
+            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded bg-black/90 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition whitespace-nowrap shadow-lg z-50">Đơn Hàng</span>
         </a>
 
         <!-- Thu mua -->
@@ -325,8 +336,8 @@
         const notifList = document.getElementById('notifList');
         if (notifList) {
             const isBuyback = data.type === 'BUYBACK';
-            const icon = isBuyback ? 'fa-hand-holding-dollar text-amber-400' : 'fa-truck-ramp-box text-blue-400';
-            const borderCol = isBuyback ? 'border-amber-500/30' : 'border-blue-500/30';
+            const icon = data.type === 'ORDER' ? 'fa-bag-shopping text-emerald-400' : (isBuyback ? 'fa-hand-holding-dollar text-amber-400' : 'fa-truck-ramp-box text-blue-400');
+            const borderCol = data.type === 'ORDER' ? 'border-emerald-500/30' : (isBuyback ? 'border-amber-500/30' : 'border-blue-500/30');
 
             const item = document.createElement('a');
             item.href = data.targetUrl || '#';
@@ -353,8 +364,8 @@
         if (!container) return;
 
         const isBuyback = data.type === 'BUYBACK';
-        const icon = isBuyback ? 'fa-hand-holding-dollar text-amber-400' : 'fa-truck-ramp-box text-blue-400';
-        const borderColor = isBuyback ? 'border-amber-500/40' : 'border-blue-500/40';
+        const icon = data.type === 'ORDER' ? 'fa-bag-shopping text-emerald-400' : (isBuyback ? 'fa-hand-holding-dollar text-amber-400' : 'fa-truck-ramp-box text-blue-400');
+        const borderColor = data.type === 'ORDER' ? 'border-emerald-500/40' : (isBuyback ? 'border-amber-500/40' : 'border-blue-500/40');
 
         const toast = document.createElement('div');
         toast.className = 'pointer-events-auto p-4 rounded-2xl glass-panel shadow-glass-elevated border ' + borderColor + ' transition-all duration-300 transform translate-y-3 opacity-0';
@@ -364,7 +375,7 @@
             '</div>' +
             '<div class="flex-1">' +
                 '<div class="flex items-center justify-between">' +
-                    '<h4 class="text-xs font-bold text-white uppercase tracking-wider">' + (isBuyback ? 'Thu Mua Mới' : 'Điều Chuyển Kho') + '</h4>' +
+                    '<h4 class="text-xs font-bold text-white uppercase tracking-wider">' + (data.type === 'ORDER' ? 'Đơn Hàng Mới' : (isBuyback ? 'Thu Mua Mới' : 'Điều Chuyển Kho')) + '</h4>' +
                     '<span class="text-[10px] text-slate-400">Vừa xong</span>' +
                 '</div>' +
                 '<p class="text-xs text-slate-200 font-medium mt-1 leading-snug">' + (data.message || '') + '</p>' +
@@ -423,6 +434,16 @@
                             handleIncomingNotification(notif);
                         } catch (e) {
                             console.error("Lỗi parse thông báo chi nhánh:", e);
+                        }
+                    });
+                </c:if>
+                // Quản trị chưa gán chi nhánh nhận đơn hàng mới của mọi chi nhánh
+                <c:if test="${empty uStoreId}">
+                    stompClient.subscribe('/topic/store/all', function (res) {
+                        try {
+                            handleIncomingNotification(JSON.parse(res.body));
+                        } catch (e) {
+                            console.error("Lỗi parse thông báo đơn hàng:", e);
                         }
                     });
                 </c:if>
