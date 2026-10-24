@@ -510,6 +510,11 @@
                     <i class="fa-solid fa-table-cells-large"></i>
                     <span>Tổng Hợp Số Liệu</span>
                 </a>
+                <a href="/admin/reports?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}&tab=sales"
+                   class="px-4 py-2.5 text-xs font-semibold transition border-b-2 whitespace-nowrap flex items-center gap-2 ${currentTab == 'sales' ? 'border-brand-gold text-brand-gold' : 'border-transparent text-slate-400 hover:text-white'}">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span>Doanh Thu Bán Hàng<c:if test="${summary.sales != null}"> (${summary.sales.orderCount})</c:if></span>
+                </a>
                 <a href="/admin/reports?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}&tab=buybacks" 
                    class="px-4 py-2.5 text-xs font-semibold transition border-b-2 whitespace-nowrap flex items-center gap-2 ${currentTab == 'buybacks' ? 'border-brand-gold text-brand-gold' : 'border-transparent text-slate-400 hover:text-white'}">
                     <i class="fa-solid fa-hand-holding-dollar"></i>
@@ -707,6 +712,12 @@
                         </div>
 
                     </div>
+
+                </c:when>
+
+                <c:when test="${currentTab == 'sales'}">
+
+                    <jsp:include page="/WEB-INF/views/admin/report/sales-tab.jsp"/>
 
                 </c:when>
 

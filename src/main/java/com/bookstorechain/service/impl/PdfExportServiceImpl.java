@@ -1,6 +1,7 @@
 package com.bookstorechain.service.impl;
 
 import com.bookstorechain.dto.response.ReportSummaryDTO;
+import com.bookstorechain.dto.response.SalesReportDTO;
 import com.bookstorechain.entity.BuybackItem;
 import com.bookstorechain.entity.BuybackRequest;
 import com.bookstorechain.entity.StockTransfer;
@@ -10,6 +11,7 @@ import com.bookstorechain.repository.BuybackRequestRepository;
 import com.bookstorechain.repository.StockTransferRepository;
 import com.bookstorechain.service.PdfExportService;
 import com.bookstorechain.service.ReportService;
+import com.bookstorechain.service.SalesStatsService;
 import com.lowagie.text.*;
 import com.lowagie.text.Font;
 import com.lowagie.text.pdf.*;
@@ -348,6 +350,9 @@ public class PdfExportServiceImpl implements PdfExportService {
         doc.add(trTable);
         doc.add(new Paragraph(" "));
 
+        // 4b. Doanh thu bán hàng online
+        addSalesSection(doc, summary.getSales(), secFont, thFont, tdFont);
+
         // 5. Signatures Block
         PdfPTable sigTable = new PdfPTable(3);
         sigTable.setWidthPercentage(100);
@@ -380,6 +385,84 @@ public class PdfExportServiceImpl implements PdfExportService {
         doc.add(sigTable);
 
         doc.close();
+    }
+
+    /** Mục IV của báo cáo: doanh thu bán hàng online (không dấu như các mục khác vì font Helvetica chuẩn). */
+    private void addSalesSection(Document doc, SalesReportDTO sales, Font secFont, Font thFont, Font tdFont) throws DocumentException {
+        doc.add(new Paragraph("IV. DOANH THU BAN HANG ONLINE (DON DA HOAN TAT TRONG KY)", secFont));
+        doc.add(new Paragraph(" "));
+
+        if (sales == null) {
+            doc.add(new Paragraph("Khong hien thi doanh thu vi khoang thoi gian dai hon " + SalesStatsService.MAX_RANGE_DAYS + " ngay.", tdFont));
+            doc.add(new Paragraph(" "));
+            return;
+        }
+
+        PdfPTable kpi = new PdfPTable(4);
+        kpi.setWidthPercentage(100);
+        kpi.setWidths(new float[]{1.6f, 1.4f, 1.6f, 1.4f});
+        addKpiCell(kpi, "Doanh thu:", String.format("%,.0f VND", sales.getRevenue()), true);
+        addKpiCell(kpi, "So don hoan tat:", String.valueOf(sales.getOrderCount()), false);
+        addKpiCell(kpi, "Gia tri don trung binh:", String.format("%,.0f VND", sales.getAverageOrderValue()), false);
+        addKpiCell(kpi, "So cuon da ban:", String.valueOf(sales.getBooksSold()), false);
+        addKpiCell(kpi, "Tong giam gia:", String.format("%,.0f VND", sales.getDiscountTotal()), false);
+        addKpiCell(kpi, "Phi giao hang thu:", String.format("%,.0f VND", sales.getShippingTotal()), false);
+        doc.add(kpi);
+
+        if (sales.isWithoutOrders()) {
+            doc.add(new Paragraph("Khong co don hang nao hoan tat trong ky bao cao.", tdFont));
+            doc.add(new Paragraph(" "));
+            return;
+        }
+
+        doc.add(new Paragraph(" "));
+        PdfPTable byStore = new PdfPTable(2);
+        byStore.setWidthPercentage(60);
+        byStore.setHorizontalAlignment(Element.ALIGN_LEFT);
+        byStore.setWidths(new float[]{2.4f, 1.4f});
+        for (String h : new String[]{"Chi Nhanh", "Doanh Thu (VND)"}) {
+            PdfPCell c = new PdfPCell(new Phrase(h, thFont));
+            c.setBackgroundColor(Color.decode("#047857")); // emerald
+            c.setPadding(3.5f);
+            c.setHorizontalAlignment(Element.ALIGN_CENTER);
+            byStore.addCell(c);
+        }
+        sales.getRevenueByStore().forEach((store, revenue) -> {
+            byStore.addCell(createDataCell(ascii(store), tdFont));
+            byStore.addCell(createDataCell(String.format("%,.0f", revenue), tdFont));
+        });
+        doc.add(byStore);
+        doc.add(new Paragraph(" "));
+
+        PdfPTable top = new PdfPTable(4);
+        top.setWidthPercentage(100);
+        top.setWidths(new float[]{0.6f, 3.4f, 0.9f, 1.4f});
+        for (String h : new String[]{"Hang", "Sach Ban Chay", "So Cuon", "Doanh Thu (VND)"}) {
+            PdfPCell c = new PdfPCell(new Phrase(h, thFont));
+            c.setBackgroundColor(Color.decode("#047857"));
+            c.setPadding(3.5f);
+            c.setHorizontalAlignment(Element.ALIGN_CENTER);
+            top.addCell(c);
+        }
+        int rank = 1;
+        for (SalesReportDTO.TopBook book : sales.getTopBooks()) {
+            if (rank > 5) break;
+            top.addCell(createDataCell(String.valueOf(rank++), tdFont));
+            top.addCell(createDataCell(ascii(book.getTitle()), tdFont));
+            top.addCell(createDataCell(String.valueOf(book.getCopies()), tdFont));
+            top.addCell(createDataCell(String.format("%,.0f", book.getRevenue()), tdFont));
+        }
+        doc.add(top);
+        doc.add(new Paragraph(" "));
+    }
+
+    /** Bỏ dấu tiếng Việt: font Helvetica chuẩn của PDF không có các ký tự như ơ, ư, ạ nên sẽ in ra dấu hỏi. */
+    static String ascii(String text) {
+        if (text == null) {
+            return "";
+        }
+        return java.text.Normalizer.normalize(text, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}+", "").replace('đ', 'd').replace('Đ', 'D');
     }
 
     private void addKpiCell(PdfPTable table, String label, String value, boolean highlight) {

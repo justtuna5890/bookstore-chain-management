@@ -28,7 +28,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SalesStatsServiceImpl implements SalesStatsService {
 
-    static final int MAX_RANGE_DAYS = 366;
     static final int TOP_BOOKS_LIMIT = 10;
     private static final int DEFAULT_RANGE_DAYS = 30;
 

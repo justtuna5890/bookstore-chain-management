@@ -145,7 +145,7 @@ class SalesStatsServiceImplTest {
         assertThat(report.getDiscountTotal()).isEqualByComparingTo("20000");
         assertThat(report.getShippingTotal()).isEqualByComparingTo("50000");
         assertThat(report.getAverageOrderValue()).isEqualByComparingTo("233333");
-        assertThat(report.isEmpty()).isFalse();
+        assertThat(report.isWithoutOrders()).isFalse();
     }
 
     @Test
@@ -189,7 +189,7 @@ class SalesStatsServiceImplTest {
         assertThat(defaults.getEndDate()).isEqualTo(LocalDate.of(2026, 10, 23));
         assertThat(defaults.getStartDate()).isEqualTo(LocalDate.of(2026, 9, 24));
         assertThat(defaults.getDaily()).hasSize(30);
-        assertThat(defaults.isEmpty()).isTrue();
+        assertThat(defaults.isWithoutOrders()).isTrue();
         assertThat(defaults.getAverageOrderValue()).isEqualByComparingTo("0");
     }
 

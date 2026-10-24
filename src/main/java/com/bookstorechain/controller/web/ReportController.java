@@ -6,16 +6,19 @@ import com.bookstorechain.security.CustomUserDetails;
 import com.bookstorechain.service.PdfExportService;
 import com.bookstorechain.service.ReportService;
 import com.bookstorechain.service.StoreService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -29,6 +32,7 @@ public class ReportController {
     private final ReportService reportService;
     private final StoreService storeService;
     private final PdfExportService pdfExportService;
+    private final ObjectMapper objectMapper;
 
     @GetMapping
     public String showReports(@AuthenticationPrincipal CustomUserDetails userDetails,
@@ -43,7 +47,7 @@ public class ReportController {
 
         // Nhân viên STAFF bị khóa cứng theo chi nhánh công tác
         if (isStaff) {
-            storeId = staffStoreId;
+            storeId = staffStoreIdOrDeny(userDetails);
             model.addAttribute("isScopedToStore", true);
         } else {
             model.addAttribute("isScopedToStore", false);
@@ -59,6 +63,11 @@ public class ReportController {
         ReportSummaryDTO summary = reportService.generateReport(startDate, endDate, storeId);
 
         model.addAttribute("summary", summary);
+        if (summary.getSales() != null) {
+            model.addAttribute("salesDailyJson", ScriptJson.of(objectMapper, summary.getSales().getDaily(), "[]"));
+            model.addAttribute("salesPaymentJson", ScriptJson.of(objectMapper, summary.getSales().getRevenueByPayment(), "{}"));
+            model.addAttribute("salesStoreJson", ScriptJson.of(objectMapper, summary.getSales().getRevenueByStore(), "{}"));
+        }
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
         model.addAttribute("selectedStoreId", storeId);
@@ -77,7 +86,7 @@ public class ReportController {
                                   HttpServletResponse response) throws Exception {
         Role userRole = userDetails != null && userDetails.getUser() != null ? userDetails.getUser().getRole() : Role.STAFF;
         if (userRole == Role.STAFF) {
-            storeId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
+            storeId = staffStoreIdOrDeny(userDetails);
         }
 
         if (startDate == null) {
@@ -98,7 +107,7 @@ public class ReportController {
                                 HttpServletResponse response) throws Exception {
         Role userRole = userDetails != null && userDetails.getUser() != null ? userDetails.getUser().getRole() : Role.STAFF;
         if (userRole == Role.STAFF) {
-            storeId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
+            storeId = staffStoreIdOrDeny(userDetails);
         }
 
         if (startDate == null) {
@@ -109,5 +118,16 @@ public class ReportController {
         }
 
         pdfExportService.exportPeriodicReportPdf(startDate, endDate, storeId, response);
+    }
+
+    /**
+     * Chi nhánh mà nhân viên được xem báo cáo. Nhân viên chưa gán chi nhánh bị từ chối: truyền null xuống tầng báo cáo
+     * nghĩa là toàn chuỗi, sẽ lộ số liệu và doanh thu của mọi chi nhánh.
+     */
+    private Long staffStoreIdOrDeny(CustomUserDetails userDetails) {
+        if (userDetails.getUser().getStore() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản chưa được gán chi nhánh nên không xem được báo cáo.");
+        }
+        return userDetails.getUser().getStore().getId();
     }
 }
