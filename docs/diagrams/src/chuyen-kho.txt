@@ -1,0 +1,25 @@
+title|Chuyển kho giữa chi nhánh
+lane|Chi nhánh gửi
+lane|Hệ thống
+lane|Chi nhánh nhận
+n|s|0|0|s|
+n|make|0|1|a|Tạo phiếu: chọn chi nhánh nhận và các bản sách AVAILABLE
+n|chk|1|2|a|Kiểm tra sách đúng trạng thái và không nằm trong phiếu khác, lưu phiếu PENDING
+n|dec|0|3|d|Xuất kho?
+n|cancel|1|3|a|Phiếu CANCELLED, bản sách trả về AVAILABLE
+n|endc|1|4|e|
+n|out|0|4|a|Bấm xuất kho
+n|sys1|1|5|a|Phiếu IN_TRANSIT, bản sách thành IN_TRANSIT
+n|recv|2|6|a|Nhận hàng, bấm xác nhận hoàn tất
+n|in|1|7|a|Phiếu COMPLETED, bản sách đổi sang chi nhánh nhận và về AVAILABLE
+n|end|2|8|e|
+e|s|make
+e|make|chk
+e|chk|dec
+e|dec|cancel|Huỷ|h
+e|cancel|endc
+e|dec|out|Xuất
+e|out|sys1
+e|sys1|recv
+e|recv|in
+e|in|end

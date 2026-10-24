@@ -1,0 +1,27 @@
+title|Thu mua sách cũ
+lane|Khách hàng
+lane|Nhân viên
+lane|Hệ thống
+n|s|0|0|s|
+n|form|0|1|a|Điền form thu mua ở trang chủ: tên sách, tác giả, tình trạng, giá mong muốn
+n|req|2|2|a|Tạo yêu cầu thu mua PENDING, thông báo cho nhân viên chi nhánh
+n|price|1|3|a|Xem yêu cầu, định giá từng cuốn
+n|dec|1|4|d|Duyệt?
+n|rej|2|4|a|REJECTED, thông báo từ chối cho khách
+n|endr|2|5|e|
+n|appr|1|5|a|Bấm Duyệt: APPROVED, hệ thống báo khách mang sách đến
+n|recv|1|6|a|Nhận sách thực tế, bấm Hoàn tất
+n|comp|2|7|a|Với mỗi cuốn đã có giá: tạo bản sách AVAILABLE, tạo đầu sách nếu chưa có
+n|noti|0|8|a|Nhận thông báo yêu cầu đã hoàn tất
+n|end|0|9|e|
+e|s|form
+e|form|req
+e|req|price
+e|price|dec
+e|dec|rej|Không|h
+e|rej|endr
+e|dec|appr|Có
+e|appr|recv
+e|recv|comp
+e|comp|noti
+e|noti|end
