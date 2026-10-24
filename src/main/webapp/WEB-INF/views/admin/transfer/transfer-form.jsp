@@ -176,7 +176,7 @@
                                 <div class="glass-panel rounded-2xl border border-white/10 max-h-60 overflow-y-auto divide-y divide-white/5 p-2">
                                     <c:forEach var="copy" items="${availableCopies}">
                                         <label class="flex items-center gap-3 p-2 hover:bg-white/5 rounded-xl cursor-pointer text-xs">
-                                            <input type="checkbox" name="copyIds" value="${copy.id}" class="rounded border-white/20 bg-white/5 text-brand-gold focus:ring-0" />
+                                            <input type="checkbox" name="bookCopyIds" value="${copy.id}" class="rounded border-white/20 bg-white/5 text-brand-gold focus:ring-0" />
                                             <div class="flex-1">
                                                 <div class="font-semibold text-white">${copy.bookTitle}</div>
                                                 <div class="text-[10px] text-slate-400 flex items-center gap-2">
@@ -195,7 +195,7 @@
                                 </div>
                             </c:otherwise>
                         </c:choose>
-                        <form:errors path="copyIds" cssClass="text-rose-400 text-[10px] mt-1 block" />
+                        <form:errors path="bookCopyIds" cssClass="text-rose-400 text-[10px] mt-1 block" />
                     </div>
 
                     <div>
