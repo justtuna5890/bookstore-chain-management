@@ -1039,6 +1039,7 @@
                                                 <c:choose>
                                                     <c:when test="${entry.key == 'AVAILABLE'}"><span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check text-[10px] mr-1"></i>Sẵn sàng bán (AVAILABLE)</span></c:when>
                                                     <c:when test="${entry.key == 'HOLDING'}"><span class="text-amber-300 font-bold"><i class="fa-solid fa-hand text-[10px] mr-1"></i>Đang giữ hàng (HOLDING)</span></c:when>
+                                                    <c:when test="${entry.key == 'RESERVED'}"><span class="text-sky-300 font-bold"><i class="fa-solid fa-cart-shopping text-[10px] mr-1"></i>Khách đã đặt (RESERVED)</span></c:when>
                                                     <c:when test="${entry.key == 'IN_TRANSIT'}"><span class="text-sky-400 font-bold"><i class="fa-solid fa-truck text-[10px] mr-1"></i>Đang chuyển kho (IN TRANSIT)</span></c:when>
                                                     <c:when test="${entry.key == 'SOLD'}"><span class="text-slate-400 font-bold"><i class="fa-solid fa-bag-shopping text-[10px] mr-1"></i>Đã bán (SOLD)</span></c:when>
                                                     <c:otherwise>${entry.key}</c:otherwise>

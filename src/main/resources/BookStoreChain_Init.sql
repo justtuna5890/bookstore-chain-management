@@ -20,6 +20,11 @@ USE BookStoreChain;
 GO
 
 -- 1. XÓA BẢNG CŨ NẾU ĐÃ TỒN TẠI (THEO THỨ TỰ RÀNG BUỘC KHÓA NGOẠI)
+IF OBJECT_ID(N'dbo.payment', N'U') IS NOT NULL DROP TABLE dbo.payment;
+IF OBJECT_ID(N'dbo.order_item', N'U') IS NOT NULL DROP TABLE dbo.order_item;
+IF OBJECT_ID(N'dbo.customer_order', N'U') IS NOT NULL DROP TABLE dbo.customer_order;
+IF OBJECT_ID(N'dbo.cart_item', N'U') IS NOT NULL DROP TABLE dbo.cart_item;
+IF OBJECT_ID(N'dbo.cart', N'U') IS NOT NULL DROP TABLE dbo.cart;
 IF OBJECT_ID(N'dbo.stock_transfer_item', N'U') IS NOT NULL DROP TABLE dbo.stock_transfer_item;
 IF OBJECT_ID(N'dbo.stock_transfer', N'U') IS NOT NULL DROP TABLE dbo.stock_transfer;
 IF OBJECT_ID(N'dbo.buyback_item', N'U') IS NOT NULL DROP TABLE dbo.buyback_item;
@@ -92,7 +97,7 @@ CREATE TABLE dbo.book_copy (
     copy_code NVARCHAR(50) NOT NULL,
     book_condition NVARCHAR(20) NOT NULL CHECK (book_condition IN (N'LIKE_NEW', N'GOOD', N'FAIR', N'POOR')),
     price NUMERIC(12,2) NOT NULL,
-    status NVARCHAR(20) NOT NULL CHECK (status IN (N'AVAILABLE', N'SOLD', N'IN_TRANSIT', N'HOLDING')),
+    status NVARCHAR(20) NOT NULL CHECK (status IN (N'AVAILABLE', N'SOLD', N'IN_TRANSIT', N'HOLDING', N'RESERVED')),
     note NVARCHAR(MAX) NULL,
     book_id BIGINT NOT NULL,
     store_id BIGINT NOT NULL,
@@ -161,6 +166,90 @@ CREATE TABLE dbo.stock_transfer_item (
     CONSTRAINT PK_stock_transfer_item PRIMARY KEY CLUSTERED (id ASC),
     CONSTRAINT FK_stock_transfer_item_transfer FOREIGN KEY (stock_transfer_id) REFERENCES dbo.stock_transfer(id) ON DELETE CASCADE,
     CONSTRAINT FK_stock_transfer_item_copy FOREIGN KEY (book_copy_id) REFERENCES dbo.book_copy(id)
+);
+GO
+
+-- Bảng Giỏ Hàng (cart): mỗi khách hàng có đúng một giỏ
+CREATE TABLE dbo.cart (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    user_id BIGINT NOT NULL,
+    CONSTRAINT PK_cart PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_cart_user UNIQUE (user_id),
+    CONSTRAINT FK_cart_user FOREIGN KEY (user_id) REFERENCES dbo.users(id)
+);
+GO
+
+-- Bảng Chi Tiết Giỏ Hàng (cart_item): mỗi bản sách là duy nhất nên không có số lượng
+CREATE TABLE dbo.cart_item (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    cart_id BIGINT NOT NULL,
+    book_copy_id BIGINT NOT NULL,
+    CONSTRAINT PK_cart_item PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_cart_item_cart_copy UNIQUE (cart_id, book_copy_id),
+    CONSTRAINT FK_cart_item_cart FOREIGN KEY (cart_id) REFERENCES dbo.cart(id) ON DELETE CASCADE,
+    CONSTRAINT FK_cart_item_copy FOREIGN KEY (book_copy_id) REFERENCES dbo.book_copy(id)
+);
+GO
+
+-- Bảng Đơn Hàng Của Khách (customer_order): mỗi đơn thuộc đúng một chi nhánh
+CREATE TABLE dbo.customer_order (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    order_code NVARCHAR(30) NOT NULL,
+    user_id BIGINT NOT NULL,
+    store_id BIGINT NOT NULL,
+    status NVARCHAR(20) NOT NULL CHECK (status IN (N'PENDING', N'CONFIRMED', N'READY_FOR_PICKUP', N'SHIPPING', N'COMPLETED', N'CANCELLED')),
+    fulfillment_type NVARCHAR(20) NOT NULL CHECK (fulfillment_type IN (N'PICKUP', N'DELIVERY')),
+    receiver_name NVARCHAR(100) NOT NULL,
+    receiver_phone NVARCHAR(20) NOT NULL,
+    shipping_address NVARCHAR(255) NULL,
+    note NVARCHAR(MAX) NULL,
+    subtotal NUMERIC(12,2) NOT NULL,
+    discount_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+    shipping_fee NUMERIC(12,2) NOT NULL DEFAULT 0,
+    total_amount NUMERIC(12,2) NOT NULL,
+    CONSTRAINT PK_customer_order PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_customer_order_code UNIQUE (order_code),
+    CONSTRAINT FK_customer_order_user FOREIGN KEY (user_id) REFERENCES dbo.users(id),
+    CONSTRAINT FK_customer_order_store FOREIGN KEY (store_id) REFERENCES dbo.store(id)
+);
+GO
+
+-- Bảng Chi Tiết Đơn Hàng (order_item): lưu snapshot giá và tên sách tại thời điểm đặt
+CREATE TABLE dbo.order_item (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    order_id BIGINT NOT NULL,
+    book_copy_id BIGINT NOT NULL,
+    price_snapshot NUMERIC(12,2) NOT NULL,
+    title_snapshot NVARCHAR(200) NOT NULL,
+    copy_code_snapshot NVARCHAR(50) NOT NULL,
+    CONSTRAINT PK_order_item PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT FK_order_item_order FOREIGN KEY (order_id) REFERENCES dbo.customer_order(id) ON DELETE CASCADE,
+    CONSTRAINT FK_order_item_copy FOREIGN KEY (book_copy_id) REFERENCES dbo.book_copy(id)
+);
+GO
+
+-- Bảng Thanh Toán (payment): một đơn có đúng một bản ghi thanh toán
+CREATE TABLE dbo.payment (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    order_id BIGINT NOT NULL,
+    method NVARCHAR(20) NOT NULL CHECK (method IN (N'COD', N'BANK_TRANSFER')),
+    status NVARCHAR(20) NOT NULL CHECK (status IN (N'UNPAID', N'PAID', N'REFUNDED')),
+    amount NUMERIC(12,2) NOT NULL,
+    transaction_code NVARCHAR(100) NULL,
+    paid_at DATETIME2(6) NULL,
+    CONSTRAINT PK_payment PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_payment_order UNIQUE (order_id),
+    CONSTRAINT FK_payment_order FOREIGN KEY (order_id) REFERENCES dbo.customer_order(id) ON DELETE CASCADE
 );
 GO
 

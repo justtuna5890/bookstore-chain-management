@@ -48,3 +48,21 @@ src/main/resources/application.yml
 
 ## Trạng thái hiện tại
 Đây là khung sườn khởi tạo: cấu hình Security/JWT/WebSocket/Cloudinary, 4 entity lõi (`User`, `Store`, `Book`, `BookCopy`), 1 luồng mẫu chạy được đầu-cuối (trang chủ liệt kê sách, đăng ký/đăng nhập qua API). Các entity và chức năng còn lại (BuybackRequest, StockTransfer, Cart, Order, Payment, Review, Promotion, ChatMessage, Notification) sẽ được bổ sung theo phân chia công việc trong `Khung_suon_du_an.docx`.
+
+## Kiểm thử
+Dùng JDK 17 hoặc 21 (Lombok chưa chạy được trên JDK 26).
+
+```bash
+mvn test
+```
+Chạy các test đơn vị (không cần database) cho giỏ hàng, đặt hàng, huỷ đơn.
+
+Test tranh chấp trên SQL Server thật (hai khách cùng đặt một cuốn, 30 vòng) mặc định bị bỏ qua vì ghi vào database dùng chung. Chạy khi cần:
+```bash
+RUN_DB_TESTS=true mvn test -Dtest=OrderConcurrencyIT
+```
+Test dùng hai khách mẫu `customer` và `khachhang` của `BookStoreChain_Init.sql` và tự dọn đơn, giỏ, trạng thái bản sách sau mỗi vòng.
+
+## Cấu hình cửa hàng
+- `app.shop.delivery-fee`: phí giao hàng cho mỗi đơn giao tận nơi (mặc định 25000).
+
