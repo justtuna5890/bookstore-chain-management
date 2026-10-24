@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,6 +78,10 @@ public class CustomerOrder extends BaseEntity {
 
     @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount;
+
+    /** Thời điểm đơn hoàn tất; doanh thu được tính theo ngày này, không theo ngày đặt hay ngày sửa cuối. */
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
 
     /** Mã giảm giá đã dùng cho đơn (null nếu không dùng) và bản sao mã để hiển thị dù mã sau này bị sửa. */
     @ManyToOne(fetch = FetchType.LAZY)

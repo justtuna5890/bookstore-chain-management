@@ -39,21 +39,27 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, Long> {
                                     @Param("keyword") String keyword,
                                     Pageable pageable);
 
-    @Query("SELECT bc.store.name, COUNT(bc) FROM BookCopy bc GROUP BY bc.store.name")
+    @Query("SELECT bc.store.name, COUNT(bc) FROM BookCopy bc WHERE bc.status <> com.bookstorechain.enums.CopyStatus.SOLD GROUP BY bc.store.name")
     List<Object[]> countCopiesByStore();
 
-    @Query("SELECT bc.store.name, SUM(bc.price) FROM BookCopy bc GROUP BY bc.store.name")
+    @Query("SELECT bc.store.name, SUM(bc.price) FROM BookCopy bc WHERE bc.status <> com.bookstorechain.enums.CopyStatus.SOLD GROUP BY bc.store.name")
     List<Object[]> sumPriceByStore();
 
-    @Query("SELECT bc.bookCondition, COUNT(bc) FROM BookCopy bc GROUP BY bc.bookCondition")
+    @Query("SELECT bc.bookCondition, COUNT(bc) FROM BookCopy bc WHERE bc.status <> com.bookstorechain.enums.CopyStatus.SOLD GROUP BY bc.bookCondition")
     List<Object[]> countByCondition();
 
-    @Query("SELECT bc.bookCondition, COUNT(bc) FROM BookCopy bc WHERE bc.store.id = :storeId GROUP BY bc.bookCondition")
+    @Query("SELECT bc.bookCondition, COUNT(bc) FROM BookCopy bc WHERE bc.store.id = :storeId AND bc.status <> com.bookstorechain.enums.CopyStatus.SOLD GROUP BY bc.bookCondition")
     List<Object[]> countByConditionAndStore(@Param("storeId") Long storeId);
 
-    long countByStoreId(Long storeId);
+    /** Số bản sao còn trong kho toàn chuỗi (không tính sách đã bán cho khách). */
+    @Query("SELECT COUNT(bc) FROM BookCopy bc WHERE bc.status <> com.bookstorechain.enums.CopyStatus.SOLD")
+    long countInStock();
 
-    @Query("SELECT COALESCE(SUM(bc.price), 0) FROM BookCopy bc WHERE bc.store.id = :storeId")
+    /** Số bản sao còn trong kho của chi nhánh (không tính sách đã bán cho khách). */
+    @Query("SELECT COUNT(bc) FROM BookCopy bc WHERE bc.store.id = :storeId AND bc.status <> com.bookstorechain.enums.CopyStatus.SOLD")
+    long countByStoreId(@Param("storeId") Long storeId);
+
+    @Query("SELECT COALESCE(SUM(bc.price), 0) FROM BookCopy bc WHERE bc.store.id = :storeId AND bc.status <> com.bookstorechain.enums.CopyStatus.SOLD")
     java.math.BigDecimal sumPriceByStoreId(@Param("storeId") Long storeId);
 
     List<BookCopy> findByBookIdAndStatus(Long bookId, CopyStatus status);
@@ -72,6 +78,6 @@ public interface BookCopyRepository extends JpaRepository<BookCopy, Long> {
     @Query("SELECT bc.status, COUNT(bc) FROM BookCopy bc WHERE (:storeId IS NULL OR bc.store.id = :storeId) GROUP BY bc.status")
     List<Object[]> countByStatusAndStoreIdGrouped(@Param("storeId") Long storeId);
 
-    @Query("SELECT bc.bookCondition, COUNT(bc) FROM BookCopy bc WHERE (:storeId IS NULL OR bc.store.id = :storeId) GROUP BY bc.bookCondition")
+    @Query("SELECT bc.bookCondition, COUNT(bc) FROM BookCopy bc WHERE (:storeId IS NULL OR bc.store.id = :storeId) AND bc.status <> com.bookstorechain.enums.CopyStatus.SOLD GROUP BY bc.bookCondition")
     List<Object[]> countByConditionAndOptionalStore(@Param("storeId") Long storeId);
 }

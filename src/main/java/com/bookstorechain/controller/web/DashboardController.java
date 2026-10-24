@@ -1,11 +1,13 @@
 package com.bookstorechain.controller.web;
 
 import com.bookstorechain.dto.response.OperationalAlertDTO;
+import com.bookstorechain.dto.response.SalesReportDTO;
 import com.bookstorechain.entity.BuybackRequest;
 import com.bookstorechain.entity.StockTransfer;
 import com.bookstorechain.enums.Role;
 import com.bookstorechain.security.CustomUserDetails;
 import com.bookstorechain.service.DashboardService;
+import com.bookstorechain.service.SalesStatsService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ import java.util.Map;
 public class DashboardController {
 
     private final DashboardService dashboardService;
+    private final SalesStatsService salesStatsService;
     private final ObjectMapper objectMapper;
 
     @GetMapping
@@ -178,7 +181,38 @@ public class DashboardController {
             model.addAttribute("transferFlowJson", "{}");
         }
 
+        addSalesSection(model, isStaff, staffStoreId, userDetails);
+
         return "admin/dashboard";
+    }
+
+    /**
+     * Khu vực doanh thu bán hàng online. Nhân viên chỉ thấy doanh thu chi nhánh mình (và không thấy gì nếu chưa gán chi nhánh);
+     * quản lý và quản trị thấy toàn chuỗi cùng doanh thu theo chi nhánh.
+     */
+    private void addSalesSection(Model model, boolean isStaff, Long staffStoreId, CustomUserDetails userDetails) {
+        if (isStaff && staffStoreId == null) {
+            return;
+        }
+        Long scope = isStaff ? staffStoreId : null;
+        SalesReportDTO report = salesStatsService.getReport(null, null, scope);
+        model.addAttribute("salesOverview", salesStatsService.getOverview(scope));
+        model.addAttribute("salesReport", report);
+        model.addAttribute("salesScopeLabel", isStaff ? userDetails.getUser().getStore().getName() : "Toàn chuỗi");
+        model.addAttribute("salesShowStores", !isStaff);
+        model.addAttribute("salesDailyJson", scriptSafeJson(report.getDaily(), "[]"));
+        model.addAttribute("salesPaymentJson", scriptSafeJson(report.getRevenueByPayment(), "{}"));
+        model.addAttribute("salesStoreJson", scriptSafeJson(report.getRevenueByStore(), "{}"));
+    }
+
+    /** JSON để nhúng thẳng vào thẻ script: thoát dấu '<' để tên chi nhánh chứa "</script>" không phá được trang. */
+    private String scriptSafeJson(Object value, String fallback) {
+        try {
+            return objectMapper.writeValueAsString(value).replace("<", "\\u003c");
+        } catch (JsonProcessingException e) {
+            log.error("Lỗi chuyển đổi dữ liệu doanh thu sang JSON", e);
+            return fallback;
+        }
     }
 
     private void setDefaultChartData(Model model) {
