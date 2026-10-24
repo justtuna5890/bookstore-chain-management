@@ -55,6 +55,11 @@
         .glass-panel { background: rgba(18, 21, 28, 0.65); backdrop-filter: blur(28px) saturate(160%); -webkit-backdrop-filter: blur(28px) saturate(160%); border: 1px solid rgba(255, 255, 255, 0.09); }
         .glass-input { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); color: #f1f5f9; }
         .glass-input:focus { background: rgba(255, 255, 255, 0.08); border-color: rgba(212, 175, 55, 0.45); outline: none; }
+        /* Plugin forms của Tailwind đặt nền trắng cho input, ghi đè .glass-input; selector này cụ thể hơn nên thắng */
+        input.glass-input, textarea.glass-input { background-color: rgba(255, 255, 255, 0.06); color: #f1f5f9; border: 1px solid rgba(255, 255, 255, 0.12); }
+        input.glass-input::placeholder, textarea.glass-input::placeholder { color: #64748b; }
+        input.glass-input:focus, textarea.glass-input:focus { background-color: rgba(255, 255, 255, 0.1); border-color: rgba(212, 175, 55, 0.55); box-shadow: none; }
+        input.glass-input[readonly] { cursor: not-allowed; }
     </style>
 </head>
 <body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-6 px-4 md:px-8 lg:px-12 selection:bg-brand-gold selection:text-black">

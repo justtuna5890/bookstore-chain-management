@@ -63,6 +63,11 @@ RUN_DB_TESTS=true mvn test -Dtest=OrderConcurrencyIT
 ```
 Test dùng hai khách mẫu `customer` và `khachhang` của `BookStoreChain_Init.sql` và tự dọn đơn, giỏ, trạng thái bản sách sau mỗi vòng.
 
+Tranh chấp lượt dùng mã giảm giá (mã chỉ còn 1 lượt, giỏ nhiều chi nhánh cần nhiều lượt) tương tự, tạo mã tạm `ITRACE` rồi xoá:
+```bash
+RUN_DB_TESTS=true mvn test -Dtest=PromotionConcurrencyIT
+```
+
 ## Cấu hình cửa hàng
 - `app.shop.delivery-fee`: phí giao hàng cho mỗi đơn giao tận nơi (mặc định 25000).
 

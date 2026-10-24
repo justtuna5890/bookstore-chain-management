@@ -14,6 +14,7 @@ import com.bookstorechain.exception.BusinessException;
 import com.bookstorechain.exception.ResourceNotFoundException;
 import com.bookstorechain.repository.CustomerOrderRepository;
 import com.bookstorechain.service.AdminOrderService;
+import com.bookstorechain.service.PromotionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +31,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 
     private final CustomerOrderRepository customerOrderRepository;
     private final OrderMapper orderMapper;
+    private final PromotionService promotionService;
 
     @Override
     @Transactional(readOnly = true)
@@ -126,6 +128,9 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                 OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.READY_FOR_PICKUP, OrderStatus.SHIPPING);
 
         order.setStatus(OrderStatus.CANCELLED);
+        if (order.getPromotion() != null) {
+            promotionService.releaseUsage(order.getPromotion().getId());
+        }
         for (OrderItem item : order.getItems()) {
             BookCopy copy = item.getCopy();
             if (copy.getStatus() == CopyStatus.RESERVED) {

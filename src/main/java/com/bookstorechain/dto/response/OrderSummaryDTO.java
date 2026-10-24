@@ -41,6 +41,7 @@ public class OrderSummaryDTO {
     private LocalDateTime paidAt;
     private BigDecimal subtotal;
     private BigDecimal discountAmount;
+    private String promotionCode;
     private BigDecimal shippingFee;
     private BigDecimal totalAmount;
     private LocalDateTime createdAt;

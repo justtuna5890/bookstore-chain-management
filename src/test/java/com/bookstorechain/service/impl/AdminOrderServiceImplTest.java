@@ -6,6 +6,7 @@ import com.bookstorechain.entity.BookCopy;
 import com.bookstorechain.entity.CustomerOrder;
 import com.bookstorechain.entity.OrderItem;
 import com.bookstorechain.entity.Payment;
+import com.bookstorechain.entity.Promotion;
 import com.bookstorechain.entity.Store;
 import com.bookstorechain.enums.CopyStatus;
 import com.bookstorechain.enums.FulfillmentType;
@@ -15,6 +16,7 @@ import com.bookstorechain.enums.PaymentStatus;
 import com.bookstorechain.exception.BusinessException;
 import com.bookstorechain.exception.ResourceNotFoundException;
 import com.bookstorechain.repository.CustomerOrderRepository;
+import com.bookstorechain.service.PromotionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,6 +34,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,6 +43,7 @@ class AdminOrderServiceImplTest {
     private static final long ORDER_ID = 50L;
 
     @Mock private CustomerOrderRepository customerOrderRepository;
+    @Mock private PromotionService promotionService;
 
     private AdminOrderServiceImpl service;
     private Store hanoi;
@@ -49,7 +53,7 @@ class AdminOrderServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new AdminOrderServiceImpl(customerOrderRepository, new OrderMapper());
+        service = new AdminOrderServiceImpl(customerOrderRepository, new OrderMapper(), promotionService);
         hanoi = TestData.store(1L, "OldBook Ha Noi");
         book = TestData.book(100L, "Hoang Tu Be");
         copy1 = TestData.copy(1L, "OB-HN-001", "60000", hanoi, book, CopyStatus.RESERVED);
@@ -209,6 +213,20 @@ class AdminOrderServiceImplTest {
         assertThat(copy1.getStatus()).isEqualTo(CopyStatus.AVAILABLE);
         assertThat(copy2.getStatus()).isEqualTo(CopyStatus.AVAILABLE);
         assertThat(order.getPayment().getStatus()).isEqualTo(PaymentStatus.UNPAID);
+        verifyNoInteractions(promotionService);
+    }
+
+    @Test
+    @DisplayName("Nhân viên huỷ đơn có dùng mã giảm giá thì lượt dùng được trả lại")
+    void cancelReleasesPromotionUsage() {
+        CustomerOrder order = order(OrderStatus.PENDING, FulfillmentType.PICKUP, PaymentMethod.COD, PaymentStatus.UNPAID);
+        Promotion promotion = Promotion.builder().code("WELCOME10").build();
+        promotion.setId(5L);
+        order.setPromotion(promotion);
+
+        service.cancel(ORDER_ID, null);
+
+        verify(promotionService).releaseUsage(5L);
     }
 
     @Test

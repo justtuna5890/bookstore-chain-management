@@ -24,6 +24,9 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 
     List<CustomerOrder> findByCustomerIdOrderByCreatedAtDesc(Long customerId);
 
+    /** Khách đã có đơn (chưa huỷ) dùng mã này chưa; dùng cho mã giới hạn mỗi khách một lần. */
+    boolean existsByCustomerIdAndPromotionIdAndStatusNot(Long customerId, Long promotionId, OrderStatus status);
+
     /** Khoá dòng đơn hàng khi đổi trạng thái để huỷ của khách và xác nhận của nhân viên không ghi đè nhau. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT o FROM CustomerOrder o WHERE o.orderCode = :code AND o.customer.id = :customerId")

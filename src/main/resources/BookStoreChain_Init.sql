@@ -23,6 +23,7 @@ GO
 IF OBJECT_ID(N'dbo.payment', N'U') IS NOT NULL DROP TABLE dbo.payment;
 IF OBJECT_ID(N'dbo.order_item', N'U') IS NOT NULL DROP TABLE dbo.order_item;
 IF OBJECT_ID(N'dbo.customer_order', N'U') IS NOT NULL DROP TABLE dbo.customer_order;
+IF OBJECT_ID(N'dbo.promotion', N'U') IS NOT NULL DROP TABLE dbo.promotion;
 IF OBJECT_ID(N'dbo.cart_item', N'U') IS NOT NULL DROP TABLE dbo.cart_item;
 IF OBJECT_ID(N'dbo.cart', N'U') IS NOT NULL DROP TABLE dbo.cart;
 IF OBJECT_ID(N'dbo.stock_transfer_item', N'U') IS NOT NULL DROP TABLE dbo.stock_transfer_item;
@@ -195,6 +196,30 @@ CREATE TABLE dbo.cart_item (
 );
 GO
 
+-- Bảng Mã Giảm Giá (promotion): code luôn chữ hoa, store_id NULL là áp dụng toàn chuỗi
+CREATE TABLE dbo.promotion (
+    id BIGINT IDENTITY(1,1) NOT NULL,
+    created_at DATETIME2(6) NULL,
+    updated_at DATETIME2(6) NULL,
+    code NVARCHAR(30) NOT NULL,
+    description NVARCHAR(255) NULL,
+    type NVARCHAR(20) NOT NULL CHECK (type IN (N'PERCENT', N'FIXED')),
+    value NUMERIC(12,2) NOT NULL,
+    min_order_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+    max_discount_amount NUMERIC(12,2) NULL,
+    starts_at DATETIME2(6) NOT NULL,
+    ends_at DATETIME2(6) NOT NULL,
+    usage_limit INT NULL,
+    used_count INT NOT NULL DEFAULT 0,
+    one_per_customer BIT NOT NULL DEFAULT 1,
+    store_id BIGINT NULL,
+    is_active BIT NOT NULL DEFAULT 1,
+    CONSTRAINT PK_promotion PRIMARY KEY CLUSTERED (id ASC),
+    CONSTRAINT UQ_promotion_code UNIQUE (code),
+    CONSTRAINT FK_promotion_store FOREIGN KEY (store_id) REFERENCES dbo.store(id)
+);
+GO
+
 -- Bảng Đơn Hàng Của Khách (customer_order): mỗi đơn thuộc đúng một chi nhánh
 CREATE TABLE dbo.customer_order (
     id BIGINT IDENTITY(1,1) NOT NULL,
@@ -213,10 +238,13 @@ CREATE TABLE dbo.customer_order (
     discount_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
     shipping_fee NUMERIC(12,2) NOT NULL DEFAULT 0,
     total_amount NUMERIC(12,2) NOT NULL,
+    promotion_id BIGINT NULL,
+    promotion_code NVARCHAR(30) NULL,
     CONSTRAINT PK_customer_order PRIMARY KEY CLUSTERED (id ASC),
     CONSTRAINT UQ_customer_order_code UNIQUE (order_code),
     CONSTRAINT FK_customer_order_user FOREIGN KEY (user_id) REFERENCES dbo.users(id),
-    CONSTRAINT FK_customer_order_store FOREIGN KEY (store_id) REFERENCES dbo.store(id)
+    CONSTRAINT FK_customer_order_store FOREIGN KEY (store_id) REFERENCES dbo.store(id),
+    CONSTRAINT FK_customer_order_promotion FOREIGN KEY (promotion_id) REFERENCES dbo.promotion(id)
 );
 GO
 
@@ -434,6 +462,17 @@ INSERT INTO dbo.stock_transfer_item (id, created_at, updated_at, stock_transfer_
 (6, DATEADD(day, -15, SYSDATETIME()), SYSDATETIME(), 6, 26),
 (7, DATEADD(hour, -3, SYSDATETIME()), SYSDATETIME(), 7, 21);
 SET IDENTITY_INSERT dbo.stock_transfer_item OFF;
+GO
+
+-- 3.9. Mã giảm giá mẫu: đủ các trạng thái để thử (đang chạy, theo chi nhánh, hết hạn, hết lượt, sắp diễn ra, tạm dừng)
+INSERT INTO dbo.promotion (created_at, updated_at, code, description, type, value, min_order_amount, max_discount_amount, starts_at, ends_at, usage_limit, used_count, one_per_customer, store_id, is_active) VALUES
+(SYSDATETIME(), SYSDATETIME(), N'WELCOME10', N'Giảm 10% cho đơn từ 100.000đ, tối đa 50.000đ', N'PERCENT', 10, 100000, 50000, DATEADD(day, -30, SYSDATETIME()), DATEADD(day, 90, SYSDATETIME()), NULL, 0, 1, NULL, 1),
+(SYSDATETIME(), SYSDATETIME(), N'GIAM20K', N'Giảm 20.000đ cho đơn từ 150.000đ', N'FIXED', 20000, 150000, NULL, DATEADD(day, -10, SYSDATETIME()), DATEADD(day, 60, SYSDATETIME()), 100, 0, 1, NULL, 1),
+(SYSDATETIME(), SYSDATETIME(), N'HANOI15', N'Giảm 15% cho đơn tại chi nhánh Hà Nội, tối đa 80.000đ', N'PERCENT', 15, 0, 80000, DATEADD(day, -5, SYSDATETIME()), DATEADD(day, 30, SYSDATETIME()), 50, 0, 1, 1, 1),
+(SYSDATETIME(), SYSDATETIME(), N'TETXUAN', N'Khuyến mãi Tết đã kết thúc', N'PERCENT', 20, 0, NULL, DATEADD(day, -90, SYSDATETIME()), DATEADD(day, -30, SYSDATETIME()), NULL, 12, 1, NULL, 1),
+(SYSDATETIME(), SYSDATETIME(), N'VIPLIMIT', N'Giảm 30.000đ cho 5 khách đầu tiên (đã hết lượt)', N'FIXED', 30000, 0, NULL, DATEADD(day, -20, SYSDATETIME()), DATEADD(day, 20, SYSDATETIME()), 5, 5, 1, NULL, 1),
+(SYSDATETIME(), SYSDATETIME(), N'SAPDIENRA', N'Khuyến mãi sắp diễn ra', N'PERCENT', 25, 200000, 100000, DATEADD(day, 7, SYSDATETIME()), DATEADD(day, 37, SYSDATETIME()), NULL, 0, 1, NULL, 1),
+(SYSDATETIME(), SYSDATETIME(), N'TAMDUNG', N'Mã đang tạm dừng', N'FIXED', 10000, 0, NULL, DATEADD(day, -5, SYSDATETIME()), DATEADD(day, 30, SYSDATETIME()), NULL, 0, 0, NULL, 0);
 GO
 
 PRINT N'>>> HOÀN TẤT KHỞI TẠO CƠ SỞ DỮ LIỆU BOOKSTORE CHAIN ĐA DẠNG THÀNH CÔNG! <<<';
