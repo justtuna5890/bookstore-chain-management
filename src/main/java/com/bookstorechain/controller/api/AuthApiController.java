@@ -1,10 +1,11 @@
 package com.bookstorechain.controller.api;
 
 import com.bookstorechain.entity.User;
-import com.bookstorechain.enums.Role;
-import com.bookstorechain.repository.UserRepository;
 import com.bookstorechain.security.JwtUtil;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.bookstorechain.service.UserService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,60 +15,38 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthApiController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
     private final JwtUtil jwtUtil;
 
-    public AuthApiController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtUtil = jwtUtil;
-    }
-
     @PostMapping("/register")
-    public Map<String, Object> register(@RequestBody Map<String, String> body) {
+    public ResponseEntity<Map<String, Object>> register(@RequestBody Map<String, String> body) {
         String email = body.get("email");
         String username = body.get("username");
-        if (username == null || username.isBlank()) {
-            username = email != null ? email.split("@")[0] : "user_" + System.currentTimeMillis();
-        }
+        String password = body.get("password");
+        String fullName = body.get("fullName");
+        String phone = body.get("phone");
 
-        if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("Email đã tồn tại trong hệ thống");
-        }
-        if (userRepository.existsByUsername(username)) {
-            username = username + "_" + (System.currentTimeMillis() % 1000);
-        }
+        User saved = userService.registerCustomer(username, email, password, fullName, phone);
 
-        User user = new User();
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(body.get("password")));
-        user.setFullName(body.get("fullName") != null ? body.get("fullName") : username);
-        user.setRole(Role.CUSTOMER);
-        user.setActive(true);
-        User saved = userRepository.save(user);
-
-        return Map.of(
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "message", "Đăng ký thành công",
                 "userId", saved.getId(),
                 "username", saved.getUsername(),
                 "email", saved.getEmail()
-        );
+        ));
     }
 
     @PostMapping("/login")
-    public Map<String, String> login(@RequestBody Map<String, String> body) {
-        User user = userRepository.findByEmail(body.get("email"))
-                .orElseThrow(() -> new RuntimeException("Sai email hoac mat khau"));
+    public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> body) {
+        String emailOrUsername = body.get("email") != null ? body.get("email") : body.get("username");
+        String password = body.get("password");
 
-        if (!passwordEncoder.matches(body.get("password"), user.getPassword())) {
-            throw new RuntimeException("Sai email hoac mat khau");
-        }
-
+        User user = userService.authenticate(emailOrUsername, password);
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
-        return Map.of("token", token);
+
+        return ResponseEntity.ok(Map.of("token", token));
     }
 }

@@ -114,6 +114,48 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
+    @Override
+    @Transactional
+    public User registerCustomer(String username, String email, String password, String fullName, String phone) {
+        String cleanEmail = email != null ? email.trim().toLowerCase() : "";
+        String cleanUsername = username != null ? username.trim() : "";
+        if (cleanUsername.isEmpty()) {
+            cleanUsername = cleanEmail.split("@")[0];
+        }
+
+        if (userRepository.existsByUsername(cleanUsername)) {
+            throw new DuplicateResourceException("Tên đăng nhập '" + cleanUsername + "' đã được sử dụng!");
+        }
+        if (userRepository.existsByEmail(cleanEmail)) {
+            throw new DuplicateResourceException("Địa chỉ email '" + cleanEmail + "' đã tồn tại!");
+        }
+
+        User user = User.builder()
+                .username(cleanUsername)
+                .fullName(fullName != null && !fullName.isBlank() ? fullName.trim() : cleanUsername)
+                .email(cleanEmail)
+                .phone(phone != null ? phone.trim() : null)
+                .password(passwordEncoder.encode(password))
+                .role(Role.CUSTOMER)
+                .isActive(true)
+                .build();
+
+        return userRepository.save(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User authenticate(String emailOrUsername, String rawPassword) {
+        User user = userRepository.findByEmail(emailOrUsername)
+                .or(() -> userRepository.findByUsername(emailOrUsername))
+                .orElseThrow(() -> new IllegalArgumentException("Sai tài khoản hoặc mật khẩu!"));
+
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Sai tài khoản hoặc mật khẩu!");
+        }
+        return user;
+    }
+
     private UserResponseDTO mapToResponseDTO(User user) {
         return UserResponseDTO.builder()
                 .id(user.getId())

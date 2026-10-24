@@ -1,13 +1,11 @@
 package com.bookstorechain.controller.web;
 
-import com.bookstorechain.entity.User;
-import com.bookstorechain.enums.Role;
-import com.bookstorechain.repository.UserRepository;
+import com.bookstorechain.exception.DuplicateResourceException;
+import com.bookstorechain.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,8 +17,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
     @GetMapping("/login")
     public String showLoginPage(
@@ -76,29 +73,16 @@ public class AuthController {
             Model model,
             RedirectAttributes redirectAttributes) {
 
-        if (userRepository.existsByUsername(username)) {
-            model.addAttribute("errorMessage", "Tên đăng nhập '" + username + "' đã được sử dụng!");
+        try {
+            userService.registerCustomer(username, email, password, fullName, phone);
+            redirectAttributes.addFlashAttribute("successMessage", "Đăng ký thành công! Vui lòng đăng nhập.");
+            return "redirect:/login?registered=true";
+        } catch (DuplicateResourceException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "auth/register";
+        } catch (Exception e) {
+            model.addAttribute("errorMessage", "Có lỗi xảy ra khi đăng ký: " + e.getMessage());
             return "auth/register";
         }
-
-        if (userRepository.existsByEmail(email)) {
-            model.addAttribute("errorMessage", "Địa chỉ email '" + email + "' đã tồn tại!");
-            return "auth/register";
-        }
-
-        User user = User.builder()
-                .username(username.trim())
-                .fullName(fullName.trim())
-                .email(email.trim().toLowerCase())
-                .phone(phone != null ? phone.trim() : null)
-                .password(passwordEncoder.encode(password))
-                .role(Role.CUSTOMER)
-                .isActive(true)
-                .build();
-
-        userRepository.save(user);
-
-        redirectAttributes.addFlashAttribute("successMessage", "Đăng ký thành công! Vui lòng đăng nhập.");
-        return "redirect:/login?registered=true";
     }
 }
