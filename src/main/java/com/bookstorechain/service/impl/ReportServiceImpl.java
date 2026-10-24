@@ -1,6 +1,7 @@
 package com.bookstorechain.service.impl;
 
 import com.bookstorechain.dto.response.ReportSummaryDTO;
+import com.bookstorechain.dto.response.SalesReportDTO;
 import com.bookstorechain.entity.*;
 import com.bookstorechain.enums.BuybackStatus;
 import com.bookstorechain.enums.Role;
@@ -12,6 +13,7 @@ import com.bookstorechain.repository.StoreRepository;
 import com.bookstorechain.repository.UserRepository;
 import com.bookstorechain.service.DashboardService;
 import com.bookstorechain.service.ReportService;
+import com.bookstorechain.service.SalesStatsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +27,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -39,6 +42,7 @@ public class ReportServiceImpl implements ReportService {
     private final BookCopyRepository bookCopyRepository;
     private final UserRepository userRepository;
     private final DashboardService dashboardService;
+    private final SalesStatsService salesStatsService;
 
     private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -179,6 +183,10 @@ public class ReportServiceImpl implements ReportService {
         long totalCustomers = userRepository.countByRole(Role.CUSTOMER);
         long newCustomersInPeriod = userRepository.countByRoleAndCreatedAtBetween(Role.CUSTOMER, startDateTime, endDateTime);
 
+        // Doanh thu bán hàng online cùng kỳ và cùng phạm vi chi nhánh; bỏ qua nếu khoảng thời gian quá dài
+        SalesReportDTO sales = ChronoUnit.DAYS.between(startDate, endDate) + 1 > SalesStatsService.MAX_RANGE_DAYS
+                ? null : salesStatsService.getReport(startDate, endDate, storeId);
+
         return ReportSummaryDTO.builder()
                 .startDate(startDate)
                 .endDate(endDate)
@@ -212,6 +220,8 @@ public class ReportServiceImpl implements ReportService {
                 .totalCustomers(totalCustomers)
                 .newCustomersInPeriod(newCustomersInPeriod)
                 .customerActivities(customerActivities)
+                // Doanh thu
+                .sales(sales)
                 .build();
     }
 
@@ -239,6 +249,11 @@ public class ReportServiceImpl implements ReportService {
             // Sheet 3: Danh sách chuyển kho
             Sheet sheetTransfer = workbook.createSheet("Dieu Chuyen Kho");
             createTransferSheet(sheetTransfer, summary.getStockTransfers(), headerStyle);
+
+            // Sheet 4: Doanh thu bán hàng online
+            if (summary.getSales() != null) {
+                SalesReportExcel.writeSheet(workbook.createSheet("Doanh Thu Ban Hang"), summary.getSales(), titleStyle, headerStyle);
+            }
 
             workbook.write(response.getOutputStream());
         }
@@ -275,6 +290,11 @@ public class ReportServiceImpl implements ReportService {
         sheet.createRow(r++).createCell(0).setCellValue("Giá trị kho ước tính (VNĐ): " + summary.getTotalInventoryValue());
         sheet.createRow(r++).createCell(0).setCellValue("Tổng số khách hàng đăng ký: " + summary.getTotalCustomers());
         sheet.createRow(r++).createCell(0).setCellValue("Khách hàng mới trong kỳ: " + summary.getNewCustomersInPeriod());
+
+        if (summary.getSales() != null) {
+            r++;
+            r = SalesReportExcel.writeOverviewSection(sheet, r, summary.getSales());
+        }
 
         sheet.setColumnWidth(0, 12000);
     }

@@ -51,7 +51,8 @@ public class SalesReportDTO {
         return orderCount == 0 ? BigDecimal.ZERO : revenue.divide(BigDecimal.valueOf(orderCount), 0, RoundingMode.HALF_UP);
     }
 
-    public boolean isEmpty() {
+    /** Không có đơn hoàn tất nào trong kỳ. Không đặt tên 'empty': đó là từ khoá của EL, JSP không đọc được ${x.empty}. */
+    public boolean isWithoutOrders() {
         return orderCount == 0;
     }
 

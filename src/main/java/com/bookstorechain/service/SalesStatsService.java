@@ -12,6 +12,9 @@ import java.time.LocalDate;
  */
 public interface SalesStatsService {
 
+    /** Số ngày tối đa của một báo cáo doanh thu. */
+    int MAX_RANGE_DAYS = 366;
+
     SalesOverviewDTO getOverview(Long storeId);
 
     /** Báo cáo từ startDate đến endDate (gồm cả hai đầu). Hai đầu đảo ngược thì tự đảo lại; tối đa 366 ngày. */
