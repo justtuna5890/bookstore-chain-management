@@ -14,7 +14,9 @@ import com.bookstorechain.exception.BusinessException;
 import com.bookstorechain.exception.ResourceNotFoundException;
 import com.bookstorechain.repository.CustomerOrderRepository;
 import com.bookstorechain.service.AdminOrderService;
+import com.bookstorechain.enums.UserNotificationType;
 import com.bookstorechain.service.PromotionService;
+import com.bookstorechain.service.UserNotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,6 +34,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     private final CustomerOrderRepository customerOrderRepository;
     private final OrderMapper orderMapper;
     private final PromotionService promotionService;
+    private final UserNotificationService userNotificationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -55,6 +58,8 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         CustomerOrder order = lockAndCheck(orderId, scopeStoreId);
         requireStatus(order, "Chỉ xác nhận được đơn đang chờ xác nhận.", OrderStatus.PENDING);
         order.setStatus(OrderStatus.CONFIRMED);
+        notifyCustomer(order, "Đơn " + order.getOrderCode() + " đã được xác nhận",
+                order.getStore().getName() + " đang chuẩn bị sách cho bạn.");
     }
 
     @Override
@@ -62,8 +67,12 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     public void markReady(Long orderId, Long scopeStoreId) {
         CustomerOrder order = lockAndCheck(orderId, scopeStoreId);
         requireStatus(order, "Chỉ chuẩn bị giao nhận được đơn đã xác nhận.", OrderStatus.CONFIRMED);
-        order.setStatus(order.getFulfillmentType() == FulfillmentType.DELIVERY
-                ? OrderStatus.SHIPPING : OrderStatus.READY_FOR_PICKUP);
+        boolean delivery = order.getFulfillmentType() == FulfillmentType.DELIVERY;
+        order.setStatus(delivery ? OrderStatus.SHIPPING : OrderStatus.READY_FOR_PICKUP);
+        notifyCustomer(order,
+                delivery ? "Đơn " + order.getOrderCode() + " đang được giao" : "Đơn " + order.getOrderCode() + " sẵn sàng để nhận",
+                delivery ? "Sách của bạn đã được giao đi, hãy giữ điện thoại để nhận hàng."
+                        : "Mời bạn đến " + order.getStore().getName() + " để nhận sách.");
     }
 
     @Override
@@ -90,6 +99,8 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         }
         order.getItems().forEach(item -> item.getCopy().setStatus(CopyStatus.SOLD));
         order.setStatus(OrderStatus.COMPLETED);
+        notifyCustomer(order, "Đơn " + order.getOrderCode() + " đã hoàn tất",
+                "Cảm ơn bạn đã mua sách. Hãy để lại đánh giá cho những cuốn bạn vừa nhận.");
     }
 
     @Override
@@ -118,6 +129,8 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         payment.setStatus(PaymentStatus.PAID);
         payment.setTransactionCode(code);
         payment.setPaidAt(LocalDateTime.now());
+        notifyCustomer(order, "Đã nhận thanh toán đơn " + order.getOrderCode(),
+                "Chi nhánh đã xác nhận khoản chuyển khoản của bạn.");
     }
 
     @Override
@@ -138,9 +151,18 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             }
         }
         // Tiền đã nhận phải được hoàn lại ngoài hệ thống, hệ thống chỉ đánh dấu để nhân viên không bỏ sót
-        if (order.getPayment().getStatus() == PaymentStatus.PAID) {
+        boolean refund = order.getPayment().getStatus() == PaymentStatus.PAID;
+        if (refund) {
             order.getPayment().setStatus(PaymentStatus.REFUNDED);
         }
+        notifyCustomer(order, "Đơn " + order.getOrderCode() + " đã bị huỷ",
+                "Chi nhánh đã huỷ đơn của bạn." + (refund ? " Chi nhánh sẽ hoàn lại tiền bạn đã thanh toán." : ""));
+    }
+
+    /** Thông báo cho khách đặt đơn; lưu cùng transaction nên đổi trạng thái và thông báo cùng thành công hoặc cùng huỷ. */
+    private void notifyCustomer(CustomerOrder order, String title, String message) {
+        userNotificationService.notify(order.getCustomer().getId(), UserNotificationType.ORDER, title, message,
+                "/orders/" + order.getOrderCode());
     }
 
     private CustomerOrder lockAndCheck(Long orderId, Long scopeStoreId) {

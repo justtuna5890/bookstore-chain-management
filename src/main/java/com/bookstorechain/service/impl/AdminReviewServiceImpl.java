@@ -4,7 +4,9 @@ import com.bookstorechain.dto.response.ReviewDTO;
 import com.bookstorechain.entity.Review;
 import com.bookstorechain.exception.ResourceNotFoundException;
 import com.bookstorechain.repository.ReviewRepository;
+import com.bookstorechain.enums.UserNotificationType;
 import com.bookstorechain.service.AdminReviewService;
+import com.bookstorechain.service.UserNotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +20,7 @@ import java.util.Locale;
 public class AdminReviewServiceImpl implements AdminReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final UserNotificationService userNotificationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -42,8 +45,19 @@ public class AdminReviewServiceImpl implements AdminReviewService {
     public ReviewDTO setHidden(Long reviewId, boolean hidden) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đánh giá với ID: " + reviewId));
+        boolean changed = review.isHidden() != hidden;
         review.setHidden(hidden);
-        return toDTO(reviewRepository.save(review));
+        Review saved = reviewRepository.save(review);
+        if (changed) {
+            // Người viết biết vì sao đánh giá của họ biến mất (hoặc hiện lại) thay vì tưởng hệ thống lỗi
+            String bookTitle = review.getBook().getTitle();
+            userNotificationService.notify(review.getUser().getId(), UserNotificationType.REVIEW,
+                    hidden ? "Đánh giá của bạn đã bị ẩn" : "Đánh giá của bạn đã hiển thị lại",
+                    hidden ? "Đánh giá của bạn về \"" + bookTitle + "\" bị ẩn vì không phù hợp với quy định cộng đồng."
+                            : "Đánh giá của bạn về \"" + bookTitle + "\" đã được hiển thị trở lại.",
+                    "/books/" + review.getBook().getId() + "#reviews");
+        }
+        return toDTO(saved);
     }
 
     /** %từ khoá% viết thường; ký tự đại diện của LIKE trong từ khoá được thoát để tìm đúng nghĩa đen. */

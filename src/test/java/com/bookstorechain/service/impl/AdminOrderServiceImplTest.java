@@ -16,7 +16,9 @@ import com.bookstorechain.enums.PaymentStatus;
 import com.bookstorechain.exception.BusinessException;
 import com.bookstorechain.exception.ResourceNotFoundException;
 import com.bookstorechain.repository.CustomerOrderRepository;
+import com.bookstorechain.enums.UserNotificationType;
 import com.bookstorechain.service.PromotionService;
+import com.bookstorechain.service.UserNotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,6 +35,10 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.AdditionalMatchers.not;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -44,6 +50,7 @@ class AdminOrderServiceImplTest {
 
     @Mock private CustomerOrderRepository customerOrderRepository;
     @Mock private PromotionService promotionService;
+    @Mock private UserNotificationService userNotificationService;
 
     private AdminOrderServiceImpl service;
     private Store hanoi;
@@ -53,7 +60,7 @@ class AdminOrderServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        service = new AdminOrderServiceImpl(customerOrderRepository, new OrderMapper(), promotionService);
+        service = new AdminOrderServiceImpl(customerOrderRepository, new OrderMapper(), promotionService, userNotificationService);
         hanoi = TestData.store(1L, "OldBook Ha Noi");
         book = TestData.book(100L, "Hoang Tu Be");
         copy1 = TestData.copy(1L, "OB-HN-001", "60000", hanoi, book, CopyStatus.RESERVED);
@@ -90,14 +97,18 @@ class AdminOrderServiceImplTest {
         service.confirm(ORDER_ID, null);
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CONFIRMED);
+        verify(userNotificationService).notify(eq(7L), eq(UserNotificationType.ORDER),
+                eq("Đơn OB-20261023-ABCDEF đã được xác nhận"), contains("OldBook Ha Noi"), eq("/orders/OB-20261023-ABCDEF"));
     }
 
     @Test
-    @DisplayName("Chỉ đơn PENDING mới xác nhận được")
+    @DisplayName("Chỉ đơn PENDING mới xác nhận được, và khi từ chối thì không có thông báo nào")
     void confirmRejectsOtherStatuses() {
         order(OrderStatus.CONFIRMED, FulfillmentType.PICKUP, PaymentMethod.COD, PaymentStatus.UNPAID);
 
         assertThatThrownBy(() -> service.confirm(ORDER_ID, null)).isInstanceOf(BusinessException.class);
+
+        verifyNoInteractions(userNotificationService);
     }
 
     @Test
@@ -110,6 +121,11 @@ class AdminOrderServiceImplTest {
         CustomerOrder delivery = order(OrderStatus.CONFIRMED, FulfillmentType.DELIVERY, PaymentMethod.COD, PaymentStatus.UNPAID);
         service.markReady(ORDER_ID, null);
         assertThat(delivery.getStatus()).isEqualTo(OrderStatus.SHIPPING);
+
+        verify(userNotificationService).notify(eq(7L), eq(UserNotificationType.ORDER),
+                eq("Đơn OB-20261023-ABCDEF sẵn sàng để nhận"), contains("OldBook Ha Noi"), any());
+        verify(userNotificationService).notify(eq(7L), eq(UserNotificationType.ORDER),
+                eq("Đơn OB-20261023-ABCDEF đang được giao"), any(), any());
     }
 
     @Test
@@ -124,6 +140,8 @@ class AdminOrderServiceImplTest {
         assertThat(copy2.getStatus()).isEqualTo(CopyStatus.SOLD);
         assertThat(order.getPayment().getStatus()).isEqualTo(PaymentStatus.PAID);
         assertThat(order.getPayment().getPaidAt()).isNotNull();
+        verify(userNotificationService).notify(eq(7L), eq(UserNotificationType.ORDER),
+                eq("Đơn OB-20261023-ABCDEF đã hoàn tất"), contains("đánh giá"), eq("/orders/OB-20261023-ABCDEF"));
     }
 
     @Test
@@ -136,6 +154,7 @@ class AdminOrderServiceImplTest {
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.READY_FOR_PICKUP);
         assertThat(copy1.getStatus()).isEqualTo(CopyStatus.RESERVED);
+        verifyNoInteractions(userNotificationService);
     }
 
     @Test
@@ -181,6 +200,8 @@ class AdminOrderServiceImplTest {
         assertThat(order.getPayment().getStatus()).isEqualTo(PaymentStatus.PAID);
         assertThat(order.getPayment().getTransactionCode()).isEqualTo("FT26102300123");
         assertThat(order.getPayment().getPaidAt()).isNotNull();
+        verify(userNotificationService).notify(eq(7L), eq(UserNotificationType.ORDER),
+                eq("Đã nhận thanh toán đơn OB-20261023-ABCDEF"), any(), any());
     }
 
     @Test
@@ -214,6 +235,8 @@ class AdminOrderServiceImplTest {
         assertThat(copy2.getStatus()).isEqualTo(CopyStatus.AVAILABLE);
         assertThat(order.getPayment().getStatus()).isEqualTo(PaymentStatus.UNPAID);
         verifyNoInteractions(promotionService);
+        verify(userNotificationService).notify(eq(7L), eq(UserNotificationType.ORDER),
+                eq("Đơn OB-20261023-ABCDEF đã bị huỷ"), not(contains("hoàn lại tiền")), eq("/orders/OB-20261023-ABCDEF"));
     }
 
     @Test
@@ -237,6 +260,8 @@ class AdminOrderServiceImplTest {
         service.cancel(ORDER_ID, null);
 
         assertThat(order.getPayment().getStatus()).isEqualTo(PaymentStatus.REFUNDED);
+        verify(userNotificationService).notify(eq(7L), eq(UserNotificationType.ORDER),
+                eq("Đơn OB-20261023-ABCDEF đã bị huỷ"), contains("hoàn lại tiền"), any());
     }
 
     @Test

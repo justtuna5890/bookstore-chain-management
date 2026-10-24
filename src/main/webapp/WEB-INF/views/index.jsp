@@ -271,12 +271,17 @@
                         </a>
                     </c:if>
                     <!-- Notification Icon -->
+                    <c:if test="${isLoggedIn}">
+                        <jsp:include page="/WEB-INF/views/customer/common/notification-bell.jsp"/>
+                    </c:if>
+                    <c:if test="${!isLoggedIn}">
                     <a href="/#stores" class="relative p-2 rounded-full glass-panel-subtle hover:bg-white/10 transition text-slate-300" title="Chi nhánh hoạt động">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" stroke-linecap="round" stroke-linejoin="round"></path>
                         </svg>
                         <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-black"></span>
                     </a>
+                    </c:if>
 
                     <!-- User status -->
                     <c:if test="${!isLoggedIn}">
@@ -902,6 +907,7 @@
     <!-- END: MinimalistFooter -->
 
     <script src="/js/wishlist.js"></script>
+    <script src="/js/notifications.js"></script>
     <script data-purpose="interactive-enhancements">
         document.addEventListener('DOMContentLoaded', () => {
             // Quick Search shortcut listener (Cmd+K / Ctrl+K)

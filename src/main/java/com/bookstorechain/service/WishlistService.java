@@ -16,4 +16,10 @@ public interface WishlistService {
 
     /** Các đầu sách yêu thích kèm giá thấp nhất, số bản đang bán và điểm đánh giá; thêm gần đây nhất trước. */
     List<BookCatalogItemDTO> getItems(Long userId);
+
+    /**
+     * Báo cho khách có sách yêu thích vừa có hàng lại (mỗi lần có hàng báo một lần). Gọi định kỳ nên bắt được mọi nguồn
+     * nhập kho: thêm bản sách, thu mua hoàn tất, nhận chuyển kho, huỷ đơn trả sách. Trả về số thông báo đã tạo.
+     */
+    int notifyBackInStock();
 }

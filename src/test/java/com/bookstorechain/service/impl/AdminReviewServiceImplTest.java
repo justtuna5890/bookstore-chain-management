@@ -4,7 +4,9 @@ import com.bookstorechain.dto.response.ReviewDTO;
 import com.bookstorechain.entity.Book;
 import com.bookstorechain.entity.Review;
 import com.bookstorechain.entity.User;
+import com.bookstorechain.enums.UserNotificationType;
 import com.bookstorechain.exception.ResourceNotFoundException;
+import com.bookstorechain.service.UserNotificationService;
 import com.bookstorechain.repository.ReviewRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,9 +26,11 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -35,13 +39,14 @@ class AdminReviewServiceImplTest {
     private static final long REVIEW_ID = 9L;
 
     @Mock private ReviewRepository reviewRepository;
+    @Mock private UserNotificationService userNotificationService;
 
     private AdminReviewServiceImpl service;
     private Review review;
 
     @BeforeEach
     void setUp() {
-        service = new AdminReviewServiceImpl(reviewRepository);
+        service = new AdminReviewServiceImpl(reviewRepository, userNotificationService);
         User customer = TestData.customer(7L);
         Book book = TestData.book(100L, "Hoang Tu Be");
         review = Review.builder().user(customer).book(book).rating(1).comment("spam").build();
@@ -60,6 +65,20 @@ class AdminReviewServiceImplTest {
         assertThat(result.isHidden()).isTrue();
         assertThat(result.getBookTitle()).isEqualTo("Hoang Tu Be");
         verify(reviewRepository).save(review);
+        verify(userNotificationService).notify(eq(7L), eq(UserNotificationType.REVIEW),
+                eq("Đánh giá của bạn đã bị ẩn"), contains("Hoang Tu Be"), eq("/books/100#reviews"));
+    }
+
+    @Test
+    @DisplayName("Ẩn đánh giá đã ẩn sẵn thì không báo lại cho người viết")
+    void hidingTwiceDoesNotNotifyAgain() {
+        review.setHidden(true);
+        when(reviewRepository.findById(REVIEW_ID)).thenReturn(Optional.of(review));
+        when(reviewRepository.save(any(Review.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        service.setHidden(REVIEW_ID, true);
+
+        verifyNoInteractions(userNotificationService);
     }
 
     @Test
@@ -70,6 +89,8 @@ class AdminReviewServiceImplTest {
         when(reviewRepository.save(any(Review.class))).thenAnswer(inv -> inv.getArgument(0));
 
         assertThat(service.setHidden(REVIEW_ID, false).isHidden()).isFalse();
+        verify(userNotificationService).notify(eq(7L), eq(UserNotificationType.REVIEW),
+                eq("Đánh giá của bạn đã hiển thị lại"), contains("Hoang Tu Be"), eq("/books/100#reviews"));
     }
 
     @Test
@@ -80,6 +101,7 @@ class AdminReviewServiceImplTest {
         assertThatThrownBy(() -> service.setHidden(REVIEW_ID, true)).isInstanceOf(ResourceNotFoundException.class);
 
         verify(reviewRepository, never()).save(any());
+        verifyNoInteractions(userNotificationService);
     }
 
     @Test

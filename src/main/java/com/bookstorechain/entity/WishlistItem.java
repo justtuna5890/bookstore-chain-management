@@ -1,5 +1,6 @@
 package com.bookstorechain.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -29,4 +30,12 @@ public class WishlistItem extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "book_id", nullable = false)
     private Book book;
+
+    /**
+     * Đã báo "có hàng lại" cho lần có hàng hiện tại. Đặt true ngay khi thêm nếu sách đang có hàng (không báo điều khách
+     * đã thấy); trở về false khi sách hết hàng để lần có hàng sau được báo lại.
+     */
+    @Column(name = "in_stock_notified", nullable = false)
+    @Builder.Default
+    private boolean inStockNotified = false;
 }

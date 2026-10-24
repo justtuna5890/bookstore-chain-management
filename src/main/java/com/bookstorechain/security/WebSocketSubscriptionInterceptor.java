@@ -21,11 +21,13 @@ import java.util.regex.Pattern;
  * <ul>
  *   <li>/topic/notifications: nhân viên, quản lý, quản trị (thông báo thu mua, chuyển kho);</li>
  *   <li>/topic/store/{id}: quản trị mọi chi nhánh; quản lý và nhân viên chỉ chi nhánh của mình;</li>
- *   <li>/topic/store/all: quản trị và quản lý (đơn hàng của mọi chi nhánh).</li>
+ *   <li>/topic/store/all: quản trị và quản lý (đơn hàng của mọi chi nhánh);</li>
+ *   <li>/user/queue/notifications: mọi người dùng đã đăng nhập, chỉ nhận thông báo gửi riêng cho chính mình
+ *       (Spring ghép đích này với tên đăng nhập của phiên, nên không nghe được kênh của người khác).</li>
  * </ul>
- * Người chưa đăng nhập và khách hàng không đăng ký được kênh nào. Khung bị từ chối bị bỏ im lặng thay vì ném lỗi
- * để trình duyệt không rơi vào vòng lặp kết nối lại. Các kênh riêng của khách (thông báo, chat) sẽ được bổ sung
- * cùng tính năng tương ứng.
+ * Người chưa đăng nhập không đăng ký được kênh nào, khách hàng chỉ đăng ký được kênh riêng của mình. Khung bị từ chối
+ * bị bỏ im lặng thay vì ném lỗi để trình duyệt không rơi vào vòng lặp kết nối lại. Kênh riêng của chat hỗ trợ sẽ
+ * được bổ sung cùng tính năng đó.
  */
 @Component
 @Slf4j
@@ -33,6 +35,7 @@ public class WebSocketSubscriptionInterceptor implements ChannelInterceptor {
 
     static final String GENERAL_TOPIC = "/topic/notifications";
     static final String ALL_STORES_TOPIC = "/topic/store/all";
+    static final String PERSONAL_NOTIFICATIONS = "/user/queue/notifications";
     private static final Pattern STORE_TOPIC = Pattern.compile("^/topic/store/(\\d+)$");
 
     @Override
@@ -50,8 +53,15 @@ public class WebSocketSubscriptionInterceptor implements ChannelInterceptor {
     }
 
     boolean isAllowed(Principal principal, String destination) {
-        CustomUserDetails user = staffOf(principal);
-        if (user == null || destination == null) {
+        CustomUserDetails signedIn = signedInUser(principal);
+        if (signedIn == null || destination == null) {
+            return false;
+        }
+        if (PERSONAL_NOTIFICATIONS.equals(destination)) {
+            return true;
+        }
+        CustomUserDetails user = staffOf(signedIn);
+        if (user == null) {
             return false;
         }
         Role role = user.getUser().getRole();
@@ -73,15 +83,18 @@ public class WebSocketSubscriptionInterceptor implements ChannelInterceptor {
         return false;
     }
 
-    /** Trả về người dùng nếu là nhân viên, quản lý hoặc quản trị đã đăng nhập; ngược lại null. */
-    private CustomUserDetails staffOf(Principal principal) {
+    /** Trả về người dùng của phiên WebSocket nếu đã đăng nhập (mọi vai trò); ngược lại null. */
+    private CustomUserDetails signedInUser(Principal principal) {
         if (principal instanceof Authentication authentication
                 && authentication.getPrincipal() instanceof CustomUserDetails details) {
-            Role role = details.getUser().getRole();
-            if (role == Role.ADMIN || role == Role.MANAGER || role == Role.STAFF) {
-                return details;
-            }
+            return details;
         }
         return null;
+    }
+
+    /** Trả về người dùng nếu là nhân viên, quản lý hoặc quản trị; ngược lại null. */
+    private CustomUserDetails staffOf(CustomUserDetails details) {
+        Role role = details.getUser().getRole();
+        return role == Role.ADMIN || role == Role.MANAGER || role == Role.STAFF ? details : null;
     }
 }

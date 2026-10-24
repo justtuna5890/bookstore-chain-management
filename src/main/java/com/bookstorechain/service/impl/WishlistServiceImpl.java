@@ -11,7 +11,9 @@ import com.bookstorechain.repository.BookCopyRepository;
 import com.bookstorechain.repository.BookRepository;
 import com.bookstorechain.repository.UserRepository;
 import com.bookstorechain.repository.WishlistItemRepository;
+import com.bookstorechain.enums.UserNotificationType;
 import com.bookstorechain.service.ReviewService;
+import com.bookstorechain.service.UserNotificationService;
 import com.bookstorechain.service.WishlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,7 @@ public class WishlistServiceImpl implements WishlistService {
     private final BookCopyRepository bookCopyRepository;
     private final UserRepository userRepository;
     private final ReviewService reviewService;
+    private final UserNotificationService userNotificationService;
     private final UserLocks userLocks;
     private final PlatformTransactionManager transactionManager;
 
@@ -57,8 +60,27 @@ public class WishlistServiceImpl implements WishlistService {
         Book book = bookRepository.findById(bookId)
                 .filter(Book::isActive)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đầu sách với ID: " + bookId));
-        wishlistItemRepository.save(WishlistItem.builder().user(userRepository.getReferenceById(userId)).book(book).build());
+        // Sách đang có hàng thì khách đã thấy, không báo "có hàng lại" cho lần có hàng này
+        boolean inStock = !bookCopyRepository.findByBookIdAndStatus(bookId, CopyStatus.AVAILABLE).isEmpty();
+        wishlistItemRepository.save(WishlistItem.builder()
+                .user(userRepository.getReferenceById(userId)).book(book).inStockNotified(inStock).build());
         return true;
+    }
+
+    @Override
+    @Transactional
+    public int notifyBackInStock() {
+        // Đặt lại cờ của sách đã hết hàng trước, để sách vừa hết rồi có lại trong cùng một chu kỳ vẫn được báo
+        wishlistItemRepository.resetOutOfStock();
+        List<WishlistItem> restocked = wishlistItemRepository.findRestocked();
+        for (WishlistItem item : restocked) {
+            Book book = item.getBook();
+            userNotificationService.notify(item.getUser().getId(), UserNotificationType.WISHLIST,
+                    "Sách yêu thích đã có hàng", "\"" + book.getTitle() + "\" vừa có hàng trở lại. Đặt sớm kẻo hết.",
+                    "/books/" + book.getId());
+            item.setInStockNotified(true);
+        }
+        return restocked.size();
     }
 
     @Override
