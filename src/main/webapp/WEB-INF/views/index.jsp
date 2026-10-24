@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <c:set var="isLoggedIn" value="${pageContext.request.userPrincipal != null}" />
 <c:set var="userRole" value="${isLoggedIn ? pageContext.request.userPrincipal.principal.user.role.name() : ''}" />
@@ -262,6 +263,9 @@
                         </c:if>
                     </a>
                     <c:if test="${isLoggedIn}">
+                        <a href="/wishlist" class="relative p-2 rounded-full glass-panel-subtle hover:bg-white/10 transition text-slate-300" title="Sách yêu thích">
+                            <i class="fa-regular fa-heart text-sm"></i>
+                        </a>
                         <a href="/orders" class="relative p-2 rounded-full glass-panel-subtle hover:bg-white/10 transition text-slate-300" title="Đơn hàng của tôi">
                             <i class="fa-solid fa-receipt text-sm"></i>
                         </a>
@@ -291,21 +295,21 @@
                                 <span>Quản Trị</span>
                             </a>
                         </c:if>
-                        <div class="flex items-center gap-2.5 pl-2 pr-3 py-1 rounded-full glass-panel-subtle border border-white/10 hover:border-brand-gold/40 transition">
+                        <a href="/account" title="Tài khoản của tôi" class="flex items-center gap-2.5 pl-2 pr-3 py-1 rounded-full glass-panel-subtle border border-white/10 hover:border-brand-gold/40 transition">
                             <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-600 via-brand-gold to-yellow-200 p-[1px] flex items-center justify-center">
                                 <div class="w-full h-full rounded-full bg-[#1e2330] flex items-center justify-center text-xs font-bold text-amber-200">
-                                    ${pageContext.request.userPrincipal.principal.username.substring(0, 1).toUpperCase()}
+                                    ${fn:escapeXml(pageContext.request.userPrincipal.principal.username.substring(0, 1).toUpperCase())}
                                 </div>
                             </div>
                             <div class="hidden sm:flex flex-col text-left">
                                 <span class="text-xs font-semibold text-slate-200 leading-tight">
-                                    ${pageContext.request.userPrincipal.principal.user.fullName}
+                                    ${fn:escapeXml(pageContext.request.userPrincipal.principal.user.fullName)}
                                 </span>
                                 <span class="text-[10px] text-brand-goldLight leading-none">
                                     ${pageContext.request.userPrincipal.principal.user.role}
                                 </span>
                             </div>
-                        </div>
+                        </a>
                     </c:if>
                 </div>
             </header>
@@ -375,10 +379,10 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <button class="text-slate-500 hover:text-brand-gold p-1.5 transition shrink-0" title="Lưu sách">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                            <path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" stroke-linecap="round" stroke-linejoin="round"></path>
-                                        </svg>
+                                    <c:set var="isItemWishlisted" value="${wishlistedIds.contains(item.id)}"/>
+                                    <button type="button" data-wishlist-toggle="${item.id}" data-wishlisted="${isItemWishlisted}" aria-pressed="${isItemWishlisted}" title="Yêu thích"
+                                            class="${isItemWishlisted ? 'text-rose-400' : 'text-slate-400'} hover:text-rose-300 p-1.5 transition shrink-0">
+                                        <i class="${isItemWishlisted ? 'fa-solid' : 'fa-regular'} fa-heart text-sm"></i>
                                     </button>
                                 </article>
                             </c:forEach>
@@ -629,15 +633,22 @@
                                         <p class="text-[11px] text-slate-400 truncate">${book.author}</p>
                                         <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-white/5">
                                             <div class="flex items-center gap-1">
-                                                <span class="text-[10px] text-amber-400 font-semibold">★ 4.9</span>
+                                                <c:choose>
+                                                    <c:when test="${book.rating.count > 0}">
+                                                        <span class="text-[10px] text-amber-400 font-semibold" title="${book.rating.count} đánh giá">★ ${book.rating.averageLabel}</span>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <span class="text-[10px] text-slate-500" title="Chưa có đánh giá">☆ —</span>
+                                                    </c:otherwise>
+                                                </c:choose>
                                                 <span class="text-[11px] font-bold text-emerald-400 ml-1">
                                                     <fmt:formatNumber value="${book.minPrice}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                                                 </span>
                                             </div>
-                                            <button class="text-slate-400 hover:text-brand-gold transition" title="Lưu sách">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                    <path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" stroke-linecap="round" stroke-linejoin="round"></path>
-                                                </svg>
+                                            <c:set var="isWishlisted" value="${wishlistedIds.contains(book.id)}"/>
+                                            <button type="button" data-wishlist-toggle="${book.id}" data-wishlisted="${isWishlisted}" aria-pressed="${isWishlisted}" title="Yêu thích"
+                                                    class="${isWishlisted ? 'text-rose-400' : 'text-slate-400'} hover:text-rose-300 transition">
+                                                <i class="${isWishlisted ? 'fa-solid' : 'fa-regular'} fa-heart text-sm"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -772,25 +783,25 @@
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <label class="block text-[11px] font-medium text-slate-300 mb-1">Họ tên của bạn (*)</label>
-                                            <input name="customerName" value="${buybackForm.customerName}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" required placeholder="Nguyễn Văn A"/>
+                                            <input name="customerName" value="${fn:escapeXml(buybackForm.customerName)}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" required placeholder="Nguyễn Văn A"/>
                                         </div>
                                         <div>
                                             <label class="block text-[11px] font-medium text-slate-300 mb-1">Email liên hệ (*)</label>
-                                            <input name="customerEmail" value="${buybackForm.customerEmail}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" required placeholder="email@domain.com"/>
+                                            <input name="customerEmail" value="${fn:escapeXml(buybackForm.customerEmail)}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" required placeholder="email@domain.com"/>
                                         </div>
                                     </div>
 
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <label class="block text-[11px] font-medium text-slate-300 mb-1">Số điện thoại</label>
-                                            <input name="customerPhone" value="${buybackForm.customerPhone}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" placeholder="09xxxxxxxx"/>
+                                            <input name="customerPhone" value="${fn:escapeXml(buybackForm.customerPhone)}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" placeholder="09xxxxxxxx"/>
                                         </div>
                                         <div>
                                             <label class="block text-[11px] font-medium text-slate-300 mb-1">Chi nhánh tiếp nhận (*)</label>
                                             <select name="storeId" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 bg-[#161a22]" required>
                                                 <option value="">-- Chọn chi nhánh gần bạn --</option>
                                                 <c:forEach var="st" items="${stores}">
-                                                    <option value="${st.id}" ${buybackForm.storeId == st.id ? 'selected' : ''}>${st.name}</option>
+                                                    <option value="${st.id}" ${buybackForm.storeId == st.id ? 'selected' : ''}>${fn:escapeXml(st.name)}</option>
                                                 </c:forEach>
                                             </select>
                                         </div>
@@ -799,7 +810,7 @@
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div>
                                             <label class="block text-[11px] font-medium text-slate-300 mb-1">Tựa sách muốn bán (*)</label>
-                                            <input name="bookTitle" value="${buybackForm.bookTitle}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" required placeholder="VD: Chiến Tranh và Hòa Bình"/>
+                                            <input name="bookTitle" value="${fn:escapeXml(buybackForm.bookTitle)}" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" required placeholder="VD: Chiến Tranh và Hòa Bình"/>
                                         </div>
                                         <div>
                                             <label class="block text-[11px] font-medium text-slate-300 mb-1">Tình trạng sách ước tính (*)</label>
@@ -813,7 +824,7 @@
 
                                     <div>
                                         <label class="block text-[11px] font-medium text-slate-300 mb-1">Ghi chú tình trạng sách</label>
-                                        <textarea name="note" rows="2" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" placeholder="VD: Sách bìa cứng năm 1990, gáy còn nguyên...">${buybackForm.note}</textarea>
+                                        <textarea name="note" rows="2" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" placeholder="VD: Sách bìa cứng năm 1990, gáy còn nguyên...">${fn:escapeXml(buybackForm.note)}</textarea>
                                     </div>
 
                                     <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-gold to-yellow-500 hover:from-yellow-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-glow-gold transition">
@@ -890,27 +901,9 @@
     </footer>
     <!-- END: MinimalistFooter -->
 
+    <script src="/js/wishlist.js"></script>
     <script data-purpose="interactive-enhancements">
         document.addEventListener('DOMContentLoaded', () => {
-            // Bookmark button active toggle
-            const bookmarkButtons = document.querySelectorAll('button[title="Lưu sách"]');
-            bookmarkButtons.forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const svg = btn.querySelector('svg');
-                    if (btn.classList.contains('text-brand-gold')) {
-                        btn.classList.remove('text-brand-gold');
-                        btn.classList.add('text-slate-400');
-                        svg.setAttribute('fill', 'none');
-                    } else {
-                        btn.classList.add('text-brand-gold');
-                        btn.classList.remove('text-slate-400');
-                        svg.setAttribute('fill', 'currentColor');
-                    }
-                });
-            });
-
             // Quick Search shortcut listener (Cmd+K / Ctrl+K)
             window.addEventListener('keydown', (e) => {
                 if ((e.metaKey || e.ctrlKey) && e.key === 'k') {

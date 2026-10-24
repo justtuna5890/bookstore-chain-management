@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <c:set var="adminTitle" value="${empty editingId ? 'Tạo Mã Giảm Giá' : 'Sửa Mã Giảm Giá'}" scope="request"/>
 <c:set var="adminActive" value="promotions" scope="request"/>
 <jsp:include page="/WEB-INF/views/admin/common/page-top.jsp"/>
@@ -11,7 +12,7 @@
 
 <c:if test="${not empty formErrors}">
     <div class="mb-5 p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs">
-        <ul class="list-disc pl-5 space-y-0.5"><c:forEach var="err" items="${formErrors}"><li>${err}</li></c:forEach></ul>
+        <ul class="list-disc pl-5 space-y-0.5"><c:forEach var="err" items="${formErrors}"><li>${fn:escapeXml(err)}</li></c:forEach></ul>
     </div>
 </c:if>
 
@@ -22,12 +23,12 @@
     <section class="glass-panel rounded-2xl border border-white/10 p-5 flex flex-col gap-4">
         <h2 class="text-[11px] uppercase tracking-wider font-semibold text-brand-gold">Thông tin mã</h2>
         <label class="block text-xs text-slate-300">Mã giảm giá
-            <input type="text" name="code" value="${form.code}" maxlength="30" ${empty editingId ? 'required' : 'readonly'} placeholder="VD: WELCOME10"
+            <input type="text" name="code" value="${fn:escapeXml(form.code)}" maxlength="30" ${empty editingId ? 'required' : 'readonly'} placeholder="VD: WELCOME10"
                    class="glass-input mt-1.5 w-full px-3 py-2 rounded-xl text-sm uppercase font-mono ${empty editingId ? '' : 'opacity-60 cursor-not-allowed'}"/>
             <c:if test="${not empty editingId}"><span class="text-[11px] text-slate-500">Không đổi được chuỗi mã sau khi tạo.</span></c:if>
         </label>
         <label class="block text-xs text-slate-300">Mô tả
-            <input type="text" name="description" value="${form.description}" maxlength="255" placeholder="Hiển thị cho khách khi chọn mã" class="glass-input mt-1.5 w-full px-3 py-2 rounded-xl text-sm"/>
+            <input type="text" name="description" value="${fn:escapeXml(form.description)}" maxlength="255" placeholder="Hiển thị cho khách khi chọn mã" class="glass-input mt-1.5 w-full px-3 py-2 rounded-xl text-sm"/>
         </label>
         <div class="grid grid-cols-2 gap-4">
             <label class="block text-xs text-slate-300">Loại giảm giá
@@ -68,7 +69,7 @@
             <select name="storeId" class="glass-input mt-1.5 w-full px-3 py-2 rounded-xl text-sm bg-[#161a22]">
                 <option value="">Toàn chuỗi</option>
                 <c:forEach var="store" items="${stores}">
-                    <option value="${store.id}" ${form.storeId == store.id ? 'selected' : ''}>${store.name}</option>
+                    <option value="${store.id}" ${form.storeId == store.id ? 'selected' : ''}>${fn:escapeXml(store.name)}</option>
                 </c:forEach>
             </select>
         </label>

@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="pageTitle" value="Đặt hàng thành công" scope="request"/>
 <jsp:include page="/WEB-INF/views/customer/common/layout-top.jsp"/>
@@ -16,19 +17,19 @@
     <c:forEach var="order" items="${placedOrders}">
         <section class="rounded-2xl glass-panel-subtle border border-white/10 overflow-hidden">
             <div class="px-4 py-3 bg-white/5 flex items-center justify-between">
-                <span class="font-mono text-sm text-amber-300 font-semibold">${order.orderCode}</span>
+                <span class="font-mono text-sm text-amber-300 font-semibold">${fn:escapeXml(order.orderCode)}</span>
                 <span class="text-[11px] text-slate-400">${order.formattedCreatedAt}</span>
             </div>
             <div class="p-4 text-xs">
-                <p class="text-slate-200 font-semibold"><i class="fa-solid fa-store text-brand-gold mr-1.5"></i>${order.storeName}</p>
+                <p class="text-slate-200 font-semibold"><i class="fa-solid fa-store text-brand-gold mr-1.5"></i>${fn:escapeXml(order.storeName)}</p>
                 <ul class="mt-3 space-y-1">
                     <c:forEach var="line" items="${order.lines}">
-                        <li class="flex justify-between gap-3"><span class="text-slate-300 truncate">${line.title} <span class="font-mono text-slate-500">(${line.copyCode})</span></span><span class="text-slate-100 shrink-0"><fmt:formatNumber value="${line.price}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span></li>
+                        <li class="flex justify-between gap-3"><span class="text-slate-300 truncate">${fn:escapeXml(line.title)} <span class="font-mono text-slate-500">(${fn:escapeXml(line.copyCode)})</span></span><span class="text-slate-100 shrink-0"><fmt:formatNumber value="${line.price}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span></li>
                     </c:forEach>
                 </ul>
                 <dl class="mt-3 pt-3 border-t border-white/10 space-y-1.5">
                     <c:if test="${order.discountAmount.signum() > 0}">
-                        <div class="flex justify-between"><dt class="text-slate-400">Giảm giá (${order.promotionCode})</dt><dd class="text-emerald-300">-<fmt:formatNumber value="${order.discountAmount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></dd></div>
+                        <div class="flex justify-between"><dt class="text-slate-400">Giảm giá (${fn:escapeXml(order.promotionCode)})</dt><dd class="text-emerald-300">-<fmt:formatNumber value="${order.discountAmount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></dd></div>
                     </c:if>
                     <div class="flex justify-between"><dt class="text-slate-400">Nhận hàng</dt><dd class="text-slate-100">${order.fulfillmentType == 'DELIVERY' ? 'Giao tận nơi' : 'Nhận tại chi nhánh'}</dd></div>
                     <div class="flex justify-between"><dt class="text-slate-400">Thanh toán</dt><dd class="text-slate-100">${order.paymentMethod == 'COD' ? 'Tiền mặt khi nhận hàng' : 'Chuyển khoản'}</dd></div>
@@ -36,7 +37,7 @@
                 </dl>
                 <c:if test="${order.paymentMethod == 'BANK_TRANSFER'}">
                     <p class="mt-3 p-2.5 rounded-lg bg-sky-500/10 border border-sky-500/30 text-sky-200 text-[11px] leading-relaxed">
-                        Vui lòng chuyển khoản đúng số tiền và ghi nội dung <strong class="font-mono">${order.orderCode}</strong>. Nhân viên sẽ xác nhận khi nhận được tiền.
+                        Vui lòng chuyển khoản đúng số tiền và ghi nội dung <strong class="font-mono">${fn:escapeXml(order.orderCode)}</strong>. Nhân viên sẽ xác nhận khi nhận được tiền.
                     </p>
                 </c:if>
             </div>

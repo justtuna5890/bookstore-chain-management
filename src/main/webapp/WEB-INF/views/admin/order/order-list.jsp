@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="adminTitle" value="Đơn Hàng Của Khách" scope="request"/>
 <c:set var="adminActive" value="orders" scope="request"/>
@@ -18,7 +19,7 @@
             <c:choose>
                 <c:when test="${isStaffScoped}">
                     <div class="glass-input w-full px-3 py-2 text-xs rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 font-semibold flex items-center gap-1.5">
-                        <i class="fa-solid fa-store text-[10px]"></i><span class="truncate">${currentStoreName}</span>
+                        <i class="fa-solid fa-store text-[10px]"></i><span class="truncate">${fn:escapeXml(currentStoreName)}</span>
                     </div>
                     <input type="hidden" name="storeId" value="${selectedStoreId}"/>
                 </c:when>
@@ -26,7 +27,7 @@
                     <select name="storeId" class="glass-input w-full px-3 py-2 text-xs rounded-xl bg-[#161a22]">
                         <option value="">-- Tất cả chi nhánh --</option>
                         <c:forEach var="store" items="${stores}">
-                            <option value="${store.id}" ${selectedStoreId == store.id ? 'selected' : ''}>${store.name}</option>
+                            <option value="${store.id}" ${selectedStoreId == store.id ? 'selected' : ''}>${fn:escapeXml(store.name)}</option>
                         </c:forEach>
                     </select>
                 </c:otherwise>
@@ -41,7 +42,7 @@
             </select>
         </div>
         <div class="sm:col-span-4">
-            <input type="text" name="keyword" value="${selectedKeyword}" placeholder="Mã đơn, tên hoặc số điện thoại người nhận..." class="glass-input w-full px-3 py-2 text-xs rounded-xl placeholder-slate-500"/>
+            <input type="text" name="keyword" value="${fn:escapeXml(selectedKeyword)}" placeholder="Mã đơn, tên hoặc số điện thoại người nhận..." class="glass-input w-full px-3 py-2 text-xs rounded-xl placeholder-slate-500"/>
         </div>
         <div class="sm:col-span-2">
             <button type="submit" class="w-full py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition">Lọc Dữ Liệu</button>
@@ -57,10 +58,10 @@
     </div>
 </c:if>
 <c:if test="${not empty successMessage}">
-    <div class="mb-5 p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2"><i class="fa-solid fa-circle-check"></i><span>${successMessage}</span></div>
+    <div class="mb-5 p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2"><i class="fa-solid fa-circle-check"></i><span>${fn:escapeXml(successMessage)}</span></div>
 </c:if>
 <c:if test="${not empty errorMessage}">
-    <div class="mb-5 p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2"><i class="fa-solid fa-circle-exclamation"></i><span>${errorMessage}</span></div>
+    <div class="mb-5 p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2"><i class="fa-solid fa-circle-exclamation"></i><span>${fn:escapeXml(errorMessage)}</span></div>
 </c:if>
 
 <!-- Bảng đơn hàng -->
@@ -83,9 +84,9 @@
             <tbody class="divide-y divide-white/5">
                 <c:forEach var="order" items="${orderPage.content}">
                     <tr class="hover:bg-white/[0.03] transition">
-                        <td class="py-3.5 px-4 font-mono font-semibold text-amber-300 whitespace-nowrap">${order.orderCode}</td>
-                        <td class="py-3.5 px-4"><div class="text-slate-100 font-medium">${order.customerName}</div><div class="text-[11px] text-slate-500">${order.receiverPhone}</div></td>
-                        <td class="py-3.5 px-4">${order.storeName}</td>
+                        <td class="py-3.5 px-4 font-mono font-semibold text-amber-300 whitespace-nowrap">${fn:escapeXml(order.orderCode)}</td>
+                        <td class="py-3.5 px-4"><div class="text-slate-100 font-medium">${fn:escapeXml(order.customerName)}</div><div class="text-[11px] text-slate-500">${fn:escapeXml(order.receiverPhone)}</div></td>
+                        <td class="py-3.5 px-4">${fn:escapeXml(order.storeName)}</td>
                         <td class="py-3.5 px-4 text-center">${order.itemCount}</td>
                         <td class="py-3.5 px-4 text-right font-bold text-emerald-400 whitespace-nowrap"><fmt:formatNumber value="${order.totalAmount}" pattern="#,###"/> đ</td>
                         <td class="py-3.5 px-4">
@@ -114,7 +115,7 @@
                 (Tổng <span class="text-brand-gold font-medium">${orderPage.totalElements}</span> đơn)</div>
             <div class="flex items-center gap-1.5">
                 <c:forEach begin="0" end="${orderPage.totalPages - 1}" var="i">
-                    <a href="?page=${i}&storeId=${selectedStoreId}&status=${selectedStatus}&keyword=${selectedKeyword}"
+                    <a href="?page=${i}&storeId=${selectedStoreId}&status=${selectedStatus}&keyword=${fn:escapeXml(selectedKeyword)}"
                        class="w-8 h-8 rounded-lg flex items-center justify-center font-medium transition ${orderPage.number == i ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold' : 'bg-white/5 hover:bg-white/10 text-slate-300'}">${i + 1}</a>
                 </c:forEach>
             </div>

@@ -6,5 +6,6 @@
         &copy; OldBook — Hệ thống chuỗi cửa hàng sách cũ tuyển chọn
     </footer>
     <script src="/js/cart.js"></script>
+    <script src="/js/wishlist.js"></script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <c:set var="pageTitle" value="Giỏ hàng" scope="request"/>
 <jsp:include page="/WEB-INF/views/customer/common/layout-top.jsp"/>
@@ -19,7 +20,7 @@
 
 <c:if test="${not empty cartNotice}">
     <div class="mt-4 p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-2.5">
-        <i class="fa-solid fa-triangle-exclamation text-amber-400 text-base mt-0.5"></i><span>${cartNotice}</span>
+        <i class="fa-solid fa-triangle-exclamation text-amber-400 text-base mt-0.5"></i><span>${fn:escapeXml(cartNotice)}</span>
     </div>
 </c:if>
 
@@ -39,7 +40,7 @@
             <c:forEach var="group" items="${cart.groups}">
                 <section class="rounded-2xl glass-panel-subtle border border-white/10 overflow-hidden">
                     <div class="px-4 py-3 bg-white/5 flex items-center justify-between">
-                        <h2 class="text-xs font-semibold text-brand-gold"><i class="fa-solid fa-store mr-1.5"></i>${group.storeName}</h2>
+                        <h2 class="text-xs font-semibold text-brand-gold"><i class="fa-solid fa-store mr-1.5"></i>${fn:escapeXml(group.storeName)}</h2>
                         <span class="text-xs text-slate-300">Tạm tính: <strong class="text-emerald-400"><fmt:formatNumber value="${group.subtotal}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></strong></span>
                     </div>
                     <ul class="divide-y divide-white/5">
@@ -47,15 +48,15 @@
                             <li class="p-4 flex items-center gap-4 ${item.available ? '' : 'opacity-60'}">
                                 <a href="/books/${item.bookId}" class="w-14 h-20 rounded-lg overflow-hidden shrink-0 book-spine-effect bg-[#15181E] flex items-center justify-center">
                                     <c:choose>
-                                        <c:when test="${not empty item.coverImage}"><img src="${item.coverImage}" class="w-full h-full object-cover" alt="${item.title}"/></c:when>
-                                        <c:otherwise><span class="text-[8px] font-serif text-amber-200 text-center px-1">${item.title}</span></c:otherwise>
+                                        <c:when test="${not empty item.coverImage}"><img src="${fn:escapeXml(item.coverImage)}" class="w-full h-full object-cover" alt="${fn:escapeXml(item.title)}"/></c:when>
+                                        <c:otherwise><span class="text-[8px] font-serif text-amber-200 text-center px-1">${fn:escapeXml(item.title)}</span></c:otherwise>
                                     </c:choose>
                                 </a>
                                 <div class="flex-1 min-w-0">
-                                    <a href="/books/${item.bookId}" class="text-sm font-semibold text-white hover:text-brand-gold transition line-clamp-1">${item.title}</a>
-                                    <p class="text-[11px] text-slate-400">${item.author}</p>
+                                    <a href="/books/${item.bookId}" class="text-sm font-semibold text-white hover:text-brand-gold transition line-clamp-1">${fn:escapeXml(item.title)}</a>
+                                    <p class="text-[11px] text-slate-400">${fn:escapeXml(item.author)}</p>
                                     <p class="text-[11px] mt-1">
-                                        <span class="font-mono text-amber-300">${item.copyCode}</span>
+                                        <span class="font-mono text-amber-300">${fn:escapeXml(item.copyCode)}</span>
                                         <span class="mx-1.5 text-slate-600">·</span>
                                         <c:choose>
                                             <c:when test="${item.bookCondition == 'LIKE_NEW'}"><span class="text-emerald-300">Như mới</span></c:when>
