@@ -5,6 +5,16 @@
 <c:set var="pageTitle" value="Đơn ${fn:escapeXml(order.orderCode)}" scope="request"/>
 <jsp:include page="/WEB-INF/views/customer/common/layout-top.jsp"/>
 
+<style>
+    .stars { position: relative; display: inline-block; color: #475569; letter-spacing: 2px; line-height: 1; }
+    .stars > span { position: absolute; top: 0; left: 0; bottom: 0; overflow: hidden; white-space: nowrap; color: #fbbf24; }
+    .rate-input { display: inline-flex; flex-direction: row-reverse; gap: 4px; }
+    .rate-input input { position: absolute; opacity: 0; pointer-events: none; }
+    .rate-input label { font-size: 28px; line-height: 1; color: #475569; cursor: pointer; transition: color .15s; }
+    .rate-input input:checked ~ label, .rate-input label:hover, .rate-input label:hover ~ label { color: #fbbf24; }
+    .rate-input input:focus-visible + label { outline: 2px solid #D4AF37; border-radius: 4px; }
+</style>
+
 <nav class="mt-5 text-xs text-slate-400 flex items-center gap-2">
     <a href="/orders" class="hover:text-brand-gold transition">Đơn hàng của tôi</a>
     <i class="fa-solid fa-chevron-right text-[9px] text-slate-600"></i>
@@ -113,5 +123,59 @@
         </c:if>
     </aside>
 </div>
+
+<!-- Đánh giá sách sau khi nhận hàng -->
+<c:if test="${order.status == 'COMPLETED' && not empty reviewLines}">
+    <section id="danh-gia" class="mt-6 rounded-2xl glass-panel-subtle border border-white/10 overflow-hidden">
+        <div class="px-4 py-3 bg-white/5 text-xs font-semibold text-brand-gold"><i class="fa-regular fa-star mr-1.5"></i>Đánh giá sách trong đơn</div>
+        <c:if test="${not empty reviewSuccess}">
+            <div class="m-4 p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-200 text-xs flex items-start gap-2.5">
+                <i class="fa-solid fa-circle-check text-emerald-400 text-base mt-0.5"></i><span>${fn:escapeXml(reviewSuccess)}</span>
+            </div>
+        </c:if>
+        <c:if test="${not empty reviewError}">
+            <div class="m-4 p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-200 text-xs flex items-start gap-2.5">
+                <i class="fa-solid fa-circle-exclamation text-rose-400 text-base mt-0.5"></i><span>${fn:escapeXml(reviewError)}</span>
+            </div>
+        </c:if>
+        <ul class="divide-y divide-white/5">
+            <c:forEach var="line" items="${reviewLines}">
+                <c:set var="mine" value="${myReviews[line.bookId]}"/>
+                <li class="p-4">
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                        <a href="/books/${line.bookId}" class="text-sm font-semibold text-white hover:text-brand-gold transition">${fn:escapeXml(line.title)}</a>
+                        <c:if test="${not empty mine}">
+                            <span class="stars text-sm" aria-label="${mine.rating} sao">★★★★★<span style="width:${mine.starPercent}%">★★★★★</span></span>
+                        </c:if>
+                    </div>
+                    <c:if test="${not empty mine.comment}">
+                        <p class="text-xs text-slate-300 mt-1.5">“${fn:escapeXml(mine.comment)}”</p>
+                    </c:if>
+                    <c:if test="${mine.hidden}">
+                        <p class="text-[11px] text-amber-300 mt-1.5"><i class="fa-solid fa-eye-slash mr-1"></i>Đánh giá của bạn đang bị quản trị viên ẩn vì vi phạm quy định.</p>
+                    </c:if>
+                    <details class="mt-2" ${empty mine ? 'open' : ''}>
+                        <summary class="cursor-pointer text-[11px] text-brand-gold hover:underline select-none">${empty mine ? 'Viết đánh giá' : 'Sửa đánh giá'}</summary>
+                        <form action="/orders/${fn:escapeXml(order.orderCode)}/reviews/${line.bookId}" method="post" class="mt-2">
+                            <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                            <div class="rate-input relative" role="radiogroup" aria-label="Số sao">
+                                <c:forEach var="star" begin="1" end="5">
+                                    <c:set var="s" value="${6 - star}"/>
+                                    <input type="radio" id="rate-${line.bookId}-${s}" name="rating" value="${s}" required ${mine.rating == s ? 'checked' : ''}/>
+                                    <label for="rate-${line.bookId}-${s}" title="${s} sao">★</label>
+                                </c:forEach>
+                            </div>
+                            <textarea name="comment" rows="3" maxlength="1000" placeholder="Chia sẻ tình trạng sách, giao nhận... (không bắt buộc)"
+                                      class="form-field w-full mt-3 px-3 py-2 text-xs rounded-xl">${fn:escapeXml(mine.comment)}</textarea>
+                            <button type="submit" class="mt-3 px-4 py-2 rounded-full bg-gradient-to-r from-brand-gold to-yellow-500 text-slate-950 font-bold text-xs hover:from-yellow-400 hover:to-amber-500 transition">
+                                <i class="fa-solid fa-paper-plane mr-1"></i>${empty mine ? 'Gửi đánh giá' : 'Cập nhật'}
+                            </button>
+                        </form>
+                    </details>
+                </li>
+            </c:forEach>
+        </ul>
+    </section>
+</c:if>
 
 <jsp:include page="/WEB-INF/views/customer/common/layout-bottom.jsp"/>
