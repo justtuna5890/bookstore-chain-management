@@ -193,6 +193,13 @@
 
         }
 
+        input[type="date"],
+        input[type="date"].glass-input {
+            color-scheme: dark !important;
+            background-color: #12151c !important;
+            color: #f1f5f9 !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        }
         input[type="date"]::-webkit-calendar-picker-indicator {
 
             filter: invert(0.8);
@@ -288,14 +295,17 @@
 
                 <div class="flex items-center gap-3">
 
-                    <a href="/admin/reports/export/excel?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}" 
-
+                                        <a href="/admin/reports/export/excel?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}" 
                        class="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold text-xs shadow-lg transition flex items-center gap-2">
-
                         <i class="fa-solid fa-file-excel"></i>
+                        <span>Xuất File Excel</span>
+                    </a>
 
-                        <span>Xuất File Excel Theo Kỳ</span>
-
+                    <a href="/admin/reports/export/pdf?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}" 
+                       target="_blank"
+                       class="px-4 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white font-bold text-xs shadow-lg transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>Xuất Báo Cáo PDF (A4)</span>
                     </a>
 
                     <a href="/admin/dashboard" class="px-3.5 py-2 rounded-xl glass-panel-subtle hover:bg-white/10 text-slate-300 text-xs transition flex items-center gap-1.5">
@@ -312,95 +322,73 @@
 
 
 
-            <!-- Filter Controls Bar -->
-
+                        <!-- Filter Controls Bar -->
             <div class="glass-panel-subtle rounded-2xl p-4 border border-white/5 mt-6">
+                <!-- Preset Quick Buttons Bar -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-white/5">
+                    <div class="flex items-center gap-2 text-xs text-slate-400">
+                        <i class="fa-solid fa-bolt text-brand-gold"></i>
+                        <span class="font-medium text-slate-300">Chọn nhanh mốc thời gian:</span>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <button type="button" onclick="setQuickFilter('today')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-brand-gold/15 hover:text-brand-gold text-slate-300 transition border border-white/5">Hôm nay</button>
+                        <button type="button" onclick="setQuickFilter('7days')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-brand-gold/15 hover:text-brand-gold text-slate-300 transition border border-white/5">7 ngày qua</button>
+                        <button type="button" onclick="setQuickFilter('30days')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-brand-gold/15 hover:text-brand-gold text-slate-300 transition border border-white/5">30 ngày qua</button>
+                        <button type="button" onclick="setQuickFilter('thisMonth')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-brand-gold/15 hover:text-brand-gold text-slate-300 transition border border-white/5">Tháng này</button>
+                        <button type="button" onclick="setQuickFilter('thisQuarter')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-brand-gold/15 hover:text-brand-gold text-slate-300 transition border border-white/5">Quý này</button>
+                        <button type="button" onclick="setQuickFilter('thisYear')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-white/5 hover:bg-brand-gold/15 hover:text-brand-gold text-slate-300 transition border border-white/5">Năm nay</button>
+                        <button type="button" onclick="resetQuickFilter()" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 transition border border-rose-500/20 flex items-center gap-1">
+                            <i class="fa-solid fa-arrow-rotate-left text-[10px]"></i>
+                            <span>Đặt lại</span>
+                        </button>
+                    </div>
+                </div>
 
-                <form action="/admin/reports" method="get" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-
+                <form id="reportFilterForm" action="/admin/reports" method="get" onsubmit="return validateDateRange()" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                     <input type="hidden" name="tab" value="${currentTab}"/>
 
-
-
                     <div>
-
                         <label class="block text-xs font-medium text-slate-300 mb-1.5">
-
                             <i class="fa-solid fa-calendar-day text-brand-gold mr-1"></i>Từ Ngày
-
                         </label>
-
-                        <input type="date" name="startDate" value="${startDate}" required
-
-                               class="glass-input w-full px-3.5 py-2 text-xs rounded-xl"/>
-
+                        <input type="date" id="inputStartDate" name="startDate" value="${startDate}" required
+                               class="glass-input w-full px-3.5 py-2 text-xs rounded-xl bg-[#12151c] text-slate-100 border border-white/10"/>
                     </div>
 
-
-
                     <div>
-
                         <label class="block text-xs font-medium text-slate-300 mb-1.5">
-
                             <i class="fa-solid fa-calendar-check text-brand-gold mr-1"></i>Đến Ngày
-
                         </label>
-
-                        <input type="date" name="endDate" value="${endDate}" required
-
-                               class="glass-input w-full px-3.5 py-2 text-xs rounded-xl"/>
-
+                        <input type="date" id="inputEndDate" name="endDate" value="${endDate}" required
+                               class="glass-input w-full px-3.5 py-2 text-xs rounded-xl bg-[#12151c] text-slate-100 border border-white/10"/>
                     </div>
 
-
-
                     <div>
-
                         <label class="block text-xs font-medium text-slate-300 mb-1.5">
-
                             <i class="fa-solid fa-store text-brand-gold mr-1"></i>Chi Nhánh
-
                         </label>
-
                         <select name="storeId" class="glass-input w-full px-3.5 py-2 text-xs rounded-xl bg-[#15181E]">
-
-                            <option value="">— Tất cả chi nhánh toàn chuỗi —</option>
-
+                            <c:if test="${!isScopedToStore}">
+                                <option value="">— Tất cả chi nhánh toàn chuỗi —</option>
+                            </c:if>
                             <c:forEach var="st" items="${stores}">
-
                                 <option value="${st.id}" ${selectedStoreId == st.id ? 'selected' : ''}>
-
                                     ${st.name}
-
                                 </option>
-
                             </c:forEach>
-
                         </select>
-
                     </div>
-
-
 
                     <div>
-
                         <button type="submit" class="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-brand-gold to-yellow-500 hover:from-yellow-400 text-slate-950 font-bold text-xs shadow-glow-gold transition flex items-center justify-center gap-2">
-
                             <i class="fa-solid fa-filter"></i>
-
                             <span>Áp Dụng Bộ Lọc</span>
-
                         </button>
-
                     </div>
-
                 </form>
-
             </div>
 
-
-
-            <!-- 4 Metric Cards for Selected Period -->
+<!-- 4 Metric Cards for Selected Period -->
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
 
@@ -518,43 +506,39 @@
 
 
 
-            <!-- Detail Tabs Navigation -->
-
-            <div class="flex items-center gap-2 border-b border-white/10 mt-8 mb-4">
-
+                        <!-- Detail Tabs Navigation -->
+            <div class="flex items-center gap-2 border-b border-white/10 mt-8 mb-4 overflow-x-auto pb-1">
                 <a href="/admin/reports?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}&tab=overview" 
-
-                   class="px-4 py-2.5 text-xs font-semibold transition border-b-2 flex items-center gap-2 ${currentTab == 'overview' ? 'border-brand-gold text-brand-gold' : 'border-transparent text-slate-400 hover:text-white'}">
-
+                   class="px-4 py-2.5 text-xs font-semibold transition border-b-2 whitespace-nowrap flex items-center gap-2 ${currentTab == 'overview' ? 'border-brand-gold text-brand-gold' : 'border-transparent text-slate-400 hover:text-white'}">
                     <i class="fa-solid fa-table-cells-large"></i>
-
                     <span>Tổng Hợp Số Liệu</span>
-
                 </a>
-
+                <a href="/admin/reports?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}&tab=sales"
+                   class="px-4 py-2.5 text-xs font-semibold transition border-b-2 whitespace-nowrap flex items-center gap-2 ${currentTab == 'sales' ? 'border-brand-gold text-brand-gold' : 'border-transparent text-slate-400 hover:text-white'}">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span>Doanh Thu Bán Hàng<c:if test="${summary.sales != null}"> (${summary.sales.orderCount})</c:if></span>
+                </a>
                 <a href="/admin/reports?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}&tab=buybacks" 
-
-                   class="px-4 py-2.5 text-xs font-semibold transition border-b-2 flex items-center gap-2 ${currentTab == 'buybacks' ? 'border-brand-gold text-brand-gold' : 'border-transparent text-slate-400 hover:text-white'}">
-
+                   class="px-4 py-2.5 text-xs font-semibold transition border-b-2 whitespace-nowrap flex items-center gap-2 ${currentTab == 'buybacks' ? 'border-brand-gold text-brand-gold' : 'border-transparent text-slate-400 hover:text-white'}">
                     <i class="fa-solid fa-hand-holding-dollar"></i>
-
                     <span>Chi Tiết Thu Mua (${summary.buybackRequests.size()})</span>
-
                 </a>
-
                 <a href="/admin/reports?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}&tab=transfers" 
-
-                   class="px-4 py-2.5 text-xs font-semibold transition border-b-2 flex items-center gap-2 ${currentTab == 'transfers' ? 'border-brand-gold text-brand-gold' : 'border-transparent text-slate-400 hover:text-white'}">
-
+                   class="px-4 py-2.5 text-xs font-semibold transition border-b-2 whitespace-nowrap flex items-center gap-2 ${currentTab == 'transfers' ? 'border-brand-gold text-brand-gold' : 'border-transparent text-slate-400 hover:text-white'}">
                     <i class="fa-solid fa-truck-ramp-box"></i>
-
                     <span>Chi Tiết Chuyển Kho (${summary.stockTransfers.size()})</span>
-
                 </a>
-
+                <a href="/admin/reports?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}&tab=inventory" 
+                   class="px-4 py-2.5 text-xs font-semibold transition border-b-2 whitespace-nowrap flex items-center gap-2 ${currentTab == 'inventory' ? 'border-brand-gold text-brand-gold' : 'border-transparent text-slate-400 hover:text-white'}">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    <span>Kho Sách & Tồn Kho</span>
+                </a>
+                <a href="/admin/reports?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}&tab=customers" 
+                   class="px-4 py-2.5 text-xs font-semibold transition border-b-2 whitespace-nowrap flex items-center gap-2 ${currentTab == 'customers' ? 'border-brand-gold text-brand-gold' : 'border-transparent text-slate-400 hover:text-white'}">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Khách Hàng & Bạn Đọc (${summary.customerActivities.size()})</span>
+                </a>
             </div>
-
-
 
             <!-- Tab Content -->
 
@@ -712,21 +696,31 @@
 
                             <div class="pt-2">
 
-                                <a href="/admin/reports/export/excel?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}" 
-
-                                   class="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 text-xs font-semibold transition flex items-center justify-center gap-2">
-
-                                    <i class="fa-solid fa-download text-brand-gold"></i>
-
-                                    <span>Tải toàn bộ bộ số liệu về máy tính (.xlsx)</span>
-
-                                </a>
+                                                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <a href="/admin/reports/export/excel?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}" 
+                                       class="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 text-xs font-semibold transition flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-file-excel text-emerald-400"></i>
+                                        <span>Tải file Excel (.xlsx)</span>
+                                    </a>
+                                    <a href="/admin/reports/export/pdf?startDate=${startDate}&endDate=${endDate}&storeId=${selectedStoreId != null ? selectedStoreId : ''}" 
+                                       target="_blank"
+                                       class="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 text-xs font-semibold transition flex items-center justify-center gap-2">
+                                        <i class="fa-solid fa-file-pdf text-rose-400"></i>
+                                        <span>In Báo Cáo PDF (A4)</span>
+                                    </a>
+                                </div>
 
                             </div>
 
                         </div>
 
                     </div>
+
+                </c:when>
+
+                <c:when test="${currentTab == 'sales'}">
+
+                    <jsp:include page="/WEB-INF/views/admin/report/sales-tab.jsp"/>
 
                 </c:when>
 
@@ -830,7 +824,7 @@
 
                                         </td>
 
-                                        <td class="py-3 px-4 text-slate-400">${br.createdAt}</td>
+                                        <td class="py-3 px-4 text-slate-400">${br.formattedCreatedAt}</td>
 
                                         <td class="py-3 px-4 text-center">
 
@@ -946,7 +940,7 @@
 
                                         </td>
 
-                                        <td class="py-3 px-4 text-slate-400">${st.createdAt}</td>
+                                        <td class="py-3 px-4 text-slate-400">${st.formattedCreatedAt}</td>
 
                                         <td class="py-3 px-4 text-center">
 
@@ -984,11 +978,284 @@
 
                 </c:when>
 
+            
+                <c:when test="${currentTab == 'inventory'}">
+                    <div class="space-y-6">
+                        <!-- 4 Mini inventory cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="p-4 rounded-xl glass-panel-subtle border border-white/5">
+                                <span class="text-xs text-slate-400 block mb-1">Tổng Số Bản Sách</span>
+                                <div class="text-xl font-bold font-serif text-white">${summary.totalBookCopies} cuốn</div>
+                                <span class="text-[10px] text-slate-500 mt-1 block">Toàn bộ bản sao trong kho</span>
+                            </div>
+                            <div class="p-4 rounded-xl glass-panel-subtle border border-white/5">
+                                <span class="text-xs text-slate-400 block mb-1">Định Giá Kho Hiện Tại</span>
+                                <div class="text-xl font-bold font-serif text-brand-gold">
+                                    <fmt:formatNumber value="${summary.totalInventoryValue}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
+                                </div>
+                                <span class="text-[10px] text-slate-500 mt-1 block">Giá trị niêm yết bán lẻ</span>
+                            </div>
+                            <div class="p-4 rounded-xl glass-panel-subtle border border-white/5">
+                                <span class="text-xs text-slate-400 block mb-1">Sách Lưu Kho Lâu (>30 Ngày)</span>
+                                <div class="text-xl font-bold font-serif text-amber-300">${summary.staleCopiesCount} cuốn</div>
+                                <span class="text-[10px] text-slate-500 mt-1 block">Chưa phát sinh luân chuyển</span>
+                            </div>
+                            <div class="p-4 rounded-xl glass-panel-subtle border border-white/5">
+                                <span class="text-xs text-slate-400 block mb-1">Đầu Sách Sắp Hết Kho</span>
+                                <div class="text-xl font-bold font-serif text-rose-400">${summary.lowStockBooks.size()} đầu sách</div>
+                                <span class="text-[10px] text-slate-500 mt-1 block">Còn tồn &le; 2 bản khả dụng</span>
+                            </div>
+                        </div>
+
+                        <!-- 2 Breakdown Grids: Condition & Status -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <!-- Phân bổ theo Tình trạng -->
+                            <div class="p-5 rounded-2xl glass-panel-subtle border border-white/5">
+                                <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+                                    <i class="fa-solid fa-certificate text-brand-gold"></i>
+                                    <span>Phân Bổ Tình Trạng Sách Thẩm Định</span>
+                                </h4>
+                                <div class="space-y-2">
+                                    <c:forEach var="entry" items="${summary.copiesByCondition}">
+                                        <div class="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between text-xs">
+                                            <span class="text-slate-300 font-medium">
+                                                <c:choose>
+                                                    <c:when test="${entry.key == 'NEW'}"><span class="text-emerald-400 font-bold">Mới 100% (NEW)</span></c:when>
+                                                    <c:when test="${entry.key == 'LIKE_NEW'}"><span class="text-teal-300 font-bold">Như mới (LIKE NEW)</span></c:when>
+                                                    <c:when test="${entry.key == 'GOOD'}"><span class="text-sky-300 font-bold">Tốt (GOOD)</span></c:when>
+                                                    <c:when test="${entry.key == 'FAIR'}"><span class="text-amber-300 font-bold">Chấp nhận được (FAIR)</span></c:when>
+                                                    <c:when test="${entry.key == 'POOR'}"><span class="text-rose-400 font-bold">Cũ / Kém (POOR)</span></c:when>
+                                                    <c:otherwise>${entry.key}</c:otherwise>
+                                                </c:choose>
+                                            </span>
+                                            <span class="font-bold text-white">${entry.value} cuốn</span>
+                                        </div>
+                                    </c:forEach>
+                                    <c:if test="${empty summary.copiesByCondition}">
+                                        <div class="text-xs text-slate-500 py-4 text-center italic">Chưa có dữ liệu phân loại tình trạng.</div>
+                                    </c:if>
+                                </div>
+                            </div>
+
+                            <!-- Phân bổ theo Trạng thái -->
+                            <div class="p-5 rounded-2xl glass-panel-subtle border border-white/5">
+                                <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+                                    <i class="fa-solid fa-tags text-sky-400"></i>
+                                    <span>Phân Bổ Trạng Thái Bản Sao Sách</span>
+                                </h4>
+                                <div class="space-y-2">
+                                    <c:forEach var="entry" items="${summary.copiesByStatus}">
+                                        <div class="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between text-xs">
+                                            <span class="text-slate-300 font-medium">
+                                                <c:choose>
+                                                    <c:when test="${entry.key == 'AVAILABLE'}"><span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check text-[10px] mr-1"></i>Sẵn sàng bán (AVAILABLE)</span></c:when>
+                                                    <c:when test="${entry.key == 'HOLDING'}"><span class="text-amber-300 font-bold"><i class="fa-solid fa-hand text-[10px] mr-1"></i>Đang giữ hàng (HOLDING)</span></c:when>
+                                                    <c:when test="${entry.key == 'RESERVED'}"><span class="text-sky-300 font-bold"><i class="fa-solid fa-cart-shopping text-[10px] mr-1"></i>Khách đã đặt (RESERVED)</span></c:when>
+                                                    <c:when test="${entry.key == 'IN_TRANSIT'}"><span class="text-sky-400 font-bold"><i class="fa-solid fa-truck text-[10px] mr-1"></i>Đang chuyển kho (IN TRANSIT)</span></c:when>
+                                                    <c:when test="${entry.key == 'SOLD'}"><span class="text-slate-400 font-bold"><i class="fa-solid fa-bag-shopping text-[10px] mr-1"></i>Đã bán (SOLD)</span></c:when>
+                                                    <c:otherwise>${entry.key}</c:otherwise>
+                                                </c:choose>
+                                            </span>
+                                            <span class="font-bold text-white">${entry.value} cuốn</span>
+                                        </div>
+                                    </c:forEach>
+                                    <c:if test="${empty summary.copiesByStatus}">
+                                        <div class="text-xs text-slate-500 py-4 text-center italic">Chưa có dữ liệu trạng thái kho.</div>
+                                    </c:if>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bảng cảnh báo đầu sách sắp hết kho -->
+                        <div class="p-5 rounded-2xl glass-panel-subtle border border-white/5">
+                            <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
+                                <div>
+                                    <h4 class="text-xs font-bold text-rose-300 uppercase tracking-wider flex items-center gap-2">
+                                        <i class="fa-solid fa-triangle-exclamation text-rose-400"></i>
+                                        <span>Danh Sách Đầu Sách Cảnh Báo Tồn Kho Thấp (&le; 2 Bản Khả Dụng)</span>
+                                    </h4>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">Cần ưu tiên thẩm định thu mua bổ sung hoặc đề xuất điều chuyển từ chi nhánh khác</p>
+                                </div>
+                                <a href="/admin/book-copies" class="text-xs text-brand-gold hover:underline">Quản lý kho bản sách &rarr;</a>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-white/5 text-slate-300 uppercase tracking-wider text-[10px]">
+                                        <tr>
+                                            <th class="py-2.5 px-3">#</th>
+                                            <th class="py-2.5 px-3">Tựa Đầu Sách</th>
+                                            <th class="py-2.5 px-3">Tồn Khả Dụng</th>
+                                            <th class="py-2.5 px-3">Mức Độ Cảnh Báo</th>
+                                            <th class="py-2.5 px-3 text-center">Thao Tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-white/5">
+                                        <c:forEach var="item" items="${summary.lowStockBooks}" varStatus="status">
+                                            <tr class="hover:bg-white/[0.02] transition">
+                                                <td class="py-2.5 px-3 text-slate-400 font-mono">${status.index + 1}</td>
+                                                <td class="py-2.5 px-3 font-semibold text-white">${item[0]}</td>
+                                                <td class="py-2.5 px-3 font-bold font-serif ${item[1] <= 1 ? 'text-rose-400' : 'text-amber-300'}">${item[1]} cuốn</td>
+                                                <td class="py-2.5 px-3">
+                                                    <c:choose>
+                                                        <c:when test="${item[1] <= 1}">
+                                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">Cực kỳ khẩn cấp</span>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Cần gom hàng</span>
+                                                        </c:otherwise>
+                                                    </c:choose>
+                                                </td>
+                                                <td class="py-2.5 px-3 text-center">
+                                                    <a href="/admin/books" class="px-2 py-1 rounded bg-white/5 hover:bg-white/10 text-brand-gold text-[11px] transition">
+                                                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </c:forEach>
+                                        <c:if test="${empty summary.lowStockBooks}">
+                                            <tr>
+                                                <td colspan="5" class="py-6 text-center text-slate-500 italic text-xs">
+                                                    Hiện không có đầu sách nào dưới ngưỡng tồn kho an toàn.
+                                                </td>
+                                            </tr>
+                                        </c:if>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </c:when>
+
+                <c:when test="${currentTab == 'customers'}">
+                    <div class="space-y-6">
+                        <!-- Customer KPI Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="p-4 rounded-xl glass-panel-subtle border border-white/5">
+                                <span class="text-xs text-slate-400 block mb-1">Tổng Số Độc Giả Đăng Ký</span>
+                                <div class="text-2xl font-bold font-serif text-white">${summary.totalCustomers}</div>
+                                <span class="text-[10px] text-slate-500 mt-1 block">Tài khoản khách hàng toàn hệ thống</span>
+                            </div>
+                            <div class="p-4 rounded-xl glass-panel-subtle border border-white/5">
+                                <span class="text-xs text-slate-400 block mb-1">Độc Giả Mới Trong Kỳ</span>
+                                <div class="text-2xl font-bold font-serif text-emerald-400">${summary.newCustomersInPeriod}</div>
+                                <span class="text-[10px] text-slate-500 mt-1 block">Gia nhập từ ${startDate} đến ${endDate}</span>
+                            </div>
+                            <div class="p-4 rounded-xl glass-panel-subtle border border-white/5">
+                                <span class="text-xs text-slate-400 block mb-1">Độc Giả Tham Gia Thu Mua</span>
+                                <div class="text-2xl font-bold font-serif text-brand-gold">${summary.customerActivities.size()}</div>
+                                <span class="text-[10px] text-slate-500 mt-1 block">Khách hàng thanh lý sách cũ trong kỳ</span>
+                            </div>
+                        </div>
+
+                        <!-- Table: Độc giả tích cực thanh lý sách cũ -->
+                        <div class="overflow-x-auto rounded-xl border border-white/5">
+                            <table class="w-full text-left text-xs">
+                                <thead class="bg-white/5 text-slate-300 font-semibold uppercase tracking-wider text-[11px]">
+                                    <tr>
+                                        <th class="py-3 px-4">#</th>
+                                        <th class="py-3 px-4">Họ và Tên Độc Giả</th>
+                                        <th class="py-3 px-4">Email</th>
+                                        <th class="py-3 px-4">Số Điện Thoại</th>
+                                        <th class="py-3 px-4 text-center">Tổng Đơn Gửi</th>
+                                        <th class="py-3 px-4 text-center">Đơn Hoàn Tất</th>
+                                        <th class="py-3 px-4">Tổng Tiền Đã Thanh Toán</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-white/5">
+                                    <c:forEach var="c" items="${summary.customerActivities}" varStatus="status">
+                                        <tr class="hover:bg-white/[0.02] transition">
+                                            <td class="py-3 px-4 font-mono text-slate-400">${status.index + 1}</td>
+                                            <td class="py-3 px-4 font-bold text-white">${c.fullName}</td>
+                                            <td class="py-3 px-4 text-slate-300 font-mono text-[11px]">${c.email}</td>
+                                            <td class="py-3 px-4 text-slate-300">${c.phone}</td>
+                                            <td class="py-3 px-4 text-center font-bold text-amber-300">${c.totalRequests}</td>
+                                            <td class="py-3 px-4 text-center font-bold text-emerald-400">${c.completedRequests}</td>
+                                            <td class="py-3 px-4 font-serif font-bold text-brand-gold">
+                                                <fmt:formatNumber value="${c.totalPayout}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                    <c:if test="${empty summary.customerActivities}">
+                                        <tr>
+                                            <td colspan="7" class="text-center py-8 text-slate-400 italic">
+                                                Chưa có độc giả nào phát sinh yêu cầu bán sách cũ trong khoảng thời gian này.
+                                            </td>
+                                        </tr>
+                                    </c:if>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </c:when>
+
             </c:choose>
 
         </main>
 
     </div>
+
+
+    <!-- Quick Filter & Date Validation Scripts -->
+    <script>
+        function formatDate(d) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function setQuickFilter(type) {
+            const now = new Date();
+            let start = new Date();
+            let end = new Date();
+
+            switch (type) {
+                case 'today':
+                    start = new Date();
+                    break;
+                case '7days':
+                    start.setDate(now.getDate() - 7);
+                    break;
+                case '30days':
+                    start.setDate(now.getDate() - 30);
+                    break;
+                case 'thisMonth':
+                    start = new Date(now.getFullYear(), now.getMonth(), 1);
+                    break;
+                case 'thisQuarter':
+                    const currentQuarterMonth = Math.floor(now.getMonth() / 3) * 3;
+                    start = new Date(now.getFullYear(), currentQuarterMonth, 1);
+                    break;
+                case 'thisYear':
+                    start = new Date(now.getFullYear(), 0, 1);
+                    break;
+            }
+
+            document.getElementById('inputStartDate').value = formatDate(start);
+            document.getElementById('inputEndDate').value = formatDate(end);
+            document.getElementById('reportFilterForm').submit();
+        }
+
+        function resetQuickFilter() {
+            const now = new Date();
+            const start = new Date();
+            start.setDate(now.getDate() - 30);
+            document.getElementById('inputStartDate').value = formatDate(start);
+            document.getElementById('inputEndDate').value = formatDate(now);
+            document.getElementById('reportFilterForm').submit();
+        }
+
+        function validateDateRange() {
+            const startVal = document.getElementById('inputStartDate').value;
+            const endVal = document.getElementById('inputEndDate').value;
+            if (startVal && endVal && startVal > endVal) {
+                alert('⚠️ Ngày bắt đầu không thể lớn hơn ngày kết thúc! Vui lòng chọn lại.');
+                return false;
+            }
+            return true;
+        }
+    </script>
 
 </body>
 

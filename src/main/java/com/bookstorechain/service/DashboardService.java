@@ -1,5 +1,6 @@
 package com.bookstorechain.service;
 
+import com.bookstorechain.dto.response.OperationalAlertDTO;
 import com.bookstorechain.entity.BuybackRequest;
 import com.bookstorechain.entity.StockTransfer;
 import com.bookstorechain.entity.Store;
@@ -35,4 +36,13 @@ public interface DashboardService {
     List<StockTransfer> getRecentTransfers(Long storeId, int limit);
 
     List<Store> getAllStores();
+
+    /** Trung tâm cảnh báo vận hành thông minh */
+    List<OperationalAlertDTO> getOperationalAlerts(Long storeId);
+
+    /** Các chỉ số vận hành chuyên sâu */
+    Map<String, Object> getExtendedMetrics(Long storeId);
+
+    /** Ma trận luồng luân chuyển hoàn tất giữa các chi nhánh */
+    Map<String, Long> getTransferFlowMatrix();
 }

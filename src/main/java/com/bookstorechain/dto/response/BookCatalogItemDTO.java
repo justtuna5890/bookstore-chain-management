@@ -29,4 +29,6 @@ public class BookCatalogItemDTO {
     private BigDecimal maxPrice;
     private List<String> storeNames;
     private List<BookCopyResponseDTO> copies;
+    /** Điểm đánh giá trung bình; có thể null ở những chỗ không cần hiển thị sao. */
+    private RatingSummaryDTO rating;
 }

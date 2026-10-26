@@ -1,15 +1,19 @@
 package com.bookstorechain.service.impl;
 
 import com.bookstorechain.dto.response.ReportSummaryDTO;
+import com.bookstorechain.dto.response.SalesReportDTO;
 import com.bookstorechain.entity.*;
 import com.bookstorechain.enums.BuybackStatus;
+import com.bookstorechain.enums.Role;
 import com.bookstorechain.enums.TransferStatus;
 import com.bookstorechain.repository.BookCopyRepository;
 import com.bookstorechain.repository.BuybackRequestRepository;
 import com.bookstorechain.repository.StockTransferRepository;
 import com.bookstorechain.repository.StoreRepository;
+import com.bookstorechain.repository.UserRepository;
 import com.bookstorechain.service.DashboardService;
 import com.bookstorechain.service.ReportService;
+import com.bookstorechain.service.SalesStatsService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +27,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +40,9 @@ public class ReportServiceImpl implements ReportService {
     private final StockTransferRepository stockTransferRepository;
     private final StoreRepository storeRepository;
     private final BookCopyRepository bookCopyRepository;
+    private final UserRepository userRepository;
     private final DashboardService dashboardService;
+    private final SalesStatsService salesStatsService;
 
     private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -55,41 +61,80 @@ public class ReportServiceImpl implements ReportService {
         long rejectedBuybacks = 0;
         BigDecimal totalBuybackAmount = BigDecimal.ZERO;
 
+        // Bảng tổng hợp hoạt động khách hàng trong kỳ
+        Map<Long, ReportSummaryDTO.CustomerActivityDTO> custMap = new LinkedHashMap<>();
+
         for (BuybackRequest br : buybacks) {
-            if (br.getStatus() == BuybackStatus.COMPLETED) {
-                completedBuybacks++;
-                if (br.getItems() != null) {
-                    for (BuybackItem item : br.getItems()) {
-                        if (item.getOfferedPrice() != null) {
-                            totalBuybackAmount = totalBuybackAmount.add(item.getOfferedPrice());
-                        }
+            BigDecimal brAmount = BigDecimal.ZERO;
+            if (br.getItems() != null) {
+                for (BuybackItem item : br.getItems()) {
+                    if (item.getOfferedPrice() != null) {
+                        brAmount = brAmount.add(item.getOfferedPrice());
                     }
                 }
+            }
+
+            if (br.getStatus() == BuybackStatus.COMPLETED) {
+                completedBuybacks++;
+                totalBuybackAmount = totalBuybackAmount.add(brAmount);
             } else if (br.getStatus() == BuybackStatus.PENDING || br.getStatus() == BuybackStatus.APPROVED) {
                 pendingBuybacks++;
             } else if (br.getStatus() == BuybackStatus.REJECTED) {
                 rejectedBuybacks++;
             }
+
+            if (br.getCustomer() != null) {
+                User c = br.getCustomer();
+                ReportSummaryDTO.CustomerActivityDTO dto = custMap.computeIfAbsent(c.getId(), k ->
+                        ReportSummaryDTO.CustomerActivityDTO.builder()
+                                .customerId(c.getId())
+                                .fullName(c.getFullName() != null ? c.getFullName() : c.getUsername())
+                                .email(c.getEmail())
+                                .phone(c.getPhone() != null ? c.getPhone() : "Chưa cập nhật")
+                                .totalRequests(0)
+                                .completedRequests(0)
+                                .totalPayout(BigDecimal.ZERO)
+                                .build()
+                );
+                dto.setTotalRequests(dto.getTotalRequests() + 1);
+                if (br.getStatus() == BuybackStatus.COMPLETED) {
+                    dto.setCompletedRequests(dto.getCompletedRequests() + 1);
+                    dto.setTotalPayout(dto.getTotalPayout().add(brAmount));
+                }
+            }
         }
+
+        long resolvedBuybacks = completedBuybacks + rejectedBuybacks;
+        double buybackApprovalRate = resolvedBuybacks > 0
+                ? Math.round(((double) completedBuybacks / resolvedBuybacks) * 1000.0) / 10.0
+                : 0.0;
+
+        List<ReportSummaryDTO.CustomerActivityDTO> customerActivities = new ArrayList<>(custMap.values());
+        customerActivities.sort((a, b) -> Long.compare(b.getTotalRequests(), a.getTotalRequests()));
 
         long completedTransfers = 0;
         long inTransitTransfers = 0;
         long pendingTransfers = 0;
+        long cancelledTransfers = 0;
         long totalCopiesTransferred = 0;
+        Map<String, Long> transferFlowMatrix = new LinkedHashMap<>();
 
         for (StockTransfer st : transfers) {
+            int itemCount = st.getItems() != null ? st.getItems().size() : 0;
             if (st.getStatus() == TransferStatus.COMPLETED) {
                 completedTransfers++;
-                if (st.getItems() != null) {
-                    totalCopiesTransferred += st.getItems().size();
+                totalCopiesTransferred += itemCount;
+                if (st.getSenderStore() != null && st.getReceiverStore() != null) {
+                    String route = st.getSenderStore().getName() + " ➔ " + st.getReceiverStore().getName();
+                    transferFlowMatrix.put(route, transferFlowMatrix.getOrDefault(route, 0L) + 1L);
                 }
             } else if (st.getStatus() == TransferStatus.IN_TRANSIT) {
                 inTransitTransfers++;
-                if (st.getItems() != null) {
-                    totalCopiesTransferred += st.getItems().size();
-                }
+                totalCopiesTransferred += itemCount;
             } else if (st.getStatus() == TransferStatus.PENDING) {
                 pendingTransfers++;
+            } else if (st.getStatus() == TransferStatus.CANCELLED) {
+                cancelledTransfers++;
             }
         }
 
@@ -106,7 +151,7 @@ public class ReportServiceImpl implements ReportService {
             totalCopies = bookCopyRepository.countByStoreId(storeId);
             totalInventoryVal = storeValues.getOrDefault(storeName, BigDecimal.ZERO);
         } else {
-            totalCopies = bookCopyRepository.count();
+            totalCopies = bookCopyRepository.countInStock();
             for (BigDecimal val : storeValues.values()) {
                 if (val != null) {
                     totalInventoryVal = totalInventoryVal.add(val);
@@ -114,25 +159,69 @@ public class ReportServiceImpl implements ReportService {
             }
         }
 
+        // Tồn kho chi tiết theo tình trạng và trạng thái
+        Map<String, Long> copiesByCondition = new LinkedHashMap<>();
+        List<Object[]> conditionRows = bookCopyRepository.countByConditionAndOptionalStore(storeId);
+        for (Object[] row : conditionRows) {
+            String cond = row[0] != null ? row[0].toString() : "UNKNOWN";
+            Long cnt = ((Number) row[1]).longValue();
+            copiesByCondition.put(cond, cnt);
+        }
+
+        Map<String, Long> copiesByStatus = new LinkedHashMap<>();
+        List<Object[]> statusRows = bookCopyRepository.countByStatusAndStoreIdGrouped(storeId);
+        for (Object[] row : statusRows) {
+            String st = row[0] != null ? row[0].toString() : "UNKNOWN";
+            Long cnt = ((Number) row[1]).longValue();
+            copiesByStatus.put(st, cnt);
+        }
+
+        List<Object[]> lowStockBooks = bookCopyRepository.findLowStockBooks(storeId);
+        long staleCopiesCount = bookCopyRepository.countStaleCopies(storeId, LocalDateTime.now().minusDays(30));
+
+        // Khách hàng
+        long totalCustomers = userRepository.countByRole(Role.CUSTOMER);
+        long newCustomersInPeriod = userRepository.countByRoleAndCreatedAtBetween(Role.CUSTOMER, startDateTime, endDateTime);
+
+        // Doanh thu bán hàng online cùng kỳ và cùng phạm vi chi nhánh; bỏ qua nếu khoảng thời gian quá dài
+        SalesReportDTO sales = ChronoUnit.DAYS.between(startDate, endDate) + 1 > SalesStatsService.MAX_RANGE_DAYS
+                ? null : salesStatsService.getReport(startDate, endDate, storeId);
+
         return ReportSummaryDTO.builder()
                 .startDate(startDate)
                 .endDate(endDate)
                 .storeId(storeId)
                 .storeName(storeName)
+                // Thu mua
                 .totalBuybacks(buybacks.size())
                 .completedBuybacks(completedBuybacks)
                 .pendingBuybacks(pendingBuybacks)
                 .rejectedBuybacks(rejectedBuybacks)
+                .buybackApprovalRate(buybackApprovalRate)
                 .totalBuybackAmount(totalBuybackAmount)
                 .buybackRequests(buybacks)
+                // Chuyển kho
                 .totalTransfers(transfers.size())
                 .completedTransfers(completedTransfers)
                 .inTransitTransfers(inTransitTransfers)
                 .pendingTransfers(pendingTransfers)
+                .cancelledTransfers(cancelledTransfers)
                 .totalCopiesTransferred(totalCopiesTransferred)
                 .stockTransfers(transfers)
+                .transferFlowMatrix(transferFlowMatrix)
+                // Tồn kho
                 .totalBookCopies(totalCopies)
                 .totalInventoryValue(totalInventoryVal)
+                .copiesByCondition(copiesByCondition)
+                .copiesByStatus(copiesByStatus)
+                .lowStockBooks(lowStockBooks)
+                .staleCopiesCount(staleCopiesCount)
+                // Khách hàng
+                .totalCustomers(totalCustomers)
+                .newCustomersInPeriod(newCustomersInPeriod)
+                .customerActivities(customerActivities)
+                // Doanh thu
+                .sales(sales)
                 .build();
     }
 
@@ -161,6 +250,11 @@ public class ReportServiceImpl implements ReportService {
             Sheet sheetTransfer = workbook.createSheet("Dieu Chuyen Kho");
             createTransferSheet(sheetTransfer, summary.getStockTransfers(), headerStyle);
 
+            // Sheet 4: Doanh thu bán hàng online
+            if (summary.getSales() != null) {
+                SalesReportExcel.writeSheet(workbook.createSheet("Doanh Thu Ban Hang"), summary.getSales(), titleStyle, headerStyle);
+            }
+
             workbook.write(response.getOutputStream());
         }
     }
@@ -180,7 +274,8 @@ public class ReportServiceImpl implements ReportService {
         sheet.createRow(r++).createCell(0).setCellValue("Đơn đã hoàn tất thu mua: " + summary.getCompletedBuybacks());
         sheet.createRow(r++).createCell(0).setCellValue("Đơn đang chờ thẩm định: " + summary.getPendingBuybacks());
         sheet.createRow(r++).createCell(0).setCellValue("Đơn đã hủy/từ chối: " + summary.getRejectedBuybacks());
-        sheet.createRow(r++).createCell(0).setCellValue("Tổng chi phí thu mua chi trả (VNĐ): " + summary.getTotalBuybackAmount());
+        sheet.createRow(r++).createCell(0).setCellValue("Tỷ lệ duyệt thành công: " + summary.getBuybackApprovalRate() + "%");
+        sheet.createRow(r++).createCell(0).setCellValue("Tổng chi phí thu mua giải ngân (VNĐ): " + summary.getTotalBuybackAmount());
 
         r++;
         sheet.createRow(r++).createCell(0).setCellValue("=== 2. CHỈ SỐ ĐIỀU CHUYỂN KHO ===");
@@ -190,9 +285,16 @@ public class ReportServiceImpl implements ReportService {
         sheet.createRow(r++).createCell(0).setCellValue("Tổng số bản sách đã chuyển: " + summary.getTotalCopiesTransferred());
 
         r++;
-        sheet.createRow(r++).createCell(0).setCellValue("=== 3. TỒN KHO HIỆN THỜI ===");
+        sheet.createRow(r++).createCell(0).setCellValue("=== 3. TỒN KHO & ĐỘC GIẢ ===");
         sheet.createRow(r++).createCell(0).setCellValue("Tổng số cuốn sách trong kho: " + summary.getTotalBookCopies());
         sheet.createRow(r++).createCell(0).setCellValue("Giá trị kho ước tính (VNĐ): " + summary.getTotalInventoryValue());
+        sheet.createRow(r++).createCell(0).setCellValue("Tổng số khách hàng đăng ký: " + summary.getTotalCustomers());
+        sheet.createRow(r++).createCell(0).setCellValue("Khách hàng mới trong kỳ: " + summary.getNewCustomersInPeriod());
+
+        if (summary.getSales() != null) {
+            r++;
+            r = SalesReportExcel.writeOverviewSection(sheet, r, summary.getSales());
+        }
 
         sheet.setColumnWidth(0, 12000);
     }

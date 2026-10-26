@@ -253,7 +253,7 @@
                                         </span>
                                     </td>
                                     <td class="py-3.5 px-4 text-slate-300">
-                                        <span class="font-bold text-amber-300">${item.itemCount}</span> cu?n
+                                        <span class="font-bold text-amber-300">${item.itemCount}</span> cuốn
                                     </td>
                                     <td class="py-3.5 px-4 text-slate-400 font-mono text-[11px]">
                                         ${item.createdAt}

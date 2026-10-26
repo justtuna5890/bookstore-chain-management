@@ -1,0 +1,23 @@
+title|Xử lý đơn hàng của nhân viên
+lane|Nhân viên chi nhánh
+lane|Hệ thống
+lane|Khách hàng
+n|s|0|0|s|
+n|conf|0|1|a|Mở /admin/orders, chọn đơn, bấm Xác nhận
+n|st1|1|2|a|PENDING chuyển CONFIRMED, lưu thông báo cho khách
+n|ready|0|3|a|Chuẩn bị xong: sẵn sàng nhận tại cửa hàng hoặc đang giao
+n|st2|1|4|a|CONFIRMED chuyển READY_FOR_PICKUP hoặc SHIPPING
+n|payc|0|5|a|Đơn chuyển khoản: nhập mã giao dịch, xác nhận đã nhận tiền
+n|cmp|0|6|a|Bấm Hoàn tất khi khách đã nhận hàng
+n|st3|1|7|a|Bản sách thành SOLD, ghi completed_at, thanh toán thành PAID
+n|note|2|8|a|Nhận thông báo realtime trên chuông và trang /notifications
+n|end|2|9|e|
+e|s|conf
+e|conf|st1
+e|st1|ready
+e|ready|st2
+e|st2|payc
+e|payc|cmp
+e|cmp|st3
+e|st3|note
+e|note|end

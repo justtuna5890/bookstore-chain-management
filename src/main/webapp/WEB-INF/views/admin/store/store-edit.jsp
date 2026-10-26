@@ -84,23 +84,6 @@
             border-color: rgba(212, 175, 55, 0.45);
             outline: none;
         }
-    
-        /* Dark Luxury Styling for Select Dropdowns & Options */
-        select, .glass-input {
-            color-scheme: dark !important;
-        }
-        select option {
-            background-color: #12151c !important;
-            color: #f1f5f9 !important;
-            padding: 8px 12px !important;
-        }
-        select option:hover,
-        select option:focus,
-        select option:checked {
-            background-color: #1e2430 !important;
-            color: #D4AF37 !important;
-            font-weight: 600 !important;
-        }
     </style>
 </head>
 <body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-6 px-4 md:px-8 lg:px-12 selection:bg-brand-gold selection:text-black">

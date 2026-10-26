@@ -29,6 +29,8 @@ public class HomeController {
     private final BookCopyRepository bookCopyRepository;
     private final StoreRepository storeRepository;
     private final BuybackService buybackService;
+    private final com.bookstorechain.service.ReviewService reviewService;
+    private final com.bookstorechain.service.WishlistService wishlistService;
 
     @GetMapping({"/", "/home"})
     public String home(@RequestParam(value = "keyword", required = false) String keyword,
@@ -77,6 +79,9 @@ public class HomeController {
         Map<Long, List<BookCopy>> copiesByBookId = allAvailableCopies.stream()
                 .filter(c -> c.getBook() != null)
                 .collect(Collectors.groupingBy(c -> c.getBook().getId()));
+
+        Map<Long, com.bookstorechain.dto.response.RatingSummaryDTO> ratings = reviewService.getSummaries(
+                allActiveBooks.stream().map(Book::getId).collect(Collectors.toList()));
 
         List<BookCatalogItemDTO> catalog = new ArrayList<>();
         for (Book b : allActiveBooks) {
@@ -156,6 +161,7 @@ public class HomeController {
                     .maxPrice(maxPrice)
                     .storeNames(storeNames)
                     .copies(copyDTOs)
+                    .rating(ratings.get(b.getId()))
                     .build());
         }
 
@@ -175,6 +181,8 @@ public class HomeController {
             }
         }
 
+        boolean loggedIn = userDetails != null && userDetails.getUser() != null;
+        model.addAttribute("wishlistedIds", loggedIn ? wishlistService.getBookIds(userDetails.getUser().getId()) : Collections.emptySet());
         model.addAttribute("catalog", catalog);
         model.addAttribute("stores", activeStores);
         model.addAttribute("categories", categories);
