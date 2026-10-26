@@ -49,7 +49,7 @@ class DashboardServiceTest {
     void getDashboardStatistics_ShouldReturnCorrectCounts() {
         when(storeRepository.count()).thenReturn(3L);
         when(bookRepository.count()).thenReturn(50L);
-        when(bookCopyRepository.count()).thenReturn(200L);
+        when(bookCopyRepository.countInStock()).thenReturn(200L);
         when(buybackRequestRepository.count()).thenReturn(15L);
         when(stockTransferRepository.count()).thenReturn(8L);
 

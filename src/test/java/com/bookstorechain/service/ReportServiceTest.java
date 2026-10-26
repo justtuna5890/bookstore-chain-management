@@ -48,6 +48,9 @@ class ReportServiceTest {
     @Mock
     private DashboardService dashboardService;
 
+    @Mock
+    private SalesStatsService salesStatsService;
+
     @InjectMocks
     private ReportServiceImpl reportService;
 
@@ -89,7 +92,7 @@ class ReportServiceTest {
                 .thenReturn(List.of(st));
         when(dashboardService.getInventoryValueByStore())
                 .thenReturn(Map.of("Kho Hà Nội", new BigDecimal("100000000")));
-        when(bookCopyRepository.count()).thenReturn(500L);
+        when(bookCopyRepository.countInStock()).thenReturn(500L);
         when(bookCopyRepository.countByConditionAndOptionalStore(null)).thenReturn(Collections.emptyList());
         when(bookCopyRepository.countByStatusAndStoreIdGrouped(null)).thenReturn(Collections.emptyList());
         when(bookCopyRepository.findLowStockBooks(null)).thenReturn(Collections.emptyList());

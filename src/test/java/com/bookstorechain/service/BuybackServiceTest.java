@@ -53,6 +53,9 @@ class BuybackServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @Mock
+    private UserNotificationService userNotificationService;
+
+    @Mock
     private NotificationService notificationService;
 
     @InjectMocks
