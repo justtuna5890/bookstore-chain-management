@@ -722,10 +722,10 @@
                                                     <i class="fa-solid fa-book-open"></i>
                                                     Xem Chi Tiết Tác Phẩm
                                                 </a>
-                                                <button type="button" onclick="openBookModal('1')" class="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white font-medium text-xs sm:text-sm border border-white/15 transition flex items-center gap-1.5">
+                                                <a href="/books/1" class="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white font-medium text-xs sm:text-sm border border-white/15 transition flex items-center gap-1.5">
                                                     <i class="fa-regular fa-eye text-slate-300 text-xs"></i>
-                                                    Xem Nhanh Bản Sao
-                                                </button>
+                                                    Xem Chi Tiết Sách
+                                                </a>
                                             </div>
                                         </div>
 
@@ -803,10 +803,10 @@
                                                     <i class="fa-solid fa-book-open"></i>
                                                     Xem Chi Tiết Tác Phẩm
                                                 </a>
-                                                <button type="button" onclick="openBookModal('2')" class="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white font-medium text-xs sm:text-sm border border-white/15 transition flex items-center gap-1.5">
+                                                <a href="/books/2" class="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white font-medium text-xs sm:text-sm border border-white/15 transition flex items-center gap-1.5">
                                                     <i class="fa-regular fa-eye text-slate-300 text-xs"></i>
-                                                    Xem Nhanh Bản Sao
-                                                </button>
+                                                    Xem Chi Tiết Sách
+                                                </a>
                                             </div>
                                         </div>
 
@@ -884,10 +884,10 @@
                                                     <i class="fa-solid fa-book-open"></i>
                                                     Xem Chi Tiết Tác Phẩm
                                                 </a>
-                                                <button type="button" onclick="openBookModal('7')" class="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white font-medium text-xs sm:text-sm border border-white/15 transition flex items-center gap-1.5">
+                                                <a href="/books/7" class="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-white font-medium text-xs sm:text-sm border border-white/15 transition flex items-center gap-1.5">
                                                     <i class="fa-regular fa-eye text-slate-300 text-xs"></i>
-                                                    Xem Nhanh Bản Sao
-                                                </button>
+                                                    Xem Chi Tiết Sách
+                                                </a>
                                             </div>
                                         </div>
 
