@@ -71,3 +71,17 @@ Các lệnh "push commit 1 lên, không để đồng tác giả", "bỏ dòng c
 **Kỷ luật kiểm thử:** sau khi viết test, AI cố ý đưa lỗi vào code (đảo điều kiện, bỏ một bước) để chắc test thật sự bắt được; test nào không bắt được thì bị viết lại.
 
 **Giới hạn:** AI viết phần lớn mã của phần B theo yêu cầu của B; B chịu trách nhiệm hiểu, chạy, kiểm tra và giải thích mã khi vấn đáp. Số liệu và hành vi nêu trong Pull Request đều đã được chạy thật trước khi ghi.
+
+## 6. Prompt của thành viên A (A tự điền)
+
+> **Ghi chú cho thành viên A:** điền các prompt bạn đã dùng để AI hỗ trợ sinh code cho phần của mình (xác thực, người dùng, chi nhánh, sách và kho, thu mua sách cũ, chuyển kho, dashboard, báo cáo, trang chủ). Chép đúng nguyên văn prompt, giữ nguyên chính tả. Cột **Kết quả** ghi AI đã làm ra gì (file, chức năng); cột **Kiểm chứng** ghi cách bạn kiểm tra lại (chạy thử, test, đọc code). Thêm dòng nếu cần, xoá ghi chú này sau khi điền xong.
+
+Công cụ AI thành viên A đã dùng: ...
+
+| # | Prompt | Kết quả | Kiểm chứng |
+|---|---|---|---|
+| 1 | | | |
+| 2 | | | |
+| 3 | | | |
+| 4 | | | |
+| 5 | | | |
