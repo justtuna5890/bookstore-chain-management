@@ -55,10 +55,73 @@
         .glass-panel { background: rgba(18, 21, 28, 0.65); backdrop-filter: blur(28px) saturate(160%); -webkit-backdrop-filter: blur(28px) saturate(160%); border: 1px solid rgba(255, 255, 255, 0.09); }
         .glass-input { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); color: #f1f5f9; }
         .glass-input:focus { background: rgba(255, 255, 255, 0.08); border-color: rgba(212, 175, 55, 0.45); outline: none; }
-        /* Plugin forms của Tailwind đặt nền trắng cho input, ghi đè .glass-input; selector này cụ thể hơn nên thắng */
-        input.glass-input, textarea.glass-input { background-color: rgba(255, 255, 255, 0.06); color: #f1f5f9; border: 1px solid rgba(255, 255, 255, 0.12); }
-        input.glass-input::placeholder, textarea.glass-input::placeholder { color: #64748b; }
-        input.glass-input:focus, textarea.glass-input:focus { background-color: rgba(255, 255, 255, 0.1); border-color: rgba(212, 175, 55, 0.55); box-shadow: none; }
+/* Global Dark Glass Forms, Inputs & Dropdowns Override */
+    input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]),
+    textarea,
+    select,
+    .glass-input,
+    .form-field,
+    .form-control,
+    .form-select {
+        background-color: rgba(16, 20, 29, 0.92) !important;
+        color: #f8fafc !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):focus,
+    textarea:focus,
+    select:focus,
+    .glass-input:focus,
+    .form-field:focus,
+    .form-control:focus,
+    .form-select:focus {
+        background-color: rgba(20, 25, 38, 0.98) !important;
+        color: #ffffff !important;
+        border-color: rgba(212, 175, 55, 0.7) !important;
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+        outline: none !important;
+    }
+
+    input::placeholder,
+    textarea::placeholder,
+    .glass-input::placeholder,
+    .form-field::placeholder,
+    .form-control::placeholder {
+        color: #94a3b8 !important;
+        opacity: 1 !important;
+    }
+
+    /* Dropdown (select) options: NEVER white background */
+    select option,
+    select optgroup,
+    option {
+        background-color: #121620 !important;
+        color: #f8fafc !important;
+    }
+
+    select option:hover,
+    select option:focus,
+    select option:checked {
+        background-color: #1e2638 !important;
+        color: #D4AF37 !important;
+    }
+
+    /* Defeat Chrome / Edge / Safari White Autofill & History Dropdown */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover, 
+    input:-webkit-autofill:focus, 
+    input:-webkit-autofill:active,
+    textarea:-webkit-autofill,
+    select:-webkit-autofill {
+        -webkit-text-fill-color: #f8fafc !important;
+        -webkit-box-shadow: 0 0 0px 1000px #10141e inset !important;
+        box-shadow: 0 0 0px 1000px #10141e inset !important;
+        transition: background-color 5000s ease-in-out 0s !important;
+        color: #f8fafc !important;
+        caret-color: #D4AF37 !important;
+    }
+
         input.glass-input[readonly] { cursor: not-allowed; }
     </style>
 </head>

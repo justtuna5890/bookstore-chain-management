@@ -58,14 +58,83 @@
         }
         .glass-panel { background: rgba(18, 21, 28, 0.65); backdrop-filter: blur(28px) saturate(160%); -webkit-backdrop-filter: blur(28px) saturate(160%); border: 1px solid rgba(255, 255, 255, 0.09); }
         .glass-panel-subtle { background: rgba(25, 30, 40, 0.5); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.06); }
-        .glass-input { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .glass-input:focus { background: rgba(255, 255, 255, 0.08); border-color: rgba(212, 175, 55, 0.45); outline: none; }
-        input.form-field, textarea.form-field, select.form-field {
-            background-color: rgba(255, 255, 255, 0.06); color: #f1f5f9; border: 1px solid rgba(255, 255, 255, 0.12);
+        /* High-priority override: ALL text inputs, textareas, selects must ALWAYS be dark glass - NEVER solid white */
+        input[type="text"],
+        input[type="search"],
+        input[type="email"],
+        input[type="password"],
+        input[type="tel"],
+        input[type="number"],
+        textarea,
+        select,
+        .glass-input,
+        input.form-field,
+        textarea.form-field,
+        select.form-field {
+            background-color: rgba(16, 20, 29, 0.92) !important;
+            color: #f8fafc !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
         }
-        input.form-field::placeholder, textarea.form-field::placeholder { color: #64748b; }
-        input.form-field:focus, textarea.form-field:focus, select.form-field:focus {
-            background-color: rgba(255, 255, 255, 0.1); border-color: rgba(212, 175, 55, 0.55); outline: none; box-shadow: none;
+
+        input[type="text"]:focus,
+        input[type="search"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="tel"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus,
+        .glass-input:focus,
+        input.form-field:focus,
+        textarea.form-field:focus,
+        select.form-field:focus {
+            background-color: rgba(20, 25, 38, 0.98) !important;
+            color: #ffffff !important;
+            border-color: rgba(212, 175, 55, 0.7) !important;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25), inset 0 2px 4px rgba(0, 0, 0, 0.4) !important;
+            outline: none !important;
+        }
+
+        input::placeholder,
+        textarea::placeholder,
+        .glass-input::placeholder,
+        input.form-field::placeholder,
+        textarea.form-field::placeholder {
+            color: #94a3b8 !important;
+            opacity: 1 !important;
+        }
+
+                /* Dropdown (select) options: NEVER white background */
+        select option,
+        select optgroup,
+        option {
+            background-color: #121620 !important;
+            color: #f8fafc !important;
+        }
+
+        select option:hover,
+        select option:focus,
+        select option:checked {
+            background-color: #1e2638 !important;
+            color: #D4AF37 !important;
+        }
+
+        /* Defeat Chrome / Edge / Safari White Autofill & History Dropdown */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active,
+        textarea:-webkit-autofill,
+        select:-webkit-autofill {
+            -webkit-text-fill-color: #f8fafc !important;
+            -webkit-box-shadow: 0 0 0px 1000px #10141e inset !important;
+            box-shadow: 0 0 0px 1000px #10141e inset !important;
+            transition: background-color 5000s ease-in-out 0s !important;
+            color: #f8fafc !important;
+            caret-color: #D4AF37 !important;
         }
         .book-spine-effect { box-shadow: inset 5px 0 10px -2px rgba(0,0,0,0.6), inset -2px 0 5px rgba(255,255,255,0.1), 0 15px 30px rgba(0,0,0,0.65); }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -105,10 +174,10 @@
 
         <main class="flex-1 w-full glass-panel rounded-[32px] p-5 sm:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden">
             <header class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 pb-6 border-b border-white/5">
-                <div class="flex items-center gap-3 w-full lg:w-80">
+                <div class="flex items-center gap-3 w-full sm:w-80 lg:w-80 shrink-0">
                     <form action="/" method="get" class="relative w-full">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400"><i class="fa-solid fa-magnifying-glass text-xs"></i></span>
-                        <input name="keyword" class="glass-input w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-full text-slate-100 placeholder-slate-400 transition" placeholder="Tìm kiếm sách, tác giả, tiệm sách..." type="text"/>
+                        <input name="keyword" autocomplete="off" class="glass-input w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-full text-white placeholder-slate-400 transition" placeholder="Tìm kiếm sách, tác giả, tiệm sách..." type="text"/>
                     </form>
                 </div>
                 <div class="flex items-center justify-end gap-3 shrink-0">
