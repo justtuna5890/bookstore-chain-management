@@ -358,7 +358,7 @@
                         <!-- Dynamic Real Books List -->
                         <div class="flex flex-col gap-2.5">
                             <c:forEach var="item" items="${catalog}" begin="0" end="4">
-                                <article class="group p-2 rounded-xl hover:bg-white/5 transition border border-transparent hover:border-white/5 flex items-center justify-between cursor-pointer" onclick="openBookModal('${item.id}')">
+                                <article class="group p-2 rounded-xl hover:bg-white/5 transition border border-transparent hover:border-white/5 flex items-center justify-between cursor-pointer" onclick="location.href='/books/${item.id}'">
                                     <div class="flex items-center gap-3 min-w-0">
                                         <div class="w-10 h-14 rounded bg-gradient-to-br from-amber-700 via-amber-900 to-black p-0.5 shrink-0 book-spine-effect relative overflow-hidden">
                                             <c:choose>
@@ -596,7 +596,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 xl:grid-cols-5 gap-3.5">
                             <c:forEach var="book" items="${catalog}">
                                 <article class="group rounded-2xl glass-panel-subtle border border-white/10 p-2.5 flex flex-col justify-between hover:border-brand-gold/40 hover:bg-white/5 transition duration-300">
-                                    <div class="relative aspect-[3/4.2] w-full rounded-xl overflow-hidden mb-2.5 bg-gradient-to-b from-[#1b120c] to-[#0c0806] book-spine-effect cursor-pointer" onclick="openBookModal('${book.id}')">
+                                    <a href="/books/${book.id}" class="block relative aspect-[3/4.2] w-full rounded-xl overflow-hidden mb-2.5 bg-gradient-to-b from-[#1b120c] to-[#0c0806] book-spine-effect" title="Xem chi tiết">
                                         <c:choose>
                                             <c:when test="${not empty book.coverImage}">
                                                 <img src="${book.coverImage}" class="w-full h-full object-cover transition transform group-hover:scale-105 duration-300" alt="${book.title}"/>
@@ -634,12 +634,12 @@
                                                 </c:otherwise>
                                             </c:choose>
                                         </div>
-                                    </div>
+                                    </a>
 
                                     <!-- Info footer -->
                                     <div>
-                                        <h3 class="text-xs font-semibold text-white truncate group-hover:text-brand-gold transition cursor-pointer" onclick="openBookModal('${book.id}')">
-                                            ${book.title}
+                                        <h3 class="text-xs font-semibold text-white truncate group-hover:text-brand-gold transition">
+                                            <a href="/books/${book.id}" class="block truncate">${book.title}</a>
                                         </h3>
                                         <p class="text-[11px] text-slate-400 truncate">${book.author}</p>
                                         <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-white/5">
@@ -665,83 +665,6 @@
                                     </div>
                                 </article>
 
-                                <!-- Hidden Details Modal for each Book -->
-                                <div id="modal-${book.id}" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-                                    <div class="glass-panel w-full max-w-2xl rounded-3xl p-6 sm:p-8 border border-white/10 shadow-glass-elevated relative overflow-hidden">
-                                        <button onclick="closeBookModal('${book.id}')" class="absolute top-5 right-5 text-slate-400 hover:text-white transition">
-                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                                            </svg>
-                                        </button>
-
-                                        <div class="flex flex-col sm:flex-row gap-6 mb-6">
-                                            <div class="w-32 h-44 rounded-xl overflow-hidden shrink-0 book-spine-effect bg-[#15181E] mx-auto sm:mx-0">
-                                                <c:choose>
-                                                    <c:when test="${not empty book.coverImage}">
-                                                        <img src="${book.coverImage}" class="w-full h-full object-cover" alt="${book.title}"/>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <div class="w-full h-full flex items-center justify-center p-2 text-center text-xs font-serif text-amber-200">
-                                                            ${book.title}
-                                                        </div>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </div>
-                                            <div class="flex-1">
-                                                <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-brand-gold/15 text-brand-gold border border-brand-gold/30">
-                                                    ${book.category}
-                                                </span>
-                                                <h2 class="text-xl font-serif font-bold text-white mt-1.5">${book.title}</h2>
-                                                <p class="text-xs text-brand-goldLight mt-0.5"><i class="fa-solid fa-pen-nib me-1"></i>${book.author}</p>
-                                                <p class="text-xs text-slate-300 mt-3 leading-relaxed font-light line-clamp-4">
-                                                    ${not empty book.description ? book.description : 'Bản in quý hiếm được lưu giữ tại hệ thống chuỗi cửa hàng OldBook.'}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <h4 class="text-xs uppercase tracking-wider font-semibold text-brand-gold mb-3">
-                                            Danh Sách Bản Sao Khả Dụng (${book.copies.size()} cuốn)
-                                        </h4>
-                                        <div class="overflow-x-auto max-h-48 rounded-xl border border-white/5">
-                                            <table class="w-full text-left text-xs text-slate-300">
-                                                <thead class="bg-white/5 text-[11px] text-slate-400 uppercase tracking-wider">
-                                                    <tr>
-                                                        <th class="p-2.5">Mã Barcode</th>
-                                                        <th class="p-2.5">Chi Nhánh</th>
-                                                        <th class="p-2.5">Tình Trạng</th>
-                                                        <th class="p-2.5 text-right">Giá Bán</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="divide-y divide-white/5">
-                                                    <c:forEach var="cp" items="${book.copies}">
-                                                        <tr class="hover:bg-white/5">
-                                                            <td class="p-2.5 font-mono text-amber-300">${cp.copyCode}</td>
-                                                            <td class="p-2.5">${cp.storeName}</td>
-                                                            <td class="p-2.5">
-                                                                <span class="px-2 py-0.5 rounded bg-white/10 text-[10px] text-slate-200">
-                                                                    ${cp.bookCondition}
-                                                                </span>
-                                                            </td>
-                                                            <td class="p-2.5 text-right font-bold text-emerald-400">
-                                                                <fmt:formatNumber value="${cp.price}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
-                                                            </td>
-                                                        </tr>
-                                                    </c:forEach>
-                                                    <c:if test="${empty book.copies}">
-                                                        <tr>
-                                                            <td colspan="4" class="p-4 text-center text-slate-500">Tất cả bản sao hiện đã được bán hoặc đang điều chuyển.</td>
-                                                        </tr>
-                                                    </c:if>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div class="mt-4 text-right">
-                                            <a href="/books/${book.id}" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-brand-gold to-yellow-500 text-slate-950 font-bold text-xs hover:from-yellow-400 hover:to-amber-500 transition">
-                                                <i class="fa-solid fa-arrow-right text-[11px]"></i> Xem chi tiết sách
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
                             </c:forEach>
                         </div>
                     </section>
@@ -925,16 +848,6 @@
                 }
             });
         });
-
-        function openBookModal(id) {
-            const m = document.getElementById('modal-' + id);
-            if (m) m.classList.remove('hidden');
-        }
-
-        function closeBookModal(id) {
-            const m = document.getElementById('modal-' + id);
-            if (m) m.classList.add('hidden');
-        }
     </script>
 </body>
 </html>

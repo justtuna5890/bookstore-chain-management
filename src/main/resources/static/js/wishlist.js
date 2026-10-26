@@ -83,6 +83,6 @@
             .finally(function () {
                 button.disabled = false;
             });
-        // Pha capture: chặn sự kiện trước khi tới thẻ sách cha (thẻ ở trang chủ mở cửa sổ chi tiết khi bấm)
+        // Pha capture: chặn sự kiện trước khi tới thẻ sách cha (mục "đang thịnh hành" ở trang chủ chuyển sang trang chi tiết khi bấm)
     }, true);
 })();
