@@ -106,6 +106,21 @@
 
 
     <style>
+        /* Universal Responsive Safeguards */
+        html, body {
+            overflow-x: hidden !important;
+            width: 100% !important;
+            max-width: 100vw !important;
+        }
+        img, svg, video {
+            max-width: 100%;
+            height: auto;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
 
         body {
 
@@ -204,7 +219,7 @@
 
 
 
-    <div class="relative z-10 max-w-[1520px] w-full mx-auto flex flex-col xl:flex-row items-start gap-5">
+    <div class="relative z-10 max-w-[1520px] w-full mx-auto flex flex-col lg:flex-row items-start gap-5">
 
         <!-- Navigation Dock -->
 
@@ -218,7 +233,7 @@
 
         <!-- Main Display Frame -->
 
-        <main class="flex-1 w-full glass-panel rounded-[32px] p-5 sm:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden">
+        <main class="flex-1 w-full glass-panel rounded-2xl sm:rounded-[32px] p-3.5 sm:p-5 lg:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden">
 
             <!-- Header bar with Role-Specific Presentation -->
 

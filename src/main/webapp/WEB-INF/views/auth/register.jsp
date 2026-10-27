@@ -48,6 +48,21 @@
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <style>
+        /* Universal Responsive Safeguards */
+        html, body {
+            overflow-x: hidden !important;
+            width: 100% !important;
+            max-width: 100vw !important;
+        }
+        img, svg, video {
+            max-width: 100%;
+            height: auto;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
             background-color: #0b0c10;
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -148,7 +163,7 @@
     <div class="ambient-glow -top-20 -left-20"></div>
     <div class="ambient-glow -bottom-20 -right-20"></div>
 
-    <a href="/" class="fixed top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs text-slate-300 hover:text-brand-gold hover:border-brand-gold/40 transition">
+    <a href="/" class="absolute top-4 left-4 sm:top-6 sm:left-6 z-20 flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs text-slate-300 hover:text-brand-gold hover:border-brand-gold/40 transition">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
         </svg>

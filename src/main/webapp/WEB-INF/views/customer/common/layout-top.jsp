@@ -43,6 +43,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
     <style>
+        
+        /* Universal Responsive Safeguards */
+        html, body {
+            overflow-x: hidden !important;
+            width: 100% !important;
+            max-width: 100vw !important;
+        }
+        img, svg, video {
+            max-width: 100%;
+            height: auto;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         body { background-color: #0b0c10; font-family: 'Plus Jakarta Sans', sans-serif; color: #e2e8f0; overflow-x: hidden; }
         .bg-reading-room {
             background: radial-gradient(circle at 15% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 45%),
@@ -241,13 +258,13 @@
     }
 </script>
 </head>
-<body data-logged-in="${isLoggedIn}" class="bg-reading-room min-h-screen relative flex flex-col justify-between py-6 px-4 md:px-8 lg:px-12 selection:bg-brand-gold selection:text-black">
+<body data-logged-in="${isLoggedIn}" class="bg-reading-room min-h-screen relative flex flex-col justify-between py-4 sm:py-6 px-2.5 sm:px-6 md:px-8 lg:px-12 pb-24 lg:pb-6 selection:bg-brand-gold selection:text-black">
     <div class="ambient-glow top-12 left-1/4"></div>
     <div class="ambient-glow bottom-20 right-10"></div>
 
     <div class="relative z-10 max-w-[1520px] w-full mx-auto flex items-start gap-5">
         <!-- Customer / Homepage Left Floating Dock -->
-        <aside class="customer-dock-pill hidden xl:flex flex-col items-center justify-start rounded-full glass-panel shadow-glass-elevated sticky top-10 border border-white/10 shrink-0 z-40" data-purpose="customer-vertical-dock">
+        <aside class="customer-dock-pill hidden lg:flex flex-col items-center justify-start rounded-full glass-panel shadow-glass-elevated sticky top-10 border border-white/10 shrink-0 z-40" data-purpose="customer-vertical-dock">
             <!-- Top: Brand Logo & Logout / Login -->
             <div class="flex flex-col items-center gap-1.5 shrink-0">
                 <!-- Brand Logo (Về trang chủ) -->
@@ -376,7 +393,7 @@
 
         <!-- Real-Time Notification Flyout Drawer for Customer (Outside dock to prevent clipping) -->
         <c:if test="${isLoggedIn}">
-            <div data-notification-panel class="hidden fixed left-20 sm:left-24 top-20 z-50 w-80 sm:w-96 max-w-[90vw] rounded-2xl border border-white/15 bg-[#12151c]/95 backdrop-blur-2xl shadow-glass-elevated overflow-hidden text-left">
+            <div data-notification-panel class="hidden fixed top-16 inset-x-3 sm:inset-x-auto sm:right-6 lg:right-auto lg:left-24 lg:top-20 z-50 w-auto sm:w-96 max-w-[95vw] rounded-2xl border border-white/15 bg-[#12151c]/95 backdrop-blur-2xl shadow-glass-elevated overflow-hidden text-left">
                 <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-white/[0.02]">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-bell text-brand-gold text-xs"></i>
@@ -393,17 +410,52 @@
             </div>
         </c:if>
 
-        <main class="flex-1 w-full glass-panel rounded-[32px] p-5 sm:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden">
-            <header class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 pb-6 border-b border-white/5">
+        <main class="flex-1 w-full glass-panel rounded-2xl sm:rounded-[32px] p-3.5 sm:p-5 lg:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden">
+            <!-- Mobile Brand Bar (Visible on < lg screens where left dock is hidden) -->
+            <div class="flex lg:hidden items-center justify-between pb-3.5 mb-3 border-b border-white/10" data-purpose="mobile-brand-bar">
+                <a href="/" class="flex items-center gap-2.5 group">
+                    <div class="w-8 h-8 rounded-full bg-brand-gold/15 border border-brand-gold/40 flex items-center justify-center text-brand-gold group-hover:bg-brand-gold/25 transition shadow-sm">
+                        <i class="fa-solid fa-book-open text-xs"></i>
+                    </div>
+                    <span class="font-serif font-bold text-lg text-white tracking-wide">Old<span class="text-brand-gold">Book</span></span>
+                </a>
+                <div class="flex items-center gap-2">
+                    <c:if test="${isLoggedIn}">
+                        <button type="button" data-notification-toggle aria-haspopup="true" aria-expanded="false" title="Thông báo"
+                                class="relative w-8 h-8 rounded-full bg-brand-gold/15 text-brand-gold border border-brand-gold/40 flex items-center justify-center hover:bg-brand-gold/25 transition">
+                            <i class="fa-solid fa-bell text-xs"></i>
+                            <span data-notification-badge class="hidden absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center animate-pulse">0</span>
+                        </button>
+                    </c:if>
+                    <a href="/cart" class="relative w-8 h-8 rounded-full glass-panel-subtle hover:bg-white/10 flex items-center justify-center transition text-slate-300" title="Giỏ hàng">
+                        <i class="fa-solid fa-cart-shopping text-xs"></i>
+                        <span data-cart-count class="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-brand-gold text-slate-950 text-[9px] font-black flex items-center justify-center ${empty cartCount || cartCount == 0 ? 'hidden' : ''}">${empty cartCount ? 0 : cartCount}</span>
+                    </a>
+                    <c:if test="${!isLoggedIn}">
+                        <a href="/login" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-brand-gold to-yellow-500 text-slate-950 font-bold text-xs shadow-glow-gold hover:from-yellow-400 hover:to-amber-500 transition">
+                            <i class="fa-solid fa-right-to-bracket text-[10px]"></i>
+                            <span>Đăng nhập</span>
+                        </a>
+                    </c:if>
+                    <c:if test="${isLoggedIn}">
+                        <a href="/account" class="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-600 via-brand-gold to-yellow-200 p-[1px] flex items-center justify-center" title="Tài khoản cá nhân">
+                            <div class="w-full h-full rounded-full bg-[#1e2330] flex items-center justify-center text-xs font-bold text-amber-200">
+                                ${fn:escapeXml(pageContext.request.userPrincipal.principal.username.substring(0, 1).toUpperCase())}
+                            </div>
+                        </a>
+                    </c:if>
+                </div>
+            </div>
+            <header class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 lg:gap-4 pb-4 lg:pb-6 border-b border-white/5">
                 <div class="flex items-center gap-3 w-full sm:w-80 lg:w-80 shrink-0">
                     <form action="/" method="get" class="relative w-full">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400"><i class="fa-solid fa-magnifying-glass text-xs"></i></span>
                         <input name="keyword" autocomplete="off" class="glass-input w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-full text-white placeholder-slate-400 transition" placeholder="Tìm kiếm sách, tác giả, tiệm sách..." type="text"/>
                     </form>
                 </div>
-                <div class="flex items-center justify-end gap-3 shrink-0">
+                <div class="hidden lg:flex items-center justify-end gap-3 shrink-0">
                     <!-- Mobile only: Quick actions for small screens where left dock is hidden (< xl) -->
-                    <div class="flex xl:hidden items-center gap-2">
+                    <div class="flex lg:hidden items-center gap-2">
                         <a href="/cart" class="relative p-2 rounded-full glass-panel-subtle hover:bg-white/10 transition text-slate-300" title="Giỏ hàng">
                             <i class="fa-solid fa-cart-shopping text-sm"></i>
                             <span data-cart-count class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-brand-gold text-slate-950 text-[10px] font-bold flex items-center justify-center ${empty cartCount || cartCount == 0 ? 'hidden' : ''}">${empty cartCount ? 0 : cartCount}</span>
@@ -430,7 +482,7 @@
                     </c:if>
                     <c:if test="${isLoggedIn}">
                         <c:if test="${isStaffOrAdmin}">
-                            <a href="/admin/dashboard" class="hidden md:flex xl:hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-gold/15 hover:bg-brand-gold/25 border border-brand-gold/30 text-xs text-brand-gold hover:text-white transition">
+                            <a href="/admin/dashboard" class="hidden md:flex lg:hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-gold/15 hover:bg-brand-gold/25 border border-brand-gold/30 text-xs text-brand-gold hover:text-white transition">
                                 <i class="fa-solid fa-gauge text-[11px]"></i><span>Quản Trị</span>
                             </a>
                         </c:if>

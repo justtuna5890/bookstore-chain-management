@@ -42,7 +42,7 @@
 
 <!-- 1. Mobile & Tablet Top Bar (xl:hidden) -->
 
-<div class="xl:hidden w-full mb-6 glass-panel rounded-2xl p-3 border border-white/10 shadow-glass-elevated">
+<div class="lg:hidden w-full mb-6 glass-panel rounded-2xl p-3 border border-white/10 shadow-glass-elevated">
 
     <div class="flex items-center justify-between gap-3 mb-2.5 pb-2.5 border-b border-white/10">
 
@@ -244,6 +244,21 @@
 
 <!-- 2. Desktop Floating Left Dock (hidden xl:flex) -->
 <style>
+        /* Universal Responsive Safeguards */
+        html, body {
+            overflow-x: hidden !important;
+            width: 100% !important;
+            max-width: 100vw !important;
+        }
+        img, svg, video {
+            max-width: 100%;
+            height: auto;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
     /* Dynamic Auto-Scaling Adaptive Dock Pill */
     .admin-dock-pill {
         --dock-btn-size: 36px;
@@ -367,7 +382,7 @@
     }
 </style>
 
-<aside class="admin-dock-pill hidden xl:flex flex-col items-center justify-start rounded-full glass-panel shadow-glass-elevated sticky top-4 border border-white/10 shrink-0 z-40" data-purpose="vertical-dock">
+<aside class="admin-dock-pill hidden lg:flex flex-col items-center justify-start rounded-full glass-panel shadow-glass-elevated sticky top-4 border border-white/10 shrink-0 z-40" data-purpose="vertical-dock">
     <!-- Top: Brand Logo & Logout Action -->
     <div class="flex flex-col items-center gap-1.5 shrink-0">
         <!-- Logo Brand -->
@@ -537,7 +552,7 @@
 
 <!-- Notification Dropdown Panel -->
 
-<div id="notifDropdown" class="hidden fixed top-16 right-4 sm:right-12 xl:left-24 xl:top-20 z-50 w-80 sm:w-96 rounded-2xl glass-panel p-4 shadow-glass-elevated border border-white/15 backdrop-blur-2xl">
+<div id="notifDropdown" class="hidden fixed top-16 inset-x-3 sm:inset-x-auto sm:right-12 lg:right-auto lg:left-24 lg:top-20 z-50 w-auto sm:w-96 max-w-[95vw] rounded-2xl glass-panel p-4 shadow-glass-elevated border border-white/15 backdrop-blur-2xl">
 
     <div class="flex items-center justify-between pb-3 border-b border-white/10 mb-3">
 

@@ -46,6 +46,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
+        /* Universal Responsive Safeguards */
+        html, body {
+            overflow-x: hidden !important;
+            width: 100% !important;
+            max-width: 100vw !important;
+        }
+        img, svg, video {
+            max-width: 100%;
+            height: auto;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
             background-color: #0b0c10;
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -90,14 +105,14 @@
     <div class="ambient-glow top-12 left-1/4"></div>
     <div class="ambient-glow bottom-20 right-10"></div>
 
-    <div class="relative z-10 max-w-[1520px] w-full mx-auto flex flex-col xl:flex-row items-start gap-5">
+    <div class="relative z-10 max-w-[1520px] w-full mx-auto flex flex-col lg:flex-row items-start gap-5">
         <!-- Unified Navigation Dock -->
         <jsp:include page="/WEB-INF/views/admin/common/nav-dock.jsp">
             <jsp:param name="active" value="buybacks"/>
         </jsp:include>
 
         <!-- Main Display Frame -->
-        <main class="flex-1 w-full glass-panel rounded-[32px] p-5 sm:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden">
+        <main class="flex-1 w-full glass-panel rounded-2xl sm:rounded-[32px] p-3.5 sm:p-5 lg:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden">
             <!-- Top Nav & Actions -->
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-white/5 mb-6">
                 <div>
@@ -183,7 +198,7 @@
                     <!-- Items Table -->
                     <div>
                         <h4 class="text-sm font-serif font-bold text-white mb-3">Danh sách tác phẩm thẩm định:</h4>
-                        <div class="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-lg">
+                        <div class="glass-panel rounded-2xl border border-white/10 overflow-x-auto shadow-lg">
                             <table class="w-full text-left text-xs text-slate-300">
                                 <thead class="bg-white/5 text-[11px] text-brand-gold uppercase tracking-wider border-b border-white/10">
                                     <tr>

@@ -255,7 +255,7 @@
         }
     </style>
 </head>
-<body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-6 px-4 md:px-8 lg:px-12 selection:bg-brand-gold selection:text-black">
+<body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-4 sm:py-6 px-2.5 sm:px-6 md:px-8 lg:px-12 pb-24 lg:pb-6 selection:bg-brand-gold selection:text-black">
     <!-- Ambient background glow lights -->
     <div class="ambient-glow top-12 left-1/4"></div>
     <div class="ambient-glow bottom-20 right-10"></div>
@@ -264,7 +264,7 @@
     <div class="relative z-10 max-w-[1520px] w-full mx-auto flex items-start gap-5">
         <!-- BEGIN: LeftFloatingDock -->
         <!-- Customer / Homepage Left Floating Dock -->
-        <aside class="customer-dock-pill hidden xl:flex flex-col items-center justify-start rounded-full glass-panel shadow-glass-elevated sticky top-10 border border-white/10 shrink-0 z-40" data-purpose="customer-vertical-dock">
+        <aside class="customer-dock-pill hidden lg:flex flex-col items-center justify-start rounded-full glass-panel shadow-glass-elevated sticky top-10 border border-white/10 shrink-0 z-40" data-purpose="customer-vertical-dock">
             <!-- Top: Brand Logo & Logout / Login -->
             <div class="flex flex-col items-center gap-1.5 shrink-0">
                 <!-- Brand Logo (Về trang chủ) -->
@@ -393,7 +393,7 @@
 
         <!-- Real-Time Notification Flyout Drawer for Customer (Outside dock to prevent clipping) -->
         <c:if test="${isLoggedIn}">
-            <div data-notification-panel class="hidden fixed left-20 sm:left-24 top-20 z-50 w-80 sm:w-96 max-w-[90vw] rounded-2xl border border-white/15 bg-[#12151c]/95 backdrop-blur-2xl shadow-glass-elevated overflow-hidden text-left">
+            <div data-notification-panel class="hidden fixed top-16 inset-x-3 sm:inset-x-auto sm:right-6 lg:right-auto lg:left-24 lg:top-20 z-50 w-auto sm:w-96 max-w-[95vw] rounded-2xl border border-white/15 bg-[#12151c]/95 backdrop-blur-2xl shadow-glass-elevated overflow-hidden text-left">
                 <div class="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-white/[0.02]">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-bell text-brand-gold text-xs"></i>
@@ -411,10 +411,45 @@
         </c:if>
         <!-- END: LeftFloatingDock -->
 
-        <!-- BEGIN: MainContentContainer -->
-        <main class="flex-1 w-full glass-panel rounded-[32px] p-5 sm:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden" data-purpose="main-display-frame">
+                <!-- BEGIN: MainContentContainer -->
+        <main class="flex-1 w-full glass-panel rounded-2xl sm:rounded-[32px] p-3.5 sm:p-5 lg:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden" data-purpose="main-display-frame">
+            <!-- Mobile Brand Bar (Visible on < lg screens where left dock is hidden) -->
+            <div class="flex lg:hidden items-center justify-between pb-3.5 mb-3 border-b border-white/10" data-purpose="mobile-brand-bar">
+                <a href="/" class="flex items-center gap-2.5 group">
+                    <div class="w-8 h-8 rounded-full bg-brand-gold/15 border border-brand-gold/40 flex items-center justify-center text-brand-gold group-hover:bg-brand-gold/25 transition shadow-sm">
+                        <i class="fa-solid fa-book-open text-xs"></i>
+                    </div>
+                    <span class="font-serif font-bold text-lg text-white tracking-wide">Old<span class="text-brand-gold">Book</span></span>
+                </a>
+                <div class="flex items-center gap-2">
+                    <c:if test="${isLoggedIn}">
+                        <button type="button" data-notification-toggle aria-haspopup="true" aria-expanded="false" title="Thông báo"
+                                class="relative w-8 h-8 rounded-full bg-brand-gold/15 text-brand-gold border border-brand-gold/40 flex items-center justify-center hover:bg-brand-gold/25 transition">
+                            <i class="fa-solid fa-bell text-xs"></i>
+                            <span data-notification-badge class="hidden absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center animate-pulse">0</span>
+                        </button>
+                    </c:if>
+                    <a href="/cart" class="relative w-8 h-8 rounded-full glass-panel-subtle hover:bg-white/10 flex items-center justify-center transition text-slate-300" title="Giỏ hàng">
+                        <i class="fa-solid fa-cart-shopping text-xs"></i>
+                        <span data-cart-count class="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-brand-gold text-slate-950 text-[9px] font-black flex items-center justify-center ${empty cartCount || cartCount == 0 ? 'hidden' : ''}">${empty cartCount ? 0 : cartCount}</span>
+                    </a>
+                    <c:if test="${!isLoggedIn}">
+                        <a href="/login" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-brand-gold to-yellow-500 text-slate-950 font-bold text-xs shadow-glow-gold hover:from-yellow-400 hover:to-amber-500 transition">
+                            <i class="fa-solid fa-right-to-bracket text-[10px]"></i>
+                            <span>Đăng nhập</span>
+                        </a>
+                    </c:if>
+                    <c:if test="${isLoggedIn}">
+                        <a href="/account" class="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-600 via-brand-gold to-yellow-200 p-[1px] flex items-center justify-center" title="Tài khoản cá nhân">
+                            <div class="w-full h-full rounded-full bg-[#1e2330] flex items-center justify-center text-xs font-bold text-amber-200">
+                                ${fn:escapeXml(pageContext.request.userPrincipal.principal.username.substring(0, 1).toUpperCase())}
+                            </div>
+                        </a>
+                    </c:if>
+                </div>
+            </div>
             <!-- BEGIN: TopNavigationBar -->
-            <header class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 pb-6 border-b border-white/5" data-purpose="header-navigation">
+            <header class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 lg:gap-4 pb-4 lg:pb-6 border-b border-white/5" data-purpose="header-navigation">
                 <!-- Search bar + Brand icon -->
                 <div class="flex items-center gap-3 w-full sm:w-80 lg:w-80 xl:w-96 shrink-0">
                     <form action="/" method="get" class="relative w-full group">
@@ -443,9 +478,9 @@
                 </nav>
 
                 <!-- User profile & Quick notification (Right) -->
-                <div class="flex items-center justify-end gap-3 shrink-0" data-purpose="user-actions">
+                <div class="hidden lg:flex items-center justify-end gap-3 shrink-0" data-purpose="user-actions">
                     <!-- Mobile only: Quick actions for small screens where left dock is hidden (< xl) -->
-                    <div class="flex xl:hidden items-center gap-2">
+                    <div class="flex lg:hidden items-center gap-2">
                         <a href="/cart" class="relative p-2 rounded-full glass-panel-subtle hover:bg-white/10 transition text-slate-300" title="Giỏ hàng">
                             <i class="fa-solid fa-cart-shopping text-sm"></i>
                             <span data-cart-count class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-brand-gold text-slate-950 text-[10px] font-bold flex items-center justify-center ${empty cartCount || cartCount == 0 ? 'hidden' : ''}">${empty cartCount ? 0 : cartCount}</span>
@@ -475,7 +510,7 @@
 
                     <c:if test="${isLoggedIn}">
                         <c:if test="${isStaffOrAdmin}">
-                            <a href="/admin/dashboard" class="hidden md:flex xl:hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-gold/15 hover:bg-brand-gold/25 border border-brand-gold/30 text-xs text-brand-gold hover:text-white transition">
+                            <a href="/admin/dashboard" class="hidden md:flex lg:hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-gold/15 hover:bg-brand-gold/25 border border-brand-gold/30 text-xs text-brand-gold hover:text-white transition">
                                 <i class="fa-solid fa-gauge text-[11px]"></i>
                                 <span>Quản Trị</span>
                             </a>
@@ -679,12 +714,12 @@
                         </c:when>
                         <c:otherwise>
                             <!-- BEGIN: Multi-Book Carousel Hero Banner -->
-                            <section id="heroBannerCarousel" class="relative rounded-2xl overflow-hidden glass-panel-subtle border border-white/10 min-h-[500px] md:min-h-[460px] lg:min-h-[440px] group shadow-xl" data-purpose="hero-carousel">
+                            <section id="heroBannerCarousel" class="relative rounded-2xl overflow-hidden glass-panel-subtle border border-white/10 min-h-[380px] sm:min-h-[430px] lg:min-h-[440px] group shadow-xl" data-purpose="hero-carousel">
                                 <!-- Slides Track -->
-                                <div class="relative w-full h-full min-h-[500px] md:min-h-[460px] lg:min-h-[440px]">
+                                <div class="relative w-full h-full min-h-[380px] sm:min-h-[430px] lg:min-h-[440px]">
 
                                     <!-- SLIDE 1: The Starless Archive (Editor's Pick) -->
-                                    <div class="hero-slide absolute inset-0 w-full h-full px-8 sm:px-14 lg:px-16 py-7 sm:py-8 pb-14 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 bg-gradient-to-r from-black/95 via-[#10151f]/90 to-black/95 transition-opacity duration-700 ease-in-out opacity-100 z-10 pointer-events-auto" data-slide-index="0">
+                                    <div class="hero-slide absolute inset-0 w-full h-full px-4 sm:px-10 lg:px-16 py-5 sm:py-8 pb-14 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 bg-gradient-to-r from-black/95 via-[#10151f]/90 to-black/95 transition-opacity duration-700 ease-in-out opacity-100 z-10 pointer-events-auto" data-slide-index="0">
                                         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/15 via-blue-900/15 to-transparent pointer-events-none"></div>
 
                                         <!-- Left Details -->
@@ -746,8 +781,8 @@
                                         </div>
 
                                         <!-- Right 3D Book Visual -->
-                                        <div class="relative z-10 shrink-0 flex flex-col items-center">
-                                            <div class="relative w-36 sm:w-44 lg:w-48 h-56 sm:h-68 lg:h-72 rounded-r-lg rounded-l-[4px] bg-[#11141c] hero-book-spine border-t border-r border-b border-white/20 p-3 sm:p-4 flex flex-col justify-between overflow-hidden transition transform hover:-translate-y-1.5 duration-300 shadow-2xl">
+                                        <div class="relative z-10 shrink-0 hidden md:flex flex-col items-center">
+                                            <div class="relative w-28 h-44 sm:w-40 sm:h-60 lg:w-48 lg:h-72 rounded-r-lg rounded-l-[4px] bg-[#11141c] hero-book-spine border-t border-r border-b border-white/20 p-3 sm:p-4 flex flex-col justify-between overflow-hidden transition transform hover:-translate-y-1.5 duration-300 shadow-2xl">
                                                 <div class="absolute inset-0 bg-gradient-to-tr from-black via-[#161a24] to-[#252c3c] opacity-95"></div>
                                                 <div class="absolute inset-2 border border-brand-gold/30 rounded pointer-events-none"></div>
                                                 <div class="absolute inset-3 border border-brand-gold/15 rounded pointer-events-none"></div>
@@ -782,7 +817,7 @@
                                     </div>
 
                                     <!-- SLIDE 2: Hoàng Tử Bé (ID: 1) -->
-                                    <div class="hero-slide absolute inset-0 w-full h-full px-8 sm:px-14 lg:px-16 py-7 sm:py-8 pb-14 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 bg-gradient-to-r from-black/95 via-[#161224]/90 to-black/95 transition-opacity duration-700 ease-in-out opacity-0 z-0 pointer-events-none" data-slide-index="1">
+                                    <div class="hero-slide absolute inset-0 w-full h-full px-4 sm:px-10 lg:px-16 py-5 sm:py-8 pb-14 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 bg-gradient-to-r from-black/95 via-[#161224]/90 to-black/95 transition-opacity duration-700 ease-in-out opacity-0 z-0 pointer-events-none" data-slide-index="1">
                                         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-500/15 via-purple-900/15 to-transparent pointer-events-none"></div>
 
                                         <!-- Left Details -->
@@ -844,8 +879,8 @@
                                         </div>
 
                                         <!-- Right 3D Book Visual -->
-                                        <div class="relative z-10 shrink-0 flex flex-col items-center">
-                                            <a href="/books/1" class="relative w-36 sm:w-44 lg:w-48 h-56 sm:h-68 lg:h-72 rounded-r-lg rounded-l-[4px] overflow-hidden hero-book-spine border-t border-r border-b border-white/20 block transition transform hover:-translate-y-1.5 duration-300 group/book shadow-2xl">
+                                        <div class="relative z-10 shrink-0 hidden md:flex flex-col items-center">
+                                            <a href="/books/1" class="relative w-28 h-44 sm:w-40 sm:h-60 lg:w-48 lg:h-72 rounded-r-lg rounded-l-[4px] overflow-hidden hero-book-spine border-t border-r border-b border-white/20 block transition transform hover:-translate-y-1.5 duration-300 group/book shadow-2xl">
                                                 <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover transition transform group-hover/book:scale-105 duration-300" alt="Hoàng Tử Bé"/>
                                                 <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-between p-3">
                                                     <div class="flex justify-between items-start">
@@ -863,7 +898,7 @@
                                     </div>
 
                                     <!-- SLIDE 3: Nhà Giả Kim (ID: 2) -->
-                                    <div class="hero-slide absolute inset-0 w-full h-full px-8 sm:px-14 lg:px-16 py-7 sm:py-8 pb-14 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 bg-gradient-to-r from-black/95 via-[#21160e]/90 to-black/95 transition-opacity duration-700 ease-in-out opacity-0 z-0 pointer-events-none" data-slide-index="2">
+                                    <div class="hero-slide absolute inset-0 w-full h-full px-4 sm:px-10 lg:px-16 py-5 sm:py-8 pb-14 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 bg-gradient-to-r from-black/95 via-[#21160e]/90 to-black/95 transition-opacity duration-700 ease-in-out opacity-0 z-0 pointer-events-none" data-slide-index="2">
                                         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-600/15 via-orange-950/20 to-transparent pointer-events-none"></div>
 
                                         <!-- Left Details -->
@@ -925,8 +960,8 @@
                                         </div>
 
                                         <!-- Right 3D Book Visual -->
-                                        <div class="relative z-10 shrink-0 flex flex-col items-center">
-                                            <a href="/books/2" class="relative w-36 sm:w-44 lg:w-48 h-56 sm:h-68 lg:h-72 rounded-r-lg rounded-l-[4px] overflow-hidden hero-book-spine border-t border-r border-b border-white/20 block transition transform hover:-translate-y-1.5 duration-300 group/book shadow-2xl">
+                                        <div class="relative z-10 shrink-0 hidden md:flex flex-col items-center">
+                                            <a href="/books/2" class="relative w-28 h-44 sm:w-40 sm:h-60 lg:w-48 lg:h-72 rounded-r-lg rounded-l-[4px] overflow-hidden hero-book-spine border-t border-r border-b border-white/20 block transition transform hover:-translate-y-1.5 duration-300 group/book shadow-2xl">
                                                 <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover transition transform group-hover/book:scale-105 duration-300" alt="Nhà Giả Kim"/>
                                                 <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-between p-3">
                                                     <div class="flex justify-between items-start">
@@ -944,7 +979,7 @@
                                     </div>
 
                                     <!-- SLIDE 4: Sapiens: Lược Sử Loài Người (ID: 7) -->
-                                    <div class="hero-slide absolute inset-0 w-full h-full px-8 sm:px-14 lg:px-16 py-7 sm:py-8 pb-14 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 bg-gradient-to-r from-black/95 via-[#0e171f]/90 to-black/95 transition-opacity duration-700 ease-in-out opacity-0 z-0 pointer-events-none" data-slide-index="3">
+                                    <div class="hero-slide absolute inset-0 w-full h-full px-4 sm:px-10 lg:px-16 py-5 sm:py-8 pb-14 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 bg-gradient-to-r from-black/95 via-[#0e171f]/90 to-black/95 transition-opacity duration-700 ease-in-out opacity-0 z-0 pointer-events-none" data-slide-index="3">
                                         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-500/15 via-emerald-950/20 to-transparent pointer-events-none"></div>
 
                                         <!-- Left Details -->
@@ -1006,8 +1041,8 @@
                                         </div>
 
                                         <!-- Right 3D Book Visual -->
-                                        <div class="relative z-10 shrink-0 flex flex-col items-center">
-                                            <a href="/books/7" class="relative w-36 sm:w-44 lg:w-48 h-56 sm:h-68 lg:h-72 rounded-r-lg rounded-l-[4px] overflow-hidden hero-book-spine border-t border-r border-b border-white/20 block transition transform hover:-translate-y-1.5 duration-300 group/book shadow-2xl">
+                                        <div class="relative z-10 shrink-0 hidden md:flex flex-col items-center">
+                                            <a href="/books/7" class="relative w-28 h-44 sm:w-40 sm:h-60 lg:w-48 lg:h-72 rounded-r-lg rounded-l-[4px] overflow-hidden hero-book-spine border-t border-r border-b border-white/20 block transition transform hover:-translate-y-1.5 duration-300 group/book shadow-2xl">
                                                 <img src="https://images.unsplash.com/photo-1495446815901-a7297e633e8d?q=80&w=600&auto=format&fit=crop" class="w-full h-full object-cover transition transform group-hover/book:scale-105 duration-300" alt="Sapiens"/>
                                                 <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-between p-3">
                                                     <div class="flex justify-between items-start">
@@ -1317,8 +1352,83 @@
     </div>
     <!-- END: MasterLayoutWrapper -->
 
+        <!-- ======================================================== -->
+    <!-- FLOATING MOBILE & TABLET BOTTOM DOCK (App Navigation Bar) -->
+    <!-- Hiển thị trên màn hình nhỏ < xl (Điện thoại & Tablet)    -->
+    <!-- ======================================================== -->
+    <nav class="lg:hidden fixed bottom-3 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 z-40 max-w-md w-[calc(100%-1.5rem)] sm:w-auto glass-panel rounded-full py-1.5 px-3.5 border border-white/15 shadow-glass-elevated flex items-center justify-around sm:gap-6 backdrop-blur-2xl" aria-label="Điều hướng di động">
+        <!-- 1. Trang chủ / Khám phá -->
+        <a href="/" class="flex flex-col items-center gap-0.5 py-1 px-2 text-slate-400 hover:text-brand-gold active:scale-95 transition" title="Khám phá">
+            <i class="fa-solid fa-house text-sm"></i>
+            <span class="text-[9px] font-medium leading-none">Khám phá</span>
+        </a>
+
+        <!-- 2. Kho sách -->
+        <a href="/#catalog" class="flex flex-col items-center gap-0.5 py-1 px-2 text-slate-400 hover:text-brand-gold active:scale-95 transition" title="Kho sách">
+            <i class="fa-solid fa-book-bookmark text-sm"></i>
+            <span class="text-[9px] font-medium leading-none">Kho sách</span>
+        </a>
+
+        <!-- 3. Giỏ hàng -->
+        <a href="/cart" class="relative flex flex-col items-center gap-0.5 py-1 px-2 text-slate-400 hover:text-brand-gold active:scale-95 transition" title="Giỏ hàng">
+            <i class="fa-solid fa-cart-shopping text-sm"></i>
+            <span data-cart-count class="absolute top-0 right-0 min-w-[15px] h-[15px] px-0.5 rounded-full bg-brand-gold text-slate-950 text-[9px] font-black flex items-center justify-center shadow ${empty cartCount || cartCount == 0 ? 'hidden' : ''}">${empty cartCount ? 0 : cartCount}</span>
+            <span class="text-[9px] font-medium leading-none">Giỏ hàng</span>
+        </a>
+
+        <!-- 4. Thông báo (Nổi bật nhất) -->
+        <c:if test="${isLoggedIn}">
+            <button type="button" data-notification-toggle aria-haspopup="true" aria-expanded="false" 
+                    class="relative flex flex-col items-center gap-0.5 py-1 px-3 rounded-full bg-gradient-to-br from-amber-500/25 via-brand-gold/35 to-amber-600/25 border border-brand-gold text-brand-gold shadow-[0_0_12px_rgba(212,175,55,0.4)] active:scale-95 transition" title="Trung tâm Thông báo">
+                <span class="relative flex items-center justify-center">
+                    <i class="fa-solid fa-bell text-sm"></i>
+                    <span class="absolute -top-0.5 -right-0.5 flex h-1.5 w-1.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
+                    </span>
+                </span>
+                <span data-notification-badge class="hidden absolute top-0 right-1 min-w-[15px] h-[15px] px-0.5 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center shadow border border-rose-300 animate-pulse">0</span>
+                <span class="text-[9px] font-bold leading-none">Thông báo</span>
+            </button>
+        </c:if>
+        <c:if test="${!isLoggedIn}">
+            <a href="/login" class="flex flex-col items-center gap-0.5 py-1 px-2 text-slate-400 hover:text-brand-gold active:scale-95 transition" title="Thông báo">
+                <i class="fa-solid fa-bell text-sm text-brand-gold"></i>
+                <span class="text-[9px] font-medium leading-none">Thông báo</span>
+            </a>
+        </c:if>
+
+        <!-- 5. Đơn hàng (hoặc Thu mua) -->
+        <c:if test="${isLoggedIn}">
+            <a href="/orders" class="flex flex-col items-center gap-0.5 py-1 px-2 text-slate-400 hover:text-brand-gold active:scale-95 transition" title="Đơn hàng">
+                <i class="fa-solid fa-receipt text-sm"></i>
+                <span class="text-[9px] font-medium leading-none">Đơn hàng</span>
+            </a>
+        </c:if>
+        <c:if test="${!isLoggedIn}">
+            <a href="/#buyback" class="flex flex-col items-center gap-0.5 py-1 px-2 text-slate-400 hover:text-brand-gold active:scale-95 transition" title="Thu mua">
+                <i class="fa-solid fa-hand-holding-dollar text-sm"></i>
+                <span class="text-[9px] font-medium leading-none">Thu mua</span>
+            </a>
+        </c:if>
+
+        <!-- 6. Tài khoản / Đăng nhập -->
+        <c:if test="${isLoggedIn}">
+            <a href="/account" class="flex flex-col items-center gap-0.5 py-1 px-2 text-slate-400 hover:text-brand-gold active:scale-95 transition" title="Tài khoản">
+                <i class="fa-solid fa-user text-sm"></i>
+                <span class="text-[9px] font-medium leading-none">Tài khoản</span>
+            </a>
+        </c:if>
+        <c:if test="${!isLoggedIn}">
+            <a href="/login" class="flex flex-col items-center gap-0.5 py-1 px-2 text-brand-gold hover:text-white active:scale-95 transition" title="Đăng nhập">
+                <i class="fa-solid fa-arrow-right-to-bracket text-sm"></i>
+                <span class="text-[9px] font-semibold leading-none">Đăng nhập</span>
+            </a>
+        </c:if>
+    </nav>
+
     <!-- BEGIN: MinimalistFooter -->
-    <footer class="max-w-[1520px] w-full mx-auto mt-6 pt-4 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-4" data-purpose="site-footer">
+    <footer class="max-w-[1520px] w-full mx-auto mt-6 pt-4 border-t border-white/5 flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-4 pb-20 lg:pb-4" data-purpose="site-footer">
         <div class="flex items-center gap-3">
             <span class="font-serif font-bold text-slate-300 tracking-wider">OLDBOOK</span>
             <span class="text-slate-700">|</span>
@@ -1337,6 +1447,7 @@
     </footer>
     <!-- END: MinimalistFooter -->
 
+    <script src="/js/cart.js"></script>
     <script src="/js/wishlist.js"></script>
     <script src="/js/notifications.js"></script>
     <script data-purpose="interactive-enhancements">
