@@ -112,6 +112,12 @@
                     <p class="text-xs text-slate-400 mt-0.5">Theo dõi từng cuốn sách thực tế qua mã Barcode, tình trạng và vị trí lưu kho</p>
                 </div>
                 <div class="flex items-center gap-2.5">
+                    <a href="/admin/orders" 
+                       class="px-3.5 py-2.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 font-semibold text-xs border border-sky-500/30 transition flex items-center gap-2 shadow-sm"
+                       title="Xem danh sách đơn khách đặt">
+                        <i class="fa-solid fa-receipt text-sky-400"></i>
+                        <span>Đơn Hàng Của Khách</span>
+                    </a>
                     <a href="/admin/export/excel/inventory${not empty selectedStoreId ? '?storeId='.concat(selectedStoreId) : ''}" 
                        class="px-3.5 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-semibold text-xs border border-emerald-500/30 transition flex items-center gap-2 shadow-sm">
                         <i class="fa-solid fa-file-excel text-emerald-400"></i>
@@ -158,7 +164,16 @@
                         <select name="status" class="glass-input w-full px-3 py-2 text-xs rounded-xl bg-[#161a22]">
                             <option value="">-- Tất cả trạng thái --</option>
                             <c:forEach var="st" items="${statuses}">
-                                <option value="${st}" ${selectedStatus == st ? 'selected' : ''}>${st}</option>
+                                <option value="${st}" ${selectedStatus == st ? 'selected' : ''}>
+                                    <c:choose>
+                                        <c:when test="${st == 'AVAILABLE'}">Sẵn sàng bán</c:when>
+                                        <c:when test="${st == 'RESERVED'}">Khách đã đặt (Trong đơn hàng)</c:when>
+                                        <c:when test="${st == 'HOLDING'}">Tạm giữ</c:when>
+                                        <c:when test="${st == 'IN_TRANSIT'}">Đang chuyển kho</c:when>
+                                        <c:when test="${st == 'SOLD'}">Đã bán</c:when>
+                                        <c:otherwise>${st}</c:otherwise>
+                                    </c:choose>
+                                </option>
                             </c:forEach>
                         </select>
                     </div>
@@ -210,8 +225,9 @@
                                 <th class="py-3.5 px-4 text-right">Thao Tác</th>
                             </tr>
                         </thead>
+                        <c:set var="effectivePage" value="${not empty copyPage ? copyPage : bookCopyPage}"/>
                         <tbody class="divide-y divide-white/5">
-                            <c:forEach var="copy" items="${copyPage.content}">
+                            <c:forEach var="copy" items="${effectivePage.content}">
                                 <tr class="hover:bg-white/5 transition">
                                     <td class="py-3.5 px-4 font-mono font-bold text-amber-300">
                                         <div class="flex items-center gap-1.5">
@@ -311,7 +327,7 @@
                                     </td>
                                 </tr>
                             </c:forEach>
-                            <c:if test="${empty copyPage.content}">
+                            <c:if test="${empty effectivePage.content}">
                                 <tr>
                                     <td colspan="7" class="py-12 text-center text-slate-500">
                                         <i class="fa-solid fa-boxes-packing text-3xl mb-3 text-slate-600 block"></i>
@@ -324,16 +340,16 @@
                 </div>
 
                 <!-- Pagination -->
-                <c:if test="${copyPage.totalPages > 1}">
+                <c:if test="${effectivePage.totalPages > 1}">
                     <div class="p-4 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
                         <div>
-                            Trang <span class="text-white font-medium">${copyPage.number + 1}</span> / <span class="text-white font-medium">${copyPage.totalPages}</span>
-                            (Tổng <span class="text-brand-gold font-medium">${copyPage.totalElements}</span> bản sao)
+                            Trang <span class="text-white font-medium">${effectivePage.number + 1}</span> / <span class="text-white font-medium">${effectivePage.totalPages}</span>
+                            (Tổng <span class="text-brand-gold font-medium">${effectivePage.totalElements}</span> bản sao)
                         </div>
                         <div class="flex items-center gap-1.5">
-                            <c:forEach begin="0" end="${copyPage.totalPages - 1}" var="i">
+                            <c:forEach begin="0" end="${effectivePage.totalPages - 1}" var="i">
                                 <a href="?page=${i}&storeId=${selectedStoreId}&status=${selectedStatus}&keyword=${keyword}" 
-                                   class="w-8 h-8 rounded-lg flex items-center justify-center font-medium transition ${copyPage.number == i ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5'}">
+                                   class="w-8 h-8 rounded-lg flex items-center justify-center font-medium transition ${effectivePage.number == i ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5'}">
                                     ${i + 1}
                                 </a>
                             </c:forEach>
