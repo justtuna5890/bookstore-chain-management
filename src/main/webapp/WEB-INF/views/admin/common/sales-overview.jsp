@@ -18,21 +18,21 @@
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-emerald-500/30 transition">
+        <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-white/5 hover:border-emerald-500/30 transition">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs text-slate-400 font-medium">Doanh Thu Hôm Nay</span>
                 <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-sack-dollar"></i></div>
             </div>
-            <div class="text-2xl font-bold font-serif text-white"><fmt:formatNumber value="${salesOverview.revenueToday}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></div>
+            <div class="text-xl sm:text-2xl font-bold font-serif text-white"><fmt:formatNumber value="${salesOverview.revenueToday}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></div>
             <span class="text-[11px] text-slate-500 mt-1 block">${salesOverview.ordersToday} đơn đã hoàn tất hôm nay</span>
         </div>
 
-        <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-emerald-500/30 transition">
+        <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-white/5 hover:border-emerald-500/30 transition">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs text-slate-400 font-medium">Doanh Thu Tháng Này</span>
                 <div class="w-8 h-8 rounded-lg bg-brand-gold/10 text-brand-gold flex items-center justify-center"><i class="fa-solid fa-chart-line"></i></div>
             </div>
-            <div class="text-2xl font-bold font-serif text-white"><fmt:formatNumber value="${salesOverview.revenueMonth}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></div>
+            <div class="text-xl sm:text-2xl font-bold font-serif text-white"><fmt:formatNumber value="${salesOverview.revenueMonth}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></div>
             <span class="text-[11px] mt-1 block">
                 <c:choose>
                     <c:when test="${salesOverview.growthPercent == null}"><span class="text-slate-500">Chưa có cùng kỳ tháng trước để so sánh</span></c:when>
@@ -42,12 +42,12 @@
             </span>
         </div>
 
-        <a href="/admin/orders" class="glass-panel-subtle rounded-2xl p-5 border ${salesOverview.pendingOrders > 0 ? 'border-amber-500/40' : 'border-white/5'} hover:border-amber-500/40 transition block">
+        <a href="/admin/orders" class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3 sm:p-5 border ${salesOverview.pendingOrders > 0 ? 'border-amber-500/40' : 'border-white/5'} hover:border-amber-500/40 transition block">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs text-slate-400 font-medium">Đơn Đang Xử Lý</span>
                 <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center"><i class="fa-solid fa-box-open"></i></div>
             </div>
-            <div class="text-2xl font-bold font-serif text-white">${salesOverview.openOrders}</div>
+            <div class="text-xl sm:text-2xl font-bold font-serif text-white">${salesOverview.openOrders}</div>
             <span class="text-[11px] mt-1 block ${salesOverview.pendingOrders > 0 ? 'text-amber-300' : 'text-slate-500'}">
                 <c:choose>
                     <c:when test="${salesOverview.pendingOrders > 0}"><i class="fa-solid fa-bell mr-1"></i>${salesOverview.pendingOrders} đơn đang chờ xác nhận</c:when>
@@ -56,12 +56,12 @@
             </span>
         </a>
 
-        <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-emerald-500/30 transition">
+        <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-white/5 hover:border-emerald-500/30 transition">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-xs text-slate-400 font-medium">Giá Trị Đơn Trung Bình</span>
                 <div class="w-8 h-8 rounded-lg bg-sky-500/10 text-sky-400 flex items-center justify-center"><i class="fa-solid fa-receipt"></i></div>
             </div>
-            <div class="text-2xl font-bold font-serif text-white"><fmt:formatNumber value="${salesOverview.averageOrderValueMonth}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></div>
+            <div class="text-xl sm:text-2xl font-bold font-serif text-white"><fmt:formatNumber value="${salesOverview.averageOrderValueMonth}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></div>
             <span class="text-[11px] text-slate-500 mt-1 block">Từ ${salesOverview.ordersMonth} đơn hoàn tất trong tháng</span>
         </div>
     </div>
@@ -76,7 +76,7 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
-        <div class="lg:col-span-2 glass-panel-subtle rounded-2xl p-5 border border-white/5">
+        <div class="lg:col-span-2 glass-panel-subtle rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-white/5">
             <h3 class="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-chart-column text-emerald-400"></i><span>Doanh Thu 30 Ngày Gần Nhất</span>
                 <span class="ml-auto text-[11px] font-normal text-slate-500">
@@ -85,7 +85,7 @@
             </h3>
             <div class="h-64"><canvas id="salesDailyChart"></canvas></div>
         </div>
-        <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5">
+        <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-white/5">
             <h3 class="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-wallet text-brand-gold"></i><span>Hình Thức Thanh Toán</span>
             </h3>
@@ -94,7 +94,7 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5">
+        <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-white/5">
             <h3 class="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
                 <i class="fa-solid fa-trophy text-brand-gold"></i><span>Sách Bán Chạy (30 Ngày)</span>
             </h3>
@@ -119,7 +119,7 @@
 
         <c:choose>
             <c:when test="${salesShowStores}">
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-white/5">
                     <h3 class="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-store text-blue-400"></i><span>Doanh Thu Theo Chi Nhánh (30 Ngày)</span>
                     </h3>
@@ -127,7 +127,7 @@
                 </div>
             </c:when>
             <c:otherwise>
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-white/5">
                     <h3 class="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
                         <i class="fa-solid fa-circle-info text-blue-400"></i><span>Cách Tính Doanh Thu</span>
                     </h3>

@@ -255,7 +255,7 @@
         }
     </style>
 </head>
-<body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-4 sm:py-6 px-2.5 sm:px-6 md:px-8 lg:px-12 pb-24 lg:pb-6 selection:bg-brand-gold selection:text-black">
+<body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-3 sm:py-6 px-2.5 sm:px-4 md:px-8 lg:px-12 pb-24 lg:pb-6 selection:bg-brand-gold selection:text-black">
     <!-- Ambient background glow lights -->
     <div class="ambient-glow top-12 left-1/4"></div>
     <div class="ambient-glow bottom-20 right-10"></div>
@@ -412,7 +412,7 @@
         <!-- END: LeftFloatingDock -->
 
                 <!-- BEGIN: MainContentContainer -->
-        <main class="flex-1 w-full glass-panel rounded-2xl sm:rounded-[32px] p-3.5 sm:p-5 lg:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden" data-purpose="main-display-frame">
+        <main class="flex-1 w-full glass-panel rounded-xl sm:rounded-2xl lg:rounded-[32px] p-2.5 sm:p-4 lg:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden" data-purpose="main-display-frame">
             <!-- Mobile Brand Bar (Visible on < lg screens where left dock is hidden) -->
             <div class="flex lg:hidden items-center justify-between pb-3.5 mb-3 border-b border-white/10" data-purpose="mobile-brand-bar">
                 <a href="/" class="flex items-center gap-2.5 group">
