@@ -44,11 +44,11 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
     <style>
         
-        /* Universal Responsive Safeguards */
+        /* Universal Responsive Baseline */
         html, body {
-            overflow-x: hidden !important;
-            width: 100% !important;
-            max-width: 100vw !important;
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
         }
         img, svg, video {
             max-width: 100%;
@@ -60,7 +60,7 @@
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        body { background-color: #0b0c10; font-family: 'Plus Jakarta Sans', sans-serif; color: #e2e8f0; overflow-x: hidden; }
+        body { background-color: #0b0c10; font-family: 'Plus Jakarta Sans', sans-serif; color: #e2e8f0; }
         .bg-reading-room {
             background: radial-gradient(circle at 15% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 45%),
                         radial-gradient(circle at 85% 65%, rgba(166, 85, 59, 0.07) 0%, transparent 50%),
@@ -259,10 +259,12 @@
 </script>
 </head>
 <body data-logged-in="${isLoggedIn}" class="bg-reading-room min-h-screen relative flex flex-col justify-between py-3 sm:py-6 px-2.5 sm:px-4 md:px-8 lg:px-12 pb-24 lg:pb-6 selection:bg-brand-gold selection:text-black">
-    <div class="ambient-glow top-12 left-1/4"></div>
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+        <div class="ambient-glow top-12 left-1/4"></div>
     <div class="ambient-glow bottom-20 right-10"></div>
+    </div>
 
-    <div class="relative z-10 max-w-[1520px] w-full mx-auto flex items-start gap-5">
+<div class="relative z-10 max-w-[1520px] w-full mx-auto flex items-start gap-5">
         <!-- Customer / Homepage Left Floating Dock -->
         <aside class="customer-dock-pill hidden lg:flex flex-col items-center justify-start rounded-full glass-panel shadow-glass-elevated sticky top-10 border border-white/10 shrink-0 z-40" data-purpose="customer-vertical-dock">
             <!-- Top: Brand Logo & Logout / Login -->

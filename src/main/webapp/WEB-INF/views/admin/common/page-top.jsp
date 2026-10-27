@@ -41,11 +41,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
         
-        /* Universal Responsive Safeguards */
+        /* Universal Responsive Baseline */
         html, body {
-            overflow-x: hidden !important;
-            width: 100% !important;
-            max-width: 100vw !important;
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
         }
         img, svg, video {
             max-width: 100%;
@@ -57,7 +57,7 @@
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        body { background-color: #0b0c10; font-family: 'Plus Jakarta Sans', sans-serif; color: #e2e8f0; overflow-x: hidden; }
+        body { background-color: #0b0c10; font-family: 'Plus Jakarta Sans', sans-serif; color: #e2e8f0; }
         .bg-reading-room {
             background: radial-gradient(circle at 15% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 45%),
                         radial-gradient(circle at 85% 65%, rgba(166, 85, 59, 0.07) 0%, transparent 50%),
@@ -142,11 +142,13 @@
         input.glass-input[readonly] { cursor: not-allowed; }
     </style>
 </head>
-<body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-4 sm:py-6 px-3 sm:px-6 md:px-8 lg:px-12 selection:bg-brand-gold selection:text-black">
-    <div class="ambient-glow top-12 left-1/4"></div>
+<body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-3 sm:py-6 px-2.5 sm:px-4 md:px-8 lg:px-12 pb-24 lg:pb-6 selection:bg-brand-gold selection:text-black">
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+        <div class="ambient-glow top-12 left-1/4"></div>
     <div class="ambient-glow bottom-20 right-10"></div>
+    </div>
 
-    <div class="relative z-10 max-w-[1520px] w-full mx-auto flex flex-col lg:flex-row items-start gap-5">
+<div class="relative z-10 max-w-[1520px] w-full mx-auto flex flex-col lg:flex-row items-start gap-5">
         <jsp:include page="/WEB-INF/views/admin/common/nav-dock.jsp">
             <jsp:param name="active" value="${adminActive}"/>
         </jsp:include>

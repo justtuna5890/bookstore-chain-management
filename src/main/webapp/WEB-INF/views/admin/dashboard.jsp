@@ -106,11 +106,11 @@
 
 
     <style>
-        /* Universal Responsive Safeguards */
+        /* Universal Responsive Baseline */
         html, body {
-            overflow-x: hidden !important;
-            width: 100% !important;
-            max-width: 100vw !important;
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
         }
         img, svg, video {
             max-width: 100%;
@@ -129,8 +129,6 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
 
             color: #e2e8f0;
-
-            overflow-x: hidden;
 
         }
 
@@ -213,13 +211,13 @@
 
 <body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-3 sm:py-6 px-2.5 sm:px-4 md:px-8 lg:px-12 selection:bg-brand-gold selection:text-black">
 
-    <div class="ambient-glow top-12 left-1/4"></div>
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+        <div class="ambient-glow top-12 left-1/4"></div>
 
     <div class="ambient-glow bottom-20 right-10"></div>
+    </div>
 
-
-
-    <div class="relative z-10 max-w-[1520px] w-full mx-auto flex flex-col lg:flex-row items-start gap-5">
+<div class="relative z-10 max-w-[1520px] w-full mx-auto flex flex-col lg:flex-row items-start gap-5">
 
         <!-- Navigation Dock -->
 

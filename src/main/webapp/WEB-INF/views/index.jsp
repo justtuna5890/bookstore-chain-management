@@ -61,7 +61,6 @@
             background-color: #0b0c10;
             font-family: 'Plus Jakarta Sans', sans-serif;
             color: #e2e8f0;
-            overflow-x: hidden;
         }
 
         .bg-reading-room {
@@ -257,10 +256,12 @@
 </head>
 <body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-3 sm:py-6 px-2.5 sm:px-4 md:px-8 lg:px-12 pb-24 lg:pb-6 selection:bg-brand-gold selection:text-black">
     <!-- Ambient background glow lights -->
-    <div class="ambient-glow top-12 left-1/4"></div>
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+        <div class="ambient-glow top-12 left-1/4"></div>
     <div class="ambient-glow bottom-20 right-10"></div>
+    </div>
 
-    <!-- BEGIN: MasterLayoutWrapper -->
+<!-- BEGIN: MasterLayoutWrapper -->
     <div class="relative z-10 max-w-[1520px] w-full mx-auto flex items-start gap-5">
         <!-- BEGIN: LeftFloatingDock -->
         <!-- Customer / Homepage Left Floating Dock -->

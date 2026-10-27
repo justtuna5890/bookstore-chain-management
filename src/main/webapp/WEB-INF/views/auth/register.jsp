@@ -48,11 +48,11 @@
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <style>
-        /* Universal Responsive Safeguards */
+        /* Universal Responsive Baseline */
         html, body {
-            overflow-x: hidden !important;
-            width: 100% !important;
-            max-width: 100vw !important;
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
         }
         img, svg, video {
             max-width: 100%;
@@ -67,7 +67,6 @@
             background-color: #0b0c10;
             font-family: 'Plus Jakarta Sans', sans-serif;
             color: #e2e8f0;
-            overflow-x: hidden;
         }
         .bg-reading-room {
             background: radial-gradient(circle at 15% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 45%),
@@ -159,11 +158,13 @@
     }
     </style>
 </head>
-<body class="bg-reading-room min-h-screen relative flex items-center justify-center p-4 selection:bg-brand-gold selection:text-black">
-    <div class="ambient-glow -top-20 -left-20"></div>
+<body class="bg-reading-room min-h-screen relative flex items-center justify-center p-2.5 sm:p-4 selection:bg-brand-gold selection:text-black">
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+        <div class="ambient-glow -top-20 -left-20"></div>
     <div class="ambient-glow -bottom-20 -right-20"></div>
+    </div>
 
-    <a href="/" class="absolute top-4 left-4 sm:top-6 sm:left-6 z-20 flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs text-slate-300 hover:text-brand-gold hover:border-brand-gold/40 transition">
+<a href="/" class="absolute top-4 left-4 sm:top-6 sm:left-6 z-20 flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-xs text-slate-300 hover:text-brand-gold hover:border-brand-gold/40 transition">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
         </svg>
@@ -171,7 +172,7 @@
     </a>
 
     <div class="relative z-10 w-full max-w-lg mx-auto py-8">
-        <div class="glass-panel rounded-3xl p-8 sm:p-10 shadow-glass-elevated border border-white/10 relative overflow-hidden">
+        <div class="glass-panel rounded-2xl sm:rounded-3xl p-4 sm:p-8 md:p-10 shadow-glass-elevated border border-white/10 relative overflow-hidden">
             <div class="text-center mb-8">
                 <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-brand-gold/15 border border-brand-gold/40 flex items-center justify-center shadow-glow-gold">
                     <svg class="w-7 h-7 text-brand-gold" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">

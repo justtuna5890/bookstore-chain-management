@@ -14,7 +14,7 @@
      class="mt-6 grid grid-cols-1 lg:grid-cols-12 gap-4">
 
     <!-- Danh sách cuộc trò chuyện và chọn chi nhánh để bắt đầu -->
-    <aside class="lg:col-span-4 rounded-2xl glass-panel-subtle border border-white/10 overflow-hidden flex flex-col max-h-[70vh]">
+    <aside class="lg:col-span-4 rounded-2xl glass-panel-subtle border border-white/10 overflow-hidden flex flex-col max-h-[36vh] sm:max-h-[42vh] lg:max-h-[52vh] sm:h-[60vh] lg:h-[70vh]">
         <div class="p-4 border-b border-white/10">
             <label class="block text-[11px] uppercase tracking-wider font-semibold text-brand-gold mb-1.5" for="chat-store">Nhắn cho chi nhánh</label>
             <select id="chat-store" data-chat-store class="form-field w-full px-3 py-2 rounded-xl text-xs text-slate-100">
@@ -29,7 +29,7 @@
     </aside>
 
     <!-- Luồng tin nhắn -->
-    <section class="lg:col-span-8 rounded-2xl glass-panel-subtle border border-white/10 overflow-hidden flex flex-col h-[70vh]">
+    <section class="lg:col-span-8 rounded-2xl glass-panel-subtle border border-white/10 overflow-hidden flex flex-col h-[52vh] sm:h-[60vh] lg:h-[70vh]">
         <header class="px-5 py-3.5 border-b border-white/10">
             <h2 data-chat-title class="text-sm font-semibold text-white">Chat với chi nhánh</h2>
             <p data-chat-subtitle class="text-[11px] text-slate-400 mt-0.5"></p>

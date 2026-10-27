@@ -244,11 +244,11 @@
 
 <!-- 2. Desktop Floating Left Dock (hidden xl:flex) -->
 <style>
-        /* Universal Responsive Safeguards */
+        /* Universal Responsive Baseline */
         html, body {
-            overflow-x: hidden !important;
-            width: 100% !important;
-            max-width: 100vw !important;
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
         }
         img, svg, video {
             max-width: 100%;
