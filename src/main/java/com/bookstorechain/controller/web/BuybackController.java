@@ -36,7 +36,7 @@ public class BuybackController {
                                @RequestParam(value = "page", defaultValue = "0") int page,
                                @AuthenticationPrincipal CustomUserDetails userDetails,
                                Model model) {
-        boolean isStaff = userDetails != null && userDetails.getUser().getRole() == Role.STAFF;
+        boolean isStaff = userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER);
 
         if (isStaff) {
             Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
@@ -68,7 +68,7 @@ public class BuybackController {
                              RedirectAttributes redirectAttributes,
                              Model model) {
         BuybackRequest request = buybackService.getRequestById(id);
-        boolean isStaff = userDetails != null && userDetails.getUser().getRole() == Role.STAFF;
+        boolean isStaff = userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER);
 
         if (isStaff) {
             Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
@@ -95,7 +95,7 @@ public class BuybackController {
                                 RedirectAttributes redirectAttributes) {
         try {
             BuybackRequest request = buybackService.getRequestById(id);
-            boolean isStaff = userDetails != null && userDetails.getUser().getRole() == Role.STAFF;
+            boolean isStaff = userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER);
 
             // 1. Kiểm tra phạm vi chi nhánh của nhân viên
             if (isStaff) {

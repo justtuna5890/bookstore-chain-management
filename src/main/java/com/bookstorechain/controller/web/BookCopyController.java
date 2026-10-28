@@ -44,9 +44,9 @@ public class BookCopyController {
                                  Model model) {
         Pageable pageable = PageRequest.of(page, 10, Sort.by("id").descending());
 
-        // Kiểm soát phạm vi chi nhánh nghiêm ngặt cho STAFF
-        boolean isStaff = userDetails != null && userDetails.getUser().getRole() == Role.STAFF;
-        if (isStaff) {
+        // Kiểm soát phạm vi chi nhánh nghiêm ngặt cho STAFF và MANAGER
+        boolean isScoped = userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER);
+        if (isScoped) {
             Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
             if (staffStoreId == null) {
                 model.addAttribute("unassignedStoreWarning", true);
@@ -80,12 +80,12 @@ public class BookCopyController {
                                  RedirectAttributes redirectAttributes,
                                  Model model) {
         BookCopyRequestDTO form = new BookCopyRequestDTO();
-        boolean isStaff = userDetails != null && userDetails.getUser().getRole() == Role.STAFF;
+        boolean isScoped = userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER);
 
-        if (isStaff) {
+        if (isScoped) {
             Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
             if (staffStoreId == null) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Tài khoản nhân viên chưa được gán vào chi nhánh nào. Vui lòng liên hệ Quản trị viên để cấu hình chi nhánh!");
+                redirectAttributes.addFlashAttribute("errorMessage", "Tài khoản chưa được gán vào chi nhánh nào. Vui lòng liên hệ Quản trị viên để cấu hình chi nhánh!");
                 return "redirect:/admin/book-copies";
             }
             form.setStoreId(staffStoreId);
@@ -107,13 +107,13 @@ public class BookCopyController {
                                  @AuthenticationPrincipal CustomUserDetails userDetails,
                                  RedirectAttributes redirectAttributes,
                                  Model model) {
-        boolean isStaff = userDetails != null && userDetails.getUser().getRole() == Role.STAFF;
-        Long staffStoreId = isStaff && userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
+        boolean isScoped = userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER);
+        Long staffStoreId = isScoped && userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
 
-        // Nếu là STAFF, ép buộc gán đúng chi nhánh trực thuộc
-        if (isStaff) {
+        // Nếu là STAFF hoặc MANAGER, ép buộc gán đúng chi nhánh trực thuộc
+        if (isScoped) {
             if (staffStoreId == null) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Tài khoản nhân viên chưa được gán vào chi nhánh nào!");
+                redirectAttributes.addFlashAttribute("errorMessage", "Tài khoản chưa được gán vào chi nhánh nào!");
                 return "redirect:/admin/book-copies";
             }
             requestDTO.setStoreId(staffStoreId);
@@ -147,12 +147,12 @@ public class BookCopyController {
                                RedirectAttributes redirectAttributes,
                                Model model) {
         BookCopyResponseDTO copy = bookCopyService.getBookCopyById(id);
-        boolean isStaff = userDetails != null && userDetails.getUser().getRole() == Role.STAFF;
+        boolean isScoped = userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER);
 
-        if (isStaff) {
+        if (isScoped) {
             Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
             if (staffStoreId == null || !staffStoreId.equals(copy.getStoreId())) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Nhân viên chỉ có quyền chỉnh sửa bản sách thuộc chi nhánh mình phụ trách!");
+                redirectAttributes.addFlashAttribute("errorMessage", "Nhân viên / Quản lý chỉ có quyền chỉnh sửa bản sách thuộc chi nhánh mình phụ trách!");
                 return "redirect:/admin/book-copies";
             }
             model.addAttribute("stores", List.of(userDetails.getUser().getStore()));
@@ -183,14 +183,14 @@ public class BookCopyController {
                                  @AuthenticationPrincipal CustomUserDetails userDetails,
                                  RedirectAttributes redirectAttributes,
                                  Model model) {
-        boolean isStaff = userDetails != null && userDetails.getUser().getRole() == Role.STAFF;
-        Long staffStoreId = isStaff && userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
+        boolean isScoped = userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER);
+        Long staffStoreId = isScoped && userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
 
-        // Nếu là STAFF, ép buộc giữ nguyên chi nhánh trực thuộc của mình
-        if (isStaff) {
+        // Nếu là STAFF hoặc MANAGER, ép buộc giữ nguyên chi nhánh trực thuộc của mình
+        if (isScoped) {
             BookCopyResponseDTO currentCopy = bookCopyService.getBookCopyById(id);
             if (staffStoreId == null || !staffStoreId.equals(currentCopy.getStoreId())) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Nhân viên chỉ có quyền chỉnh sửa bản sách thuộc chi nhánh mình!");
+                redirectAttributes.addFlashAttribute("errorMessage", "Nhân viên / Quản lý chỉ có quyền chỉnh sửa bản sách thuộc chi nhánh mình phụ trách!");
                 return "redirect:/admin/book-copies";
             }
             requestDTO.setStoreId(staffStoreId);

@@ -36,5 +36,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     long countByRole(Role role);
 
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role = com.bookstorechain.enums.Role.ADMIN AND u.isActive = true")
+    long countActiveAdmins();
+
     long countByRoleAndCreatedAtBetween(Role role, LocalDateTime start, LocalDateTime end);
 }

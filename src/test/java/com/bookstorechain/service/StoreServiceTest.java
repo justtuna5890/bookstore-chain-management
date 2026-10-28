@@ -37,6 +37,9 @@ class StoreServiceTest {
     @Mock
     private StockTransferRepository stockTransferRepository;
 
+    @Mock
+    private com.bookstorechain.repository.BookCopyRepository bookCopyRepository;
+
     @InjectMocks
     private StoreServiceImpl storeService;
 
@@ -147,11 +150,30 @@ class StoreServiceTest {
                 eq(1L),
                 eq(List.of(TransferStatus.PENDING, TransferStatus.IN_TRANSIT))
         )).thenReturn(false);
+        when(bookCopyRepository.countByStoreId(1L)).thenReturn(0L);
 
         storeService.toggleStoreStatus(1L);
 
         assertThat(sampleStore.isActive()).isFalse();
         verify(storeRepository, times(1)).save(sampleStore);
+    }
+
+    @Test
+    @DisplayName("toggleStoreStatus - Kích hoạt lại chi nhánh đang tắt không cần check phiếu chuyển")
+    void toggleStoreStatus_WhenActiveAndHasInventory_ShouldThrowIllegalStateException() {
+        sampleStore.setActive(true);
+        when(storeRepository.findById(1L)).thenReturn(Optional.of(sampleStore));
+        when(stockTransferRepository.existsByStoreAndStatuses(
+                eq(1L),
+                eq(List.of(TransferStatus.PENDING, TransferStatus.IN_TRANSIT))
+        )).thenReturn(false);
+        when(bookCopyRepository.countByStoreId(1L)).thenReturn(5L);
+
+        assertThatThrownBy(() -> storeService.toggleStoreStatus(1L))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("vẫn còn 5 bản sao sách tồn kho");
+
+        verify(storeRepository, never()).save(sampleStore);
     }
 
     @Test

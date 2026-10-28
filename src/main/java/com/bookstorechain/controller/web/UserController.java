@@ -66,7 +66,7 @@ public class UserController {
         try {
             userService.createUser(requestDTO);
             redirectAttributes.addFlashAttribute("successMessage", "Thêm tài khoản thành công!");
-        } catch (DuplicateResourceException e) {
+        } catch (DuplicateResourceException | IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/users";
@@ -106,7 +106,7 @@ public class UserController {
         try {
             userService.updateUser(id, requestDTO);
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật tài khoản thành công!");
-        } catch (DuplicateResourceException e) {
+        } catch (DuplicateResourceException | IllegalArgumentException | IllegalStateException e) {
             model.addAttribute("userId", id);
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("roles", Role.values());
@@ -118,8 +118,12 @@ public class UserController {
 
     @PostMapping("/{id}/toggle-status")
     public String toggleStatus(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        userService.toggleUserStatus(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật trạng thái tài khoản!");
+        try {
+            userService.toggleUserStatus(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật trạng thái tài khoản!");
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/admin/users";
     }
 
@@ -127,8 +131,12 @@ public class UserController {
     public String changeRole(@PathVariable Long id,
                              @RequestParam("role") Role role,
                              RedirectAttributes redirectAttributes) {
-        userService.changeUserRole(id, role);
-        redirectAttributes.addFlashAttribute("successMessage", "Đã đổi vai trò thành " + role + " thành công!");
+        try {
+            userService.changeUserRole(id, role);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã đổi vai trò thành " + role + " thành công!");
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/admin/users";
     }
 }

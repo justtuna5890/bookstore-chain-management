@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!DOCTYPE html>
 <html class="dark" data-bs-theme="dark" lang="vi">
 <head>
@@ -121,17 +122,24 @@
                         <span class="px-2.5 py-0.5 rounded-full bg-brand-gold/15 text-brand-gold text-[10px] font-semibold border border-brand-gold/30">
                             HỆ THỐNG VẬN HÀNH
                         </span>
+                        <c:if test="${isManagerScoped}">
+                            <span class="px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 text-[10px] font-semibold border border-sky-500/30">
+                                CHI NHÁNH PHỤ TRÁCH: ${currentStoreName}
+                            </span>
+                        </c:if>
                     </div>
                     <h1 class="text-2xl sm:text-3xl font-serif font-bold text-white tracking-tight">
                         Mạng Lưới Chi Nhánh Chuỗi
                     </h1>
                     <p class="text-xs text-slate-400 mt-0.5">Quản lý các cơ sở tiếp nhận, lưu trữ và điều chuyển sách</p>
                 </div>
+                <sec:authorize access="hasRole('ADMIN')">
                 <button onclick="document.getElementById('createStoreModal').classList.remove('hidden')" 
                         class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-400 hover:to-amber-600 text-slate-950 font-bold text-xs shadow-glow-gold transition flex items-center gap-2">
                     <i class="fa-solid fa-plus"></i>
                     <span>Thêm Chi Nhánh Mới</span>
                 </button>
+                </sec:authorize>
             </div>
 
             <!-- Feedback Messages -->
@@ -210,6 +218,7 @@
                                                title="Chỉnh sửa chi nhánh">
                                                 <i class="fa-solid fa-pen-to-square text-[11px]"></i>
                                             </a>
+                                            <sec:authorize access="hasRole('ADMIN')">
                                             <form action="/admin/stores/${store.id}/toggle-status" method="post" class="inline">
                                                 <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                                                 <button type="submit" 
@@ -219,6 +228,7 @@
                                                     <i class="fa-solid ${store.active ? 'fa-lock' : 'fa-lock-open'} text-[11px]"></i>
                                                 </button>
                                             </form>
+                                            </sec:authorize>
                                         </div>
                                     </td>
                                 </tr>
@@ -239,6 +249,7 @@
     </div>
 
     <!-- Modal Thêm Chi Nhánh -->
+    <sec:authorize access="hasRole('ADMIN')">
     <div id="createStoreModal" 
          onclick="if(event.target === this) this.classList.add('hidden')"
          class="${openModal ? '' : 'hidden'} fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
@@ -283,5 +294,6 @@
             </form:form>
         </div>
     </div>
+    </sec:authorize>
 </body>
 </html>
