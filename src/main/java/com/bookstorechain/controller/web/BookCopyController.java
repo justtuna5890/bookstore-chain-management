@@ -50,6 +50,7 @@ public class BookCopyController {
             Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
             if (staffStoreId == null) {
                 model.addAttribute("unassignedStoreWarning", true);
+                model.addAttribute("copyPage", Page.empty());
                 model.addAttribute("bookCopyPage", Page.empty());
                 model.addAttribute("stores", List.of());
                 model.addAttribute("statuses", CopyStatus.values());
@@ -63,7 +64,9 @@ public class BookCopyController {
             model.addAttribute("stores", storeService.getAllStores());
         }
 
-        model.addAttribute("bookCopyPage", bookCopyService.getBookCopies(storeId, status, keyword, pageable));
+        Page<BookCopyResponseDTO> copyPage = bookCopyService.getBookCopies(storeId, status, keyword, pageable);
+        model.addAttribute("copyPage", copyPage);
+        model.addAttribute("bookCopyPage", copyPage);
         model.addAttribute("statuses", CopyStatus.values());
         model.addAttribute("selectedStoreId", storeId);
         model.addAttribute("selectedStatus", status);

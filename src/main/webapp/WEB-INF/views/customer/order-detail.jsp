@@ -46,11 +46,11 @@
         <div class="mt-5 p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-200 text-xs"><i class="fa-solid fa-ban mr-1.5"></i>Đơn hàng này đã bị huỷ.</div>
     </c:when>
     <c:otherwise>
-        <ol class="mt-5 grid grid-cols-4 gap-2">
+        <ol class="mt-5 grid grid-cols-4 gap-1.5 sm:gap-2">
             <c:forEach var="step" items="${order.timeline}">
-                <li class="text-center">
+                <li class="text-center min-w-0">
                     <div class="h-1.5 rounded-full ${step.done ? 'bg-brand-gold' : 'bg-white/10'}"></div>
-                    <p class="text-[11px] mt-1.5 ${step.current ? 'text-brand-gold font-semibold' : (step.done ? 'text-slate-200' : 'text-slate-500')}">${step.label}</p>
+                    <p class="text-[10px] sm:text-[11px] leading-tight mt-1.5 break-words ${step.current ? 'text-brand-gold font-semibold' : (step.done ? 'text-slate-200' : 'text-slate-500')}">${step.label}</p>
                 </li>
             </c:forEach>
         </ol>

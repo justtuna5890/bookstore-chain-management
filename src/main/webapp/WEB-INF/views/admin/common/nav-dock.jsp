@@ -42,7 +42,7 @@
 
 <!-- 1. Mobile & Tablet Top Bar (xl:hidden) -->
 
-<div class="xl:hidden w-full mb-6 glass-panel rounded-2xl p-3 border border-white/10 shadow-glass-elevated">
+<div class="lg:hidden w-full mb-6 glass-panel rounded-2xl p-3 border border-white/10 shadow-glass-elevated">
 
     <div class="flex items-center justify-between gap-3 mb-2.5 pb-2.5 border-b border-white/10">
 
@@ -84,15 +84,15 @@
 
 
 
-            <!-- Mobile Notification Bell -->
+            <!-- Mobile Notification Bell (Nổi bật) -->
 
             <div class="relative">
 
-                <button type="button" onclick="toggleNotifDropdown()" class="w-7 h-7 rounded-lg bg-brand-gold/10 hover:bg-brand-gold/20 text-brand-gold flex items-center justify-center transition relative" title="Thông báo thời gian thực">
+                <button type="button" onclick="toggleNotifDropdown()" class="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500/25 via-brand-gold/35 to-amber-600/25 border border-brand-gold text-brand-gold shadow-[0_0_12px_rgba(212,175,55,0.4)] flex items-center justify-center transition relative group" title="Thông báo thời gian thực">
 
-                    <i class="fa-solid fa-bell text-xs"></i>
+                    <i class="fa-solid fa-bell text-xs group-hover:animate-bounce"></i>
 
-                    <span id="mobileNotifBadge" class="hidden absolute -top-1 -right-1 min-w-[15px] h-[15px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center animate-pulse">0</span>
+                    <span id="mobileNotifBadge" class="hidden absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center shadow-md animate-pulse">0</span>
 
                 </button>
 
@@ -244,71 +244,74 @@
 
 <!-- 2. Desktop Floating Left Dock (hidden xl:flex) -->
 <style>
+        /* Universal Responsive Baseline */
+        html, body {
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        img, svg, video {
+            max-width: 100%;
+            height: auto;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+    /* Dynamic Auto-Scaling Adaptive Dock Pill */
     .admin-dock-pill {
-        width: 56px;
-        transition: all 0.25s ease;
+        --dock-btn-size: 36px;
+        --dock-icon-size: 13.5px;
+        --dock-gap: 3.5px;
+        --dock-pad-y: 8px;
+        --dock-pad-x: 6px;
+        --dock-width: 52px;
+
+        width: var(--dock-width, 52px);
+        height: fit-content !important;
+        max-height: calc(100vh - 2rem);
+        padding-top: var(--dock-pad-y, 8px) !important;
+        padding-bottom: var(--dock-pad-y, 8px) !important;
+        padding-left: var(--dock-pad-x, 6px) !important;
+        padding-right: var(--dock-pad-x, 6px) !important;
+        gap: var(--dock-gap, 3.5px) !important;
+        transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+                    padding 0.22s ease,
+                    gap 0.22s ease;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
     }
+    .admin-dock-pill::-webkit-scrollbar {
+        display: none;
+    }
+
     .admin-dock-btn {
-        width: 36px;
-        height: 36px;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        width: var(--dock-btn-size, 36px) !important;
+        height: var(--dock-btn-size, 36px) !important;
+        min-width: var(--dock-btn-size, 36px) !important;
+        min-height: var(--dock-btn-size, 36px) !important;
+        transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                    height 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                    background-color 0.15s ease,
+                    border-color 0.15s ease,
+                    color 0.15s ease;
     }
     .admin-dock-btn i {
-        font-size: 14px;
+        font-size: var(--dock-icon-size, 13.5px) !important;
+        transition: font-size 0.2s ease;
     }
     .admin-dock-divider {
-        width: 22px;
+        width: calc(var(--dock-btn-size, 36px) * 0.58) !important;
         height: 1px;
-        background: rgba(255, 255, 255, 0.1);
-        margin: 2px 0;
+        background: rgba(255, 255, 255, 0.12);
+        margin: 1px 0;
+        transition: width 0.2s ease;
     }
-
-    /* Adaptive scaling for medium/small vertical screens (laptops, 125%-150% scaling) */
-    @media (max-height: 860px) {
-        .admin-dock-pill {
-            width: 52px;
-            padding-top: 10px !important;
-            padding-bottom: 10px !important;
-            gap: 4px !important;
-        }
-        .admin-dock-btn {
-            width: 32px !important;
-            height: 32px !important;
-        }
-        .admin-dock-btn i {
-            font-size: 12.5px !important;
-        }
-        .admin-dock-nav {
-            gap: 3px !important;
-        }
-        .admin-dock-divider {
-            width: 18px !important;
-            margin: 1px 0 !important;
-        }
-    }
-
-    /* Extreme compact mode for small viewport heights (under 720px) */
-    @media (max-height: 720px) {
-        .admin-dock-pill {
-            width: 48px;
-            padding-top: 8px !important;
-            padding-bottom: 8px !important;
-            gap: 2px !important;
-        }
-        .admin-dock-btn {
-            width: 28px !important;
-            height: 28px !important;
-        }
-        .admin-dock-btn i {
-            font-size: 11px !important;
-        }
-        .admin-dock-nav {
-            gap: 2px !important;
-        }
-        .admin-dock-divider {
-            width: 16px !important;
-            margin: 1px 0 !important;
-        }
+    .admin-dock-nav {
+        gap: var(--dock-gap, 3.5px) !important;
     }
 
     /* Global Dark Glass Forms, Inputs & Dropdowns Override */
@@ -379,7 +382,7 @@
     }
 </style>
 
-<aside class="admin-dock-pill hidden xl:flex flex-col items-center justify-between py-3 px-1.5 rounded-full glass-panel shadow-glass-elevated sticky top-4 border border-white/10 shrink-0 z-40 gap-1.5" data-purpose="vertical-dock">
+<aside class="admin-dock-pill hidden lg:flex flex-col items-center justify-start rounded-full glass-panel shadow-glass-elevated sticky top-4 border border-white/10 shrink-0 z-40" data-purpose="vertical-dock">
     <!-- Top: Brand Logo & Logout Action -->
     <div class="flex flex-col items-center gap-1.5 shrink-0">
         <!-- Logo Brand -->
@@ -401,7 +404,7 @@
     <div class="admin-dock-divider shrink-0"></div>
 
     <!-- Center: Business Navigation -->
-    <nav class="admin-dock-nav flex flex-col items-center gap-1 my-auto">
+    <nav class="admin-dock-nav flex flex-col items-center my-1">
         <!-- Dashboard -->
         <a class="admin-dock-btn rounded-full flex items-center justify-center transition group relative shrink-0 ${param.active == 'dashboard' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
            href="/admin/dashboard" title="Tổng quan Dashboard">
@@ -426,6 +429,13 @@
                 <span class="absolute left-14 ml-2 px-2.5 py-1 rounded-xl bg-black/95 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 whitespace-nowrap shadow-2xl border border-white/10 z-50">Chi Nhánh</span>
             </a>
         </c:if>
+
+        <!-- Đơn hàng của khách (Tất cả vai trò ADMIN, MANAGER, STAFF) -->
+        <a class="admin-dock-btn rounded-full flex items-center justify-center transition group relative shrink-0 ${param.active == 'orders' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
+           href="/admin/orders" title="Quản lý đơn hàng của khách">
+            <i class="fa-solid fa-receipt"></i>
+            <span class="absolute left-14 ml-2 px-2.5 py-1 rounded-xl bg-black/95 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 whitespace-nowrap shadow-2xl border border-white/10 z-50">Đơn Hàng</span>
+        </a>
 
         <!-- Đầu sách -->
         <a class="admin-dock-btn rounded-full flex items-center justify-center transition group relative shrink-0 ${param.active == 'books' ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'text-slate-400 hover:text-brand-gold hover:bg-white/5'}" 
@@ -495,12 +505,20 @@
 
     <!-- Bottom: Utility & User Avatar -->
     <div class="flex flex-col items-center gap-1.5 shrink-0">
-        <!-- Desktop Notification Bell -->
+        <!-- Desktop Notification Bell (Nổi bật rực rỡ trên thanh dock) -->
         <div class="relative">
-            <button type="button" onclick="toggleNotifDropdown()" class="admin-dock-btn rounded-full flex items-center justify-center text-slate-400 hover:text-brand-gold hover:bg-white/5 transition group relative" title="Thông báo thời gian thực">
-                <i class="fa-solid fa-bell"></i>
-                <span id="desktopNotifBadge" class="hidden absolute top-0.5 right-0.5 min-w-[14px] h-[14px] px-0.5 rounded-full bg-rose-500 text-white text-[8px] font-bold flex items-center justify-center animate-pulse">0</span>
-                <span class="absolute left-14 ml-2 px-2.5 py-1 rounded-xl bg-black/95 text-xs text-white opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 whitespace-nowrap shadow-2xl border border-white/10 z-50">Chuông Thông Báo</span>
+            <button type="button" onclick="toggleNotifDropdown()" class="admin-dock-btn rounded-full flex items-center justify-center bg-gradient-to-br from-amber-500/25 via-brand-gold/35 to-amber-600/25 border border-brand-gold text-brand-gold shadow-[0_0_16px_rgba(212,175,55,0.4)] hover:shadow-[0_0_24px_rgba(212,175,55,0.7)] hover:scale-105 hover:border-brand-gold transition-all group relative" title="Trung tâm Thông Báo Thời Gian Thực">
+                <span class="relative flex items-center justify-center">
+                    <i class="fa-solid fa-bell text-brand-gold group-hover:animate-bounce"></i>
+                    <span class="absolute -top-1 -right-1 flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                    </span>
+                </span>
+                <span id="desktopNotifBadge" class="hidden absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center shadow-lg border border-rose-300 ring-2 ring-[#0b0c10] animate-pulse">0</span>
+                <span class="absolute left-14 ml-2 px-2.5 py-1 rounded-xl bg-black/95 text-xs text-brand-gold font-bold opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 whitespace-nowrap shadow-2xl border border-brand-gold/40 z-50">
+                    <i class="fa-solid fa-bell mr-1"></i>Trung Tâm Thông Báo
+                </span>
             </button>
         </div>
 
@@ -534,7 +552,7 @@
 
 <!-- Notification Dropdown Panel -->
 
-<div id="notifDropdown" class="hidden fixed top-16 right-4 sm:right-12 xl:left-24 xl:top-20 z-50 w-80 sm:w-96 rounded-2xl glass-panel p-4 shadow-glass-elevated border border-white/15 backdrop-blur-2xl">
+<div id="notifDropdown" class="hidden fixed top-16 inset-x-3 sm:inset-x-auto sm:right-12 lg:right-auto lg:left-24 lg:top-20 z-50 w-auto sm:w-96 max-w-[95vw] rounded-2xl glass-panel p-4 shadow-glass-elevated border border-white/15 backdrop-blur-2xl">
 
     <div class="flex items-center justify-between pb-3 border-b border-white/10 mb-3">
 
@@ -1022,6 +1040,56 @@
 
         initWebSocket();
 
+    }
+
+
+    // =========================================================================
+    // Dynamic Auto-Scaling Dock: Adjusts button & pill size based on button count & screen height
+    // =========================================================================
+    function autoScaleAdminDock() {
+        const dock = document.querySelector('[data-purpose="vertical-dock"]');
+        if (!dock) return;
+
+        const btns = dock.querySelectorAll('.admin-dock-btn');
+        const count = btns.length;
+        if (count === 0) return;
+
+        // Viewport height
+        const vh = window.innerHeight || document.documentElement.clientHeight;
+        
+        // Reserved space: Top spacing (sticky top-4 = 16px), bottom buffer (16px),
+        // dividers (2 * 4px), container vertical paddings (2 * 8px = 16px) -> ~60px
+        const reservedSpace = 60;
+        const availableHeight = Math.max(280, vh - reservedSpace);
+
+        // Target: count * btnSize + (count + 2) * gap <= availableHeight
+        let btnSize = Math.floor(availableHeight / (count * 1.12 + 1));
+
+        // Clamp button size based on count and comfort:
+        const maxBtnSize = count <= 11 ? 38 : 36;
+        const minBtnSize = 24;
+        btnSize = Math.max(minBtnSize, Math.min(maxBtnSize, btnSize));
+
+        // Proportionally compute gap, icon, padding, pill width
+        let gap = btnSize <= 26 ? 1.5 : btnSize <= 30 ? 2 : btnSize <= 34 ? 3 : 3.5;
+        let iconSize = btnSize <= 26 ? 10.5 : btnSize <= 30 ? 11.5 : btnSize <= 34 ? 13 : 14;
+        let padY = btnSize <= 28 ? 6 : btnSize <= 32 ? 8 : 10;
+        let padX = btnSize <= 28 ? 4 : 6;
+        let pillWidth = btnSize + (padX * 2) + 4;
+
+        dock.style.setProperty('--dock-btn-size', btnSize + 'px');
+        dock.style.setProperty('--dock-icon-size', iconSize + 'px');
+        dock.style.setProperty('--dock-gap', gap + 'px');
+        dock.style.setProperty('--dock-pad-y', padY + 'px');
+        dock.style.setProperty('--dock-pad-x', padX + 'px');
+        dock.style.setProperty('--dock-width', pillWidth + 'px');
+    }
+
+    window.addEventListener('resize', autoScaleAdminDock, { passive: true });
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', autoScaleAdminDock);
+    } else {
+        autoScaleAdminDock();
     }
 
 </script>

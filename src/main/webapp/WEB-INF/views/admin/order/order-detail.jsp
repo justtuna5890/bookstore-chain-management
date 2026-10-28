@@ -31,11 +31,11 @@
             <c:if test="${order.paymentStatus == 'REFUNDED'}"><strong class="text-amber-200">Cần hoàn tiền cho khách ngoài hệ thống.</strong></c:if></div>
     </c:when>
     <c:otherwise>
-        <ol class="mb-6 grid grid-cols-4 gap-2">
+        <ol class="mb-6 grid grid-cols-4 gap-1.5 sm:gap-2">
             <c:forEach var="step" items="${order.timeline}">
-                <li class="text-center">
+                <li class="text-center min-w-0">
                     <div class="h-1.5 rounded-full ${step.done ? 'bg-brand-gold' : 'bg-white/10'}"></div>
-                    <p class="text-[11px] mt-1.5 ${step.current ? 'text-brand-gold font-semibold' : (step.done ? 'text-slate-200' : 'text-slate-500')}">${step.label}</p>
+                    <p class="text-[10px] sm:text-[11px] leading-tight mt-1.5 break-words ${step.current ? 'text-brand-gold font-semibold' : (step.done ? 'text-slate-200' : 'text-slate-500')}">${step.label}</p>
                 </li>
             </c:forEach>
         </ol>
@@ -45,7 +45,8 @@
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
     <!-- Sách trong đơn -->
     <section class="lg:col-span-7 glass-panel rounded-2xl border border-white/10 overflow-hidden self-start">
-        <table class="w-full text-left text-xs text-slate-300">
+        <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-300 min-w-full sm:min-w-[360px]">
             <thead class="bg-white/5 text-[11px] text-brand-gold uppercase tracking-wider border-b border-white/10">
                 <tr><th class="py-3 px-4">Sách</th><th class="py-3 px-4">Mã bản sao</th><th class="py-3 px-4 text-right">Giá</th></tr>
             </thead>
@@ -59,6 +60,7 @@
                 </c:forEach>
             </tbody>
         </table>
+        </div>
         <dl class="p-4 border-t border-white/10 space-y-1.5 text-xs">
             <div class="flex justify-between"><dt class="text-slate-400">Tạm tính</dt><dd><fmt:formatNumber value="${order.subtotal}" pattern="#,###"/> đ</dd></div>
             <c:if test="${order.discountAmount.signum() > 0}">

@@ -28,7 +28,7 @@
      data-show-store="${isStaffScoped ? 'false' : 'true'}" data-initial="${initialConversationId}"
      class="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-    <aside class="lg:col-span-4 rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden flex flex-col max-h-[72vh]">
+    <aside class="lg:col-span-4 rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden flex flex-col max-h-[36vh] sm:max-h-[42vh] lg:max-h-[52vh] sm:h-[60vh] lg:h-[72vh]">
         <div class="p-4 border-b border-white/10 flex flex-col gap-2">
             <select data-chat-filter-status class="glass-input px-3 py-2 text-xs rounded-xl text-slate-100">
                 <option value="">Mọi trạng thái</option>
@@ -46,7 +46,7 @@
         <p data-chat-list-empty class="hidden px-4 py-8 text-center text-xs text-slate-500">Chưa có cuộc trò chuyện nào.</p>
     </aside>
 
-    <section class="lg:col-span-8 rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden flex flex-col h-[72vh]">
+    <section class="lg:col-span-8 rounded-2xl bg-white/[0.03] border border-white/10 overflow-hidden flex flex-col h-[52vh] sm:h-[60vh] lg:h-[72vh]">
         <header class="px-5 py-3.5 border-b border-white/10 flex items-center justify-between gap-3">
             <div class="min-w-0">
                 <h2 data-chat-title class="text-sm font-semibold text-white truncate">Chọn một cuộc trò chuyện</h2>

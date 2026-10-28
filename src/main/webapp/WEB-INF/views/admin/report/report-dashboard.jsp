@@ -102,6 +102,21 @@
 
 
     <style>
+        /* Universal Responsive Baseline */
+        html, body {
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        img, svg, video {
+            max-width: 100%;
+            height: auto;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
 
         body {
 
@@ -110,8 +125,6 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
 
             color: #e2e8f0;
-
-            overflow-x: hidden;
 
         }
 
@@ -229,15 +242,15 @@
 
 </head>
 
-<body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-6 px-4 md:px-8 lg:px-12 selection:bg-brand-gold selection:text-black">
+<body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-3 sm:py-6 px-2.5 sm:px-4 md:px-8 lg:px-12 selection:bg-brand-gold selection:text-black">
 
-    <div class="ambient-glow top-12 left-1/4"></div>
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+        <div class="ambient-glow top-12 left-1/4"></div>
 
     <div class="ambient-glow bottom-20 right-10"></div>
+    </div>
 
-
-
-    <div class="relative z-10 max-w-[1520px] w-full mx-auto flex flex-col xl:flex-row items-start gap-5">
+<div class="relative z-10 max-w-[1520px] w-full mx-auto flex flex-col lg:flex-row items-start gap-5">
 
         <!-- Navigation Dock -->
 
@@ -251,7 +264,7 @@
 
         <!-- Main Display Frame -->
 
-        <main class="flex-1 w-full glass-panel rounded-[32px] p-5 sm:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden">
+        <main class="flex-1 w-full glass-panel rounded-xl sm:rounded-2xl lg:rounded-[32px] p-2.5 sm:p-4 lg:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden">
 
             <!-- Header bar -->
 

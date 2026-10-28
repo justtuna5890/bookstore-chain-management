@@ -106,6 +106,21 @@
 
 
     <style>
+        /* Universal Responsive Baseline */
+        html, body {
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        img, svg, video {
+            max-width: 100%;
+            height: auto;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
 
         body {
 
@@ -114,8 +129,6 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
 
             color: #e2e8f0;
-
-            overflow-x: hidden;
 
         }
 
@@ -196,15 +209,15 @@
 
 </head>
 
-<body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-6 px-4 md:px-8 lg:px-12 selection:bg-brand-gold selection:text-black">
+<body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-3 sm:py-6 px-2.5 sm:px-4 md:px-8 lg:px-12 selection:bg-brand-gold selection:text-black">
 
-    <div class="ambient-glow top-12 left-1/4"></div>
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+        <div class="ambient-glow top-12 left-1/4"></div>
 
     <div class="ambient-glow bottom-20 right-10"></div>
+    </div>
 
-
-
-    <div class="relative z-10 max-w-[1520px] w-full mx-auto flex flex-col xl:flex-row items-start gap-5">
+<div class="relative z-10 max-w-[1520px] w-full mx-auto flex flex-col lg:flex-row items-start gap-5">
 
         <!-- Navigation Dock -->
 
@@ -218,7 +231,7 @@
 
         <!-- Main Display Frame -->
 
-        <main class="flex-1 w-full glass-panel rounded-[32px] p-5 sm:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden">
+        <main class="flex-1 w-full glass-panel rounded-xl sm:rounded-2xl lg:rounded-[32px] p-2.5 sm:p-4 lg:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden">
 
             <!-- Header bar with Role-Specific Presentation -->
 
@@ -474,31 +487,31 @@
 
             
             <!-- ================= CỤM CẢNH BÁO VẬN HÀNH THỜI GIAN THỰC ================= -->
-            <div class="mt-6 glass-panel rounded-2xl p-5 border border-white/10 shadow-glass-elevated">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-white/10 gap-3">
-                    <div class="flex items-center gap-3">
-                        <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 shrink-0">
-                            <i class="fa-solid fa-bell-concierge text-base"></i>
+            <div class="mt-6 glass-panel rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-white/10 shadow-glass-elevated">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 sm:pb-4 mb-3 sm:mb-4 border-b border-white/10 gap-2.5 sm:gap-3">
+                    <div class="flex items-center gap-2.5 sm:gap-3">
+                        <div class="relative flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 shrink-0">
+                            <i class="fa-solid fa-bell-concierge text-sm sm:text-base"></i>
                             <c:if test="${not empty operationalAlerts}">
-                                <span class="absolute -top-1 -right-1 flex h-3 w-3">
+                                <span class="absolute -top-1 -right-1 flex h-2.5 w-2.5 sm:h-3 sm:w-3">
                                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                                    <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                                    <span class="relative inline-flex rounded-full h-full w-full bg-rose-500"></span>
                                 </span>
                             </c:if>
                         </div>
                         <div>
-                            <div class="flex items-center gap-2">
-                                <h2 class="text-sm font-bold text-white uppercase tracking-wider">
+                            <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                                <h2 class="text-xs sm:text-sm font-bold text-white uppercase tracking-wider">
                                     Trung Tâm Cảnh Báo Vận Hành & Tắc Nghẽn
                                 </h2>
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${not empty operationalAlerts ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}">
+                                <span class="px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-semibold whitespace-nowrap ${not empty operationalAlerts ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}">
                                     <c:choose><c:when test="${not empty operationalAlerts}">${operationalAlerts.size()} sự vụ cần xử lý</c:when><c:otherwise>Hoạt động ổn định</c:otherwise></c:choose>
                                 </span>
                             </div>
-                            <p class="text-xs text-slate-400 mt-0.5">Giám sát tự động đơn thu mua trễ hẹn, phiếu chuyển kho quá giờ và cảnh báo mức tồn kho.</p>
+                            <p class="text-[11px] sm:text-xs text-slate-400 mt-0.5">Giám sát tự động đơn thu mua trễ hẹn, phiếu chuyển kho quá giờ và cảnh báo mức tồn kho.</p>
                         </div>
                     </div>
-                    <div class="text-xs text-slate-400 flex items-center gap-2">
+                    <div class="text-[11px] sm:text-xs text-slate-400 flex items-center gap-1.5 sm:gap-2">
                         <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                         <span>Quét liên tục theo dữ liệu kho thực</span>
                     </div>
@@ -506,25 +519,25 @@
 
                 <c:choose>
                     <c:when test="${not empty operationalAlerts}">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5">
                             <c:forEach var="alert" items="${operationalAlerts}">
-                                <div class="p-4 rounded-xl border transition flex flex-col justify-between gap-3 ${alert.level == 'DANGER' ? 'bg-rose-500/10 border-rose-500/30 hover:border-rose-500/50' : alert.level == 'WARNING' ? 'bg-amber-500/10 border-amber-500/30 hover:border-amber-500/50' : 'bg-sky-500/10 border-sky-500/30 hover:border-sky-500/50'}">
-                                    <div class="flex items-start gap-3">
-                                        <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${alert.level == 'DANGER' ? 'bg-rose-500/20 text-rose-400' : alert.level == 'WARNING' ? 'bg-amber-500/20 text-amber-400' : 'bg-sky-500/20 text-sky-400'}">
-                                            <i class="fa-solid ${alert.level == 'DANGER' ? 'fa-triangle-exclamation' : alert.level == 'WARNING' ? 'fa-circle-exclamation' : 'fa-circle-info'} text-sm"></i>
-                                        </div>
-                                        <div class="min-w-0 flex-1">
-                                            <div class="flex items-center gap-2 mb-1">
-                                                <span class="text-xs font-bold text-white truncate">${alert.title}</span>
-                                                <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${alert.level == 'DANGER' ? 'bg-rose-500/30 text-rose-200' : alert.level == 'WARNING' ? 'bg-amber-500/30 text-amber-200' : 'bg-sky-500/30 text-sky-200'}">
-                                                    ${alert.level == 'DANGER' ? 'Khẩn cấp' : alert.level == 'WARNING' ? 'Chú ý' : 'Thông tin'}
-                                                </span>
+                                <div class="p-3 sm:p-4 rounded-xl border transition flex flex-col justify-between gap-3 ${alert.level == 'DANGER' ? 'bg-rose-500/10 border-rose-500/30 hover:border-rose-500/50' : alert.level == 'WARNING' ? 'bg-amber-500/10 border-amber-500/30 hover:border-amber-500/50' : 'bg-sky-500/10 border-sky-500/30 hover:border-sky-500/50'}">
+                                    <div>
+                                        <div class="flex items-center justify-between gap-2 mb-2">
+                                            <div class="flex items-center gap-2 min-w-0">
+                                                <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center shrink-0 ${alert.level == 'DANGER' ? 'bg-rose-500/20 text-rose-400' : alert.level == 'WARNING' ? 'bg-amber-500/20 text-amber-400' : 'bg-sky-500/20 text-sky-400'}">
+                                                    <i class="fa-solid ${alert.level == 'DANGER' ? 'fa-triangle-exclamation' : alert.level == 'WARNING' ? 'fa-circle-exclamation' : 'fa-circle-info'} text-xs"></i>
+                                                </div>
+                                                <span class="text-xs font-bold text-white line-clamp-1">${alert.title}</span>
                                             </div>
-                                            <p class="text-xs text-slate-300 leading-relaxed">${alert.message}</p>
+                                            <span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider whitespace-nowrap shrink-0 ${alert.level == 'DANGER' ? 'bg-rose-500/30 text-rose-200' : alert.level == 'WARNING' ? 'bg-amber-500/30 text-amber-200' : 'bg-sky-500/30 text-sky-200'}">
+                                                ${alert.level == 'DANGER' ? 'Khẩn cấp' : alert.level == 'WARNING' ? 'Chú ý' : 'Thông tin'}
+                                            </span>
                                         </div>
+                                        <p class="text-[11px] sm:text-xs text-slate-300 leading-relaxed">${alert.message}</p>
                                     </div>
                                     <div class="flex justify-end pt-2 border-t border-white/5">
-                                        <a href="${alert.actionUrl}" class="px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition ${alert.level == 'DANGER' ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30' : alert.level == 'WARNING' ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'bg-sky-500/20 text-sky-300 hover:bg-sky-500/30'}">
+                                        <a href="${alert.actionUrl}" class="w-full sm:w-auto text-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap transition ${alert.level == 'DANGER' ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30' : alert.level == 'WARNING' ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30' : 'bg-sky-500/20 text-sky-300 hover:bg-sky-500/30'}">
                                             <span>${alert.actionLabel}</span>
                                             <i class="fa-solid fa-arrow-right text-[10px]"></i>
                                         </a>
@@ -554,7 +567,7 @@
 
                 <!-- Card 1 -->
 
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-brand-gold/30 transition">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5 hover:border-brand-gold/30 transition">
 
                     <div class="flex items-center justify-between mb-3">
 
@@ -594,7 +607,7 @@
 
                         <c:otherwise>
 
-                            <div class="text-2xl font-bold font-serif text-white">${totalStores}</div>
+                            <div class="text-xl sm:text-2xl font-bold font-serif text-white">${totalStores}</div>
 
                             <span class="text-[11px] text-slate-500 mt-1 block">Điểm tiếp nhận & kho hàng</span>
 
@@ -608,7 +621,7 @@
 
                 <!-- Card 2 -->
 
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-brand-gold/30 transition">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5 hover:border-brand-gold/30 transition">
 
                     <div class="flex items-center justify-between mb-3">
 
@@ -622,7 +635,7 @@
 
                     </div>
 
-                    <div class="text-2xl font-bold font-serif text-white">${totalBooks}</div>
+                    <div class="text-xl sm:text-2xl font-bold font-serif text-white">${totalBooks}</div>
 
                     <span class="text-[11px] text-slate-500 mt-1 block">Tác phẩm trong danh mục</span>
 
@@ -632,7 +645,7 @@
 
                 <!-- Card 3 -->
 
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-brand-gold/30 transition">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5 hover:border-brand-gold/30 transition">
 
                     <div class="flex items-center justify-between mb-3">
 
@@ -670,7 +683,7 @@
 
                 <!-- Card 4 -->
 
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-brand-gold/30 transition">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5 hover:border-brand-gold/30 transition">
 
                     <div class="flex items-center justify-between mb-3">
 
@@ -716,7 +729,7 @@
             <!-- 4 Operational Metrics Row -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                 <!-- Op Metric 1: Thu mua chờ duyệt -->
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-amber-500/30 transition">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5 hover:border-amber-500/30 transition">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-xs text-slate-400 font-medium">Thu Mua Chờ Thẩm Định</span>
                         <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
@@ -736,7 +749,7 @@
                 </div>
 
                 <!-- Op Metric 2: Phiếu chuyển kho đang vận chuyển -->
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-blue-500/30 transition">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5 hover:border-blue-500/30 transition">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-xs text-slate-400 font-medium">Chuyển Kho Đang Lưu Thông</span>
                         <div class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
@@ -756,7 +769,7 @@
                 </div>
 
                 <!-- Op Metric 3: Cảnh báo sách sắp hết -->
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-rose-500/30 transition">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5 hover:border-rose-500/30 transition">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-xs text-slate-400 font-medium">Đầu Sách Sắp Hết Kho</span>
                         <div class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center">
@@ -776,7 +789,7 @@
                 </div>
 
                 <!-- Op Metric 4: Tỷ lệ hoàn tất thu mua -->
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 hover:border-emerald-500/30 transition">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5 hover:border-emerald-500/30 transition">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-xs text-slate-400 font-medium">Tỷ Lệ Thu Mua Thành Công</span>
                         <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
@@ -802,7 +815,7 @@
 
                 <!-- Chart 1: Sách theo chi nhánh -->
 
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5">
 
                     <h3 class="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-2">
 
@@ -838,7 +851,7 @@
 
                 <!-- Chart 2: Giá trị tồn kho -->
 
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5">
 
                     <h3 class="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-2">
 
@@ -874,7 +887,7 @@
 
                 <!-- Chart 3: Tình trạng sách -->
 
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5">
 
                     <h3 class="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-2">
 
@@ -896,7 +909,7 @@
 
                 <!-- Chart 4: Trạng thái thu mua -->
 
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5">
 
                     <h3 class="text-sm font-semibold text-slate-200 mb-4 flex items-center gap-2">
 
@@ -922,7 +935,7 @@
                         
             <!-- Ma trận luồng luân chuyển kho liên chi nhánh -->
             <c:if test="${not empty transferFlow}">
-                <div class="mt-6 glass-panel-subtle rounded-2xl p-5 border border-white/5">
+                <div class="mt-6 glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5">
                     <div class="flex items-center justify-between pb-3 mb-4 border-b border-white/5">
                         <div class="flex items-center gap-2">
                             <div class="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
@@ -951,7 +964,7 @@
 <!-- 5. Active Operations: Recent Buybacks & Stock Transfers Directly on Dashboard -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6">
                 <!-- Box 1: Recent Buyback Requests -->
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 flex flex-col justify-between">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5 flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
                             <div class="flex items-center gap-2">
@@ -1016,7 +1029,7 @@
                 </div>
 
                 <!-- Box 2: Recent Stock Transfers -->
-                <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5 flex flex-col justify-between">
+                <div class="glass-panel-subtle rounded-xl sm:rounded-2xl p-3.5 sm:p-5 border border-white/5 flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between pb-3 mb-3 border-b border-white/5">
                             <div class="flex items-center gap-2">

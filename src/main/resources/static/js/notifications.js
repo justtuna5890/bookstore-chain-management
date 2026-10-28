@@ -1,12 +1,10 @@
 (function () {
-    var bell = document.querySelector('[data-notification-bell]');
-    if (!bell) {
+    var toggles = document.querySelectorAll('[data-notification-toggle]');
+    var panel = document.querySelector('[data-notification-panel]');
+    var pageList = document.querySelector('[data-notification-page-list]');
+    if (!toggles.length && !panel && !pageList) {
         return;
     }
-    var toggle = bell.querySelector('[data-notification-toggle]');
-    var panel = bell.querySelector('[data-notification-panel]');
-    var list = bell.querySelector('[data-notification-list]');
-    var badge = bell.querySelector('[data-notification-badge]');
     var MAX_ITEMS = 8;
     var ICONS = { ORDER: 'fa-receipt', WISHLIST: 'fa-heart', BUYBACK: 'fa-hand-holding-dollar', REVIEW: 'fa-star', CHAT: 'fa-comments' };
 
@@ -32,13 +30,16 @@
 
     function setBadge(count) {
         var n = Math.max(0, count || 0);
-        badge.textContent = n > 99 ? '99+' : n;
-        badge.classList.toggle('hidden', n === 0);
+        document.querySelectorAll('[data-notification-badge]').forEach(function (badge) {
+            badge.textContent = n > 99 ? '99+' : n;
+            badge.classList.toggle('hidden', n === 0);
+        });
         document.querySelectorAll('[data-notification-unread-total]').forEach(function (el) { el.textContent = n; });
     }
 
     function currentCount() {
-        return parseInt(badge.textContent, 10) || 0;
+        var badge = document.querySelector('[data-notification-badge]');
+        return badge ? (parseInt(badge.textContent, 10) || 0) : 0;
     }
 
     function safeLink(link) {
@@ -90,15 +91,17 @@
     }
 
     function render(items) {
-        list.textContent = '';
-        if (!items.length) {
-            var empty = document.createElement('li');
-            empty.className = 'px-4 py-6 text-center text-xs text-slate-500';
-            empty.textContent = 'Bạn chưa có thông báo nào.';
-            list.appendChild(empty);
-            return;
-        }
-        items.slice(0, MAX_ITEMS).forEach(function (n) { list.appendChild(buildItem(n)); });
+        document.querySelectorAll('[data-notification-list]').forEach(function (list) {
+            list.textContent = '';
+            if (!items.length) {
+                var empty = document.createElement('li');
+                empty.className = 'px-4 py-6 text-center text-xs text-slate-500';
+                empty.textContent = 'Bạn chưa có thông báo nào.';
+                list.appendChild(empty);
+            } else {
+                items.slice(0, MAX_ITEMS).forEach(function (n) { list.appendChild(buildItem(n)); });
+            }
+        });
     }
 
     function load() {
@@ -115,9 +118,7 @@
                     setBadge(data.unread);
                 }
             })
-            .catch(function () {
-                list.textContent = '';
-            });
+            .catch(function () {});
     }
 
     function showToast(n) {
@@ -137,23 +138,23 @@
     }
 
     function onPush(n) {
-        // Khung có thể tới hai lần khi tải lại trang ngay lúc đang kết nối; bỏ khung đã hiển thị
-        if (list.querySelector('[data-notification-item="' + n.id + '"]')) {
-            return;
-        }
-        var first = list.firstElementChild;
-        if (first && !first.querySelector('[data-notification-item]')) {
-            first.remove(); // dòng "Chưa có thông báo" hoặc "Đang tải"
-        }
-        list.insertBefore(buildItem(n), list.firstChild);
-        while (list.children.length > MAX_ITEMS) {
-            list.removeChild(list.lastChild);
-        }
+        document.querySelectorAll('[data-notification-list]').forEach(function (list) {
+            if (list.querySelector('[data-notification-item="' + n.id + '"]')) {
+                return;
+            }
+            var first = list.firstElementChild;
+            if (first && !first.querySelector('[data-notification-item]')) {
+                first.remove();
+            }
+            list.insertBefore(buildItem(n), list.firstChild);
+            while (list.children.length > MAX_ITEMS) {
+                list.removeChild(list.lastChild);
+            }
+        });
         setBadge(currentCount() + 1);
         showToast(n);
         var pageList = document.querySelector('[data-notification-page-list]');
         if (pageList && window.location.search.indexOf('page=') < 0) {
-            // Đang ở trang đầy đủ: nạp lại để dòng mới hiện ở đúng chỗ
             setTimeout(function () { window.location.reload(); }, 1500);
         }
     }
@@ -177,21 +178,30 @@
         });
     }
 
-    // Trang khác (VD chat) báo đã thay đổi thông báo phía máy chủ
     window.addEventListener('notifications:refresh', load);
 
-    toggle.addEventListener('click', function (event) {
-        event.stopPropagation();
-        var open = panel.classList.toggle('hidden') === false;
-        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-        if (open) {
-            load();
-        }
+    toggles.forEach(function (toggle) {
+        toggle.addEventListener('click', function (event) {
+            event.stopPropagation();
+            if (!panel) return;
+            var open = panel.classList.toggle('hidden') === false;
+            toggles.forEach(function (t) { t.setAttribute('aria-expanded', open ? 'true' : 'false'); });
+            if (open) {
+                load();
+            }
+        });
     });
+
     document.addEventListener('click', function (event) {
-        if (!bell.contains(event.target)) {
-            panel.classList.add('hidden');
-            toggle.setAttribute('aria-expanded', 'false');
+        if (panel && !panel.classList.contains('hidden')) {
+            var clickedToggle = false;
+            toggles.forEach(function (t) {
+                if (t.contains(event.target)) clickedToggle = true;
+            });
+            if (!panel.contains(event.target) && !clickedToggle) {
+                panel.classList.add('hidden');
+                toggles.forEach(function (t) { t.setAttribute('aria-expanded', 'false'); });
+            }
         }
         var row = event.target.closest('[data-notification-item]');
         if (row) {
@@ -210,13 +220,14 @@
             });
         }
     });
+
     document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && panel) {
             panel.classList.add('hidden');
+            toggles.forEach(function (t) { t.setAttribute('aria-expanded', 'false'); });
         }
     });
 
-    // Kết nối STOMP: nạp SockJS và STOMP nếu trang chưa có (trang chủ không tải sẵn)
     function loadScript(src) {
         return new Promise(function (resolve, reject) {
             var script = document.createElement('script');
@@ -236,10 +247,9 @@
             client.subscribe('/user/queue/notifications', function (frame) {
                 try {
                     onPush(JSON.parse(frame.body));
-                } catch (e) { /* khung hỏng: bỏ qua */ }
+                } catch (e) {}
             });
         }, function () {
-            // Mất kết nối (khởi động lại máy chủ, mạng chập chờn): thử lại với thời gian chờ tăng dần
             setTimeout(connect, retryDelay);
             retryDelay = Math.min(retryDelay * 2, 30000);
         });
@@ -251,5 +261,5 @@
             .then(function () { return loadScript('https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js'); });
 
     load();
-    ready.then(connect).catch(function () { /* không tải được thư viện: vẫn xem được thông báo bằng cách mở chuông */ });
+    ready.then(connect).catch(function () {});
 })();

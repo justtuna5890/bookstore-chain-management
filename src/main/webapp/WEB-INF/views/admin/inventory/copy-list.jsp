@@ -46,11 +46,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <style>
+        /* Universal Responsive Baseline */
+        html, body {
+            min-height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        img, svg, video {
+            max-width: 100%;
+            height: auto;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
             background-color: #0b0c10;
             font-family: 'Plus Jakarta Sans', sans-serif;
             color: #e2e8f0;
-            overflow-x: hidden;
         }
         .bg-reading-room {
             background: radial-gradient(circle at 15% 20%, rgba(212, 175, 55, 0.08) 0%, transparent 45%),
@@ -86,18 +100,20 @@
         }
     </style>
 </head>
-<body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-6 px-4 md:px-8 lg:px-12 selection:bg-brand-gold selection:text-black">
-    <div class="ambient-glow top-12 left-1/4"></div>
+<body class="bg-reading-room min-h-screen relative flex flex-col justify-between py-3 sm:py-6 px-2.5 sm:px-4 md:px-8 lg:px-12 selection:bg-brand-gold selection:text-black">
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+        <div class="ambient-glow top-12 left-1/4"></div>
     <div class="ambient-glow bottom-20 right-10"></div>
+    </div>
 
-    <div class="relative z-10 max-w-[1520px] w-full mx-auto flex flex-col xl:flex-row items-start gap-5">
+<div class="relative z-10 max-w-[1520px] w-full mx-auto flex flex-col lg:flex-row items-start gap-5">
         <!-- Unified Navigation Dock -->
         <jsp:include page="/WEB-INF/views/admin/common/nav-dock.jsp">
             <jsp:param name="active" value="copies"/>
         </jsp:include>
 
         <!-- Main Display Frame -->
-        <main class="flex-1 w-full glass-panel rounded-[32px] p-5 sm:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden">
+        <main class="flex-1 w-full glass-panel rounded-xl sm:rounded-2xl lg:rounded-[32px] p-2.5 sm:p-4 lg:p-7 shadow-glass-elevated border border-white/10 relative overflow-hidden">
             <!-- Top Nav & Breadcrumbs -->
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-white/5 mb-6">
                 <div>
@@ -112,6 +128,12 @@
                     <p class="text-xs text-slate-400 mt-0.5">Theo dõi từng cuốn sách thực tế qua mã Barcode, tình trạng và vị trí lưu kho</p>
                 </div>
                 <div class="flex items-center gap-2.5">
+                    <a href="/admin/orders" 
+                       class="px-3.5 py-2.5 rounded-xl bg-sky-500/10 hover:bg-sky-500/20 text-sky-300 font-semibold text-xs border border-sky-500/30 transition flex items-center gap-2 shadow-sm"
+                       title="Xem danh sách đơn khách đặt">
+                        <i class="fa-solid fa-receipt text-sky-400"></i>
+                        <span>Đơn Hàng Của Khách</span>
+                    </a>
                     <a href="/admin/export/excel/inventory${not empty selectedStoreId ? '?storeId='.concat(selectedStoreId) : ''}" 
                        class="px-3.5 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-semibold text-xs border border-emerald-500/30 transition flex items-center gap-2 shadow-sm">
                         <i class="fa-solid fa-file-excel text-emerald-400"></i>
@@ -158,7 +180,16 @@
                         <select name="status" class="glass-input w-full px-3 py-2 text-xs rounded-xl bg-[#161a22]">
                             <option value="">-- Tất cả trạng thái --</option>
                             <c:forEach var="st" items="${statuses}">
-                                <option value="${st}" ${selectedStatus == st ? 'selected' : ''}>${st}</option>
+                                <option value="${st}" ${selectedStatus == st ? 'selected' : ''}>
+                                    <c:choose>
+                                        <c:when test="${st == 'AVAILABLE'}">Sẵn sàng bán</c:when>
+                                        <c:when test="${st == 'RESERVED'}">Khách đã đặt (Trong đơn hàng)</c:when>
+                                        <c:when test="${st == 'HOLDING'}">Tạm giữ</c:when>
+                                        <c:when test="${st == 'IN_TRANSIT'}">Đang chuyển kho</c:when>
+                                        <c:when test="${st == 'SOLD'}">Đã bán</c:when>
+                                        <c:otherwise>${st}</c:otherwise>
+                                    </c:choose>
+                                </option>
                             </c:forEach>
                         </select>
                     </div>
@@ -210,8 +241,9 @@
                                 <th class="py-3.5 px-4 text-right">Thao Tác</th>
                             </tr>
                         </thead>
+                        <c:set var="effectivePage" value="${not empty copyPage ? copyPage : bookCopyPage}"/>
                         <tbody class="divide-y divide-white/5">
-                            <c:forEach var="copy" items="${copyPage.content}">
+                            <c:forEach var="copy" items="${effectivePage.content}">
                                 <tr class="hover:bg-white/5 transition">
                                     <td class="py-3.5 px-4 font-mono font-bold text-amber-300">
                                         <div class="flex items-center gap-1.5">
@@ -311,7 +343,7 @@
                                     </td>
                                 </tr>
                             </c:forEach>
-                            <c:if test="${empty copyPage.content}">
+                            <c:if test="${empty effectivePage.content}">
                                 <tr>
                                     <td colspan="7" class="py-12 text-center text-slate-500">
                                         <i class="fa-solid fa-boxes-packing text-3xl mb-3 text-slate-600 block"></i>
@@ -324,16 +356,16 @@
                 </div>
 
                 <!-- Pagination -->
-                <c:if test="${copyPage.totalPages > 1}">
+                <c:if test="${effectivePage.totalPages > 1}">
                     <div class="p-4 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
                         <div>
-                            Trang <span class="text-white font-medium">${copyPage.number + 1}</span> / <span class="text-white font-medium">${copyPage.totalPages}</span>
-                            (Tổng <span class="text-brand-gold font-medium">${copyPage.totalElements}</span> bản sao)
+                            Trang <span class="text-white font-medium">${effectivePage.number + 1}</span> / <span class="text-white font-medium">${effectivePage.totalPages}</span>
+                            (Tổng <span class="text-brand-gold font-medium">${effectivePage.totalElements}</span> bản sao)
                         </div>
                         <div class="flex items-center gap-1.5">
-                            <c:forEach begin="0" end="${copyPage.totalPages - 1}" var="i">
+                            <c:forEach begin="0" end="${effectivePage.totalPages - 1}" var="i">
                                 <a href="?page=${i}&storeId=${selectedStoreId}&status=${selectedStatus}&keyword=${keyword}" 
-                                   class="w-8 h-8 rounded-lg flex items-center justify-center font-medium transition ${copyPage.number == i ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5'}">
+                                   class="w-8 h-8 rounded-lg flex items-center justify-center font-medium transition ${effectivePage.number == i ? 'bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold shadow-glow-gold' : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/5'}">
                                     ${i + 1}
                                 </a>
                             </c:forEach>

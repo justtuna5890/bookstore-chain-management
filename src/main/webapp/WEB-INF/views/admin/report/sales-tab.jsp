@@ -93,7 +93,7 @@
                         <c:otherwise>
                             <div class="glass-panel-subtle rounded-2xl p-5 border border-white/5">
                                 <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2"><i class="fa-solid fa-calendar-days text-blue-400"></i><span>Doanh Thu Từng Ngày</span></h3>
-                                <div class="overflow-y-auto rounded-xl border border-white/5" style="max-height: 14rem;">
+                                <div class="overflow-auto rounded-xl border border-white/5" style="max-height: 14rem;">
                                     <table class="w-full text-left text-xs">
                                         <thead class="bg-white/5 text-slate-300 font-semibold text-[11px]"><tr><th class="py-2 px-3">Ngày</th><th class="py-2 px-3 text-right">Đơn</th><th class="py-2 px-3 text-right">Doanh thu</th></tr></thead>
                                         <tbody class="divide-y divide-white/5 text-slate-300">
