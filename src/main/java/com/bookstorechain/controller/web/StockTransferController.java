@@ -40,7 +40,7 @@ public class StockTransferController {
                                 @RequestParam(value = "page", defaultValue = "0") int page,
                                 @AuthenticationPrincipal CustomUserDetails userDetails,
                                 Model model) {
-        boolean isStaff = userDetails != null && userDetails.getUser().getRole() == Role.STAFF;
+        boolean isStaff = userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER);
 
         if (isStaff) {
             Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
@@ -71,7 +71,7 @@ public class StockTransferController {
                                  @AuthenticationPrincipal CustomUserDetails userDetails,
                                  RedirectAttributes redirectAttributes,
                                  Model model) {
-        boolean isStaff = userDetails != null && userDetails.getUser().getRole() == Role.STAFF;
+        boolean isStaff = userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER);
         StockTransferRequestDTO form = new StockTransferRequestDTO();
 
         if (isStaff) {
@@ -103,7 +103,7 @@ public class StockTransferController {
                                  @AuthenticationPrincipal CustomUserDetails userDetails,
                                  RedirectAttributes redirectAttributes,
                                  Model model) {
-        boolean isStaff = userDetails != null && userDetails.getUser().getRole() == Role.STAFF;
+        boolean isStaff = userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER);
 
         if (isStaff) {
             Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
@@ -148,7 +148,7 @@ public class StockTransferController {
                              RedirectAttributes redirectAttributes,
                              Model model) {
         StockTransfer transfer = transferService.getTransferById(id);
-        boolean isStaff = userDetails != null && userDetails.getUser().getRole() == Role.STAFF;
+        boolean isStaff = userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER);
 
         if (isStaff) {
             Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
@@ -174,7 +174,7 @@ public class StockTransferController {
                                RedirectAttributes redirectAttributes) {
         try {
             StockTransfer transfer = transferService.getTransferById(id);
-            boolean isStaff = userDetails != null && userDetails.getUser().getRole() == Role.STAFF;
+            boolean isStaff = userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER);
 
             if (isStaff) {
                 Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;

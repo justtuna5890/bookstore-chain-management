@@ -13,6 +13,8 @@ import com.bookstorechain.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,6 +52,10 @@ public class UserServiceImpl implements UserService {
             throw new DuplicateResourceException("Email '" + requestDTO.getEmail() + "' đã được sử dụng");
         }
 
+        if ((requestDTO.getRole() == Role.STAFF || requestDTO.getRole() == Role.MANAGER) && requestDTO.getStoreId() == null) {
+            throw new IllegalArgumentException("Nhân viên (STAFF) và Quản lý (MANAGER) bắt buộc phải được gán vào một chi nhánh cụ thể.");
+        }
+
         Store store = null;
         if (requestDTO.getStoreId() != null) {
             store = storeRepository.findById(requestDTO.getStoreId())
@@ -76,6 +82,20 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản với ID: " + id));
 
+        if ((requestDTO.getRole() == Role.STAFF || requestDTO.getRole() == Role.MANAGER) && requestDTO.getStoreId() == null) {
+            throw new IllegalArgumentException("Nhân viên (STAFF) và Quản lý (MANAGER) bắt buộc phải được gán vào một chi nhánh cụ thể.");
+        }
+
+        if (user.getRole() == Role.ADMIN && requestDTO.getRole() != Role.ADMIN) {
+            String currentUsername = getCurrentAuthenticatedUsername();
+            if (currentUsername != null && currentUsername.equalsIgnoreCase(user.getUsername())) {
+                throw new IllegalStateException("Bạn không thể tự hạ quyền Quản trị viên (ADMIN) của chính mình.");
+            }
+            if (user.isActive() && userRepository.countActiveAdmins() <= 1) {
+                throw new IllegalStateException("Không thể hạ quyền Quản trị viên (ADMIN) đang hoạt động cuối cùng của hệ thống.");
+            }
+        }
+
         user.setFullName(requestDTO.getFullName().trim());
         user.setEmail(requestDTO.getEmail().trim());
         user.setPhone(requestDTO.getPhone());
@@ -101,6 +121,16 @@ public class UserServiceImpl implements UserService {
     public void toggleUserStatus(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản với ID: " + id));
+        if (user.isActive() && user.getRole() == Role.ADMIN) {
+            String currentUsername = getCurrentAuthenticatedUsername();
+            if (currentUsername != null && currentUsername.equalsIgnoreCase(user.getUsername())) {
+                throw new IllegalStateException("Bạn không thể tự khóa tài khoản Quản trị viên (ADMIN) của chính mình.");
+            }
+            if (userRepository.countActiveAdmins() <= 1) {
+                throw new IllegalStateException("Không thể khóa tài khoản Quản trị viên (ADMIN) đang hoạt động cuối cùng của hệ thống.");
+            }
+        }
+
         user.setActive(!user.isActive());
         userRepository.save(user);
     }
@@ -110,6 +140,20 @@ public class UserServiceImpl implements UserService {
     public void changeUserRole(Long id, Role role) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản với ID: " + id));
+        if (user.getRole() == Role.ADMIN && role != Role.ADMIN) {
+            String currentUsername = getCurrentAuthenticatedUsername();
+            if (currentUsername != null && currentUsername.equalsIgnoreCase(user.getUsername())) {
+                throw new IllegalStateException("Bạn không thể tự hạ quyền Quản trị viên (ADMIN) của chính mình.");
+            }
+            if (user.isActive() && userRepository.countActiveAdmins() <= 1) {
+                throw new IllegalStateException("Không thể hạ quyền Quản trị viên (ADMIN) đang hoạt động cuối cùng của hệ thống.");
+            }
+        }
+
+        if ((role == Role.STAFF || role == Role.MANAGER) && user.getStore() == null) {
+            throw new IllegalArgumentException("Không thể chuyển sang vai trò " + role + " vì tài khoản chưa được gán chi nhánh. Hãy chỉnh sửa thông tin tài khoản và chọn chi nhánh.");
+        }
+
         user.setRole(role);
         userRepository.save(user);
     }
@@ -154,6 +198,14 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Sai tài khoản hoặc mật khẩu!");
         }
         return user;
+    }
+
+    private String getCurrentAuthenticatedUsername() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getName())) {
+            return auth.getName();
+        }
+        return null;
     }
 
     private UserResponseDTO mapToResponseDTO(User user) {

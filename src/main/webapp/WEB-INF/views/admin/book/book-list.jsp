@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
 <!DOCTYPE html>
 <html class="dark" data-bs-theme="dark" lang="vi">
 <head>
@@ -127,11 +128,13 @@
                     </h1>
                     <p class="text-xs text-slate-400 mt-0.5">Kho lưu trữ tác phẩm, thông tin xuất bản và tác giả</p>
                 </div>
+                <sec:authorize access="hasAnyRole('ADMIN', 'MANAGER')">
                 <a href="/admin/books/new" 
                    class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-600 hover:from-amber-400 text-slate-950 font-bold text-xs shadow-glow-gold transition flex items-center gap-2">
                     <i class="fa-solid fa-plus"></i>
                     <span>Thêm Đầu Sách Mới</span>
                 </a>
+                </sec:authorize>
             </div>
 
             <!-- Search Bar -->
@@ -241,6 +244,7 @@
                                         </c:choose>
                                     </td>
                                     <td class="py-3.5 px-4 text-right">
+                                        <sec:authorize access="hasAnyRole('ADMIN', 'MANAGER')">
                                         <div class="inline-flex items-center gap-1.5">
                                             <a href="/admin/books/${book.id}/edit" 
                                                class="w-7 h-7 rounded-lg bg-white/5 hover:bg-brand-gold/20 border border-white/10 hover:border-brand-gold/40 text-slate-300 hover:text-brand-gold flex items-center justify-center transition"
@@ -257,6 +261,7 @@
                                                 </button>
                                             </form>
                                         </div>
+                                        </sec:authorize>
                                     </td>
                                 </tr>
                             </c:forEach>

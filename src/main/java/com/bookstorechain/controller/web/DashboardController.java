@@ -41,21 +41,23 @@ public class DashboardController {
         boolean isAdmin = userRole == Role.ADMIN;
         boolean isManager = userRole == Role.MANAGER;
         boolean isStaff = userRole == Role.STAFF;
+        boolean isScoped = !isAdmin; // Quản lý (MANAGER) và Nhân viên (STAFF) chỉ được quản lý chi nhánh cụ thể
 
         model.addAttribute("userRole", userRole.name());
         model.addAttribute("isAdmin", isAdmin);
         model.addAttribute("isManager", isManager);
         model.addAttribute("isStaff", isStaff);
 
-        Long staffStoreId = isStaff && userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
+        Long scopedStoreId = isScoped && userDetails != null && userDetails.getUser() != null && userDetails.getUser().getStore() != null
+                ? userDetails.getUser().getStore().getId() : null;
 
         Map<String, Long> stats;
         BigDecimal totalInventoryValue = BigDecimal.ZERO;
         Map<String, BigDecimal> storeValues = dashboardService.getInventoryValueByStore();
 
-        if (isStaff) {
-            if (staffStoreId == null) {
-                // Nhân viên chưa được gán chi nhánh: KHÔNG cấp quyền xem toàn bộ kho
+        if (isScoped) {
+            if (scopedStoreId == null) {
+                // Nhân viên hoặc Quản lý chưa được gán chi nhánh: KHÔNG cấp quyền xem toàn bộ kho
                 model.addAttribute("unassignedStoreWarning", true);
                 model.addAttribute("isScopedToStore", true);
                 model.addAttribute("currentStoreName", "Chưa phân bổ chi nhánh");
@@ -72,13 +74,13 @@ public class DashboardController {
                 model.addAttribute("stores", List.of());
                 setDefaultChartData(model);
             } else {
-                // Nhân viên STAFF: Giới hạn theo chi nhánh phụ trách
+                // Quản lý hoặc Nhân viên: Giới hạn theo đúng chi nhánh phụ trách
                 String storeName = userDetails.getUser().getStore().getName();
                 model.addAttribute("isScopedToStore", true);
                 model.addAttribute("currentStoreName", storeName);
-                model.addAttribute("currentStoreId", staffStoreId);
+                model.addAttribute("currentStoreId", scopedStoreId);
 
-                stats = dashboardService.getDashboardStatisticsByStore(staffStoreId);
+                stats = dashboardService.getDashboardStatisticsByStore(scopedStoreId);
                 model.addAttribute("stats", stats);
                 model.addAttribute("stores", List.of(userDetails.getUser().getStore()));
 
@@ -90,15 +92,15 @@ public class DashboardController {
 
                     model.addAttribute("inventoryByStoreJson", objectMapper.writeValueAsString(staffInv));
                     model.addAttribute("inventoryValueJson", objectMapper.writeValueAsString(staffVal));
-                    model.addAttribute("conditionBreakdownJson", objectMapper.writeValueAsString(dashboardService.getConditionBreakdownByStore(staffStoreId)));
-                    model.addAttribute("buybackStatusJson", objectMapper.writeValueAsString(dashboardService.getBuybackStatusBreakdownByStore(staffStoreId)));
+                    model.addAttribute("conditionBreakdownJson", objectMapper.writeValueAsString(dashboardService.getConditionBreakdownByStore(scopedStoreId)));
+                    model.addAttribute("buybackStatusJson", objectMapper.writeValueAsString(dashboardService.getBuybackStatusBreakdownByStore(scopedStoreId)));
                 } catch (JsonProcessingException e) {
-                    log.error("Lỗi chuyển đổi dữ liệu thống kê JSON cho STAFF", e);
+                    log.error("Lỗi chuyển đổi dữ liệu thống kê JSON cho chi nhánh", e);
                     setDefaultChartData(model);
                 }
             }
         } else {
-            // ADMIN & MANAGER: Xem toàn hệ thống
+            // ADMIN: Xem toàn hệ thống chuỗi
             model.addAttribute("isScopedToStore", false);
             if (userDetails != null && userDetails.getUser().getStore() != null) {
                 model.addAttribute("currentStoreName", userDetails.getUser().getStore().getName());
@@ -137,13 +139,13 @@ public class DashboardController {
         // Danh sách yêu cầu thu mua & phiếu điều chuyển gần đây từ Service
         List<BuybackRequest> recentBuybacks;
         List<StockTransfer> recentTransfers;
-        if (isStaff) {
-            if (staffStoreId == null) {
+        if (isScoped) {
+            if (scopedStoreId == null) {
                 recentBuybacks = List.of();
                 recentTransfers = List.of();
             } else {
-                recentBuybacks = dashboardService.getRecentBuybacks(staffStoreId, 5);
-                recentTransfers = dashboardService.getRecentTransfers(staffStoreId, 5);
+                recentBuybacks = dashboardService.getRecentBuybacks(scopedStoreId, 5);
+                recentTransfers = dashboardService.getRecentTransfers(scopedStoreId, 5);
             }
         } else {
             recentBuybacks = dashboardService.getRecentBuybacks(null, 5);
@@ -153,10 +155,10 @@ public class DashboardController {
         model.addAttribute("recentTransfers", recentTransfers);
 
         // Trung tâm cảnh báo vận hành & Chỉ số mở rộng
-        Long targetStoreId = isStaff ? staffStoreId : null;
+        Long targetStoreId = isScoped ? scopedStoreId : null;
         List<OperationalAlertDTO> alerts;
         Map<String, Object> extendedMetrics;
-        if (isStaff && staffStoreId == null) {
+        if (isScoped && scopedStoreId == null) {
             alerts = List.of();
             extendedMetrics = Map.of(
                     "pendingBuybacks", 0L,
@@ -181,25 +183,25 @@ public class DashboardController {
             model.addAttribute("transferFlowJson", "{}");
         }
 
-        addSalesSection(model, isStaff, staffStoreId, userDetails);
+        addSalesSection(model, isScoped, scopedStoreId, userDetails);
 
         return "admin/dashboard";
     }
 
     /**
-     * Khu vực doanh thu bán hàng online. Nhân viên chỉ thấy doanh thu chi nhánh mình (và không thấy gì nếu chưa gán chi nhánh);
-     * quản lý và quản trị thấy toàn chuỗi cùng doanh thu theo chi nhánh.
+     * Khu vực doanh thu bán hàng online. Quản lý và nhân viên chỉ thấy doanh thu chi nhánh mình;
+     * chỉ quản trị (ADMIN) mới thấy toàn chuỗi cùng doanh thu theo chi nhánh.
      */
-    private void addSalesSection(Model model, boolean isStaff, Long staffStoreId, CustomUserDetails userDetails) {
-        if (isStaff && staffStoreId == null) {
+    private void addSalesSection(Model model, boolean isScoped, Long scopedStoreId, CustomUserDetails userDetails) {
+        if (isScoped && scopedStoreId == null) {
             return;
         }
-        Long scope = isStaff ? staffStoreId : null;
+        Long scope = isScoped ? scopedStoreId : null;
         SalesReportDTO report = salesStatsService.getReport(null, null, scope);
         model.addAttribute("salesOverview", salesStatsService.getOverview(scope));
         model.addAttribute("salesReport", report);
-        model.addAttribute("salesScopeLabel", isStaff ? userDetails.getUser().getStore().getName() : "Toàn chuỗi");
-        model.addAttribute("salesShowStores", !isStaff);
+        model.addAttribute("salesScopeLabel", isScoped ? (userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getName() : "Chi nhánh phụ trách") : "Toàn chuỗi");
+        model.addAttribute("salesShowStores", !isScoped);
         model.addAttribute("salesDailyJson", ScriptJson.of(objectMapper, report.getDaily(), "[]"));
         model.addAttribute("salesPaymentJson", ScriptJson.of(objectMapper, report.getRevenueByPayment(), "{}"));
         model.addAttribute("salesStoreJson", ScriptJson.of(objectMapper, report.getRevenueByStore(), "{}"));

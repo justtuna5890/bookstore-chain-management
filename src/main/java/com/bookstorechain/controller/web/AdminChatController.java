@@ -45,7 +45,7 @@ public class AdminChatController {
     public String page(@RequestParam(value = "conversation", required = false) Long conversation,
                        @AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         model.addAttribute("initialConversationId", conversation);
-        if (userDetails.getUser().getRole() == Role.STAFF) {
+        if (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER) {
             Store store = userDetails.getUser().getStore();
             if (store == null) {
                 model.addAttribute("unassignedStoreWarning", true);
@@ -93,7 +93,7 @@ public class AdminChatController {
 
     /** Chi nhánh giới hạn của người dùng: nhân viên là chi nhánh của mình, quản lý và quản trị là null (mọi chi nhánh). */
     private Long scopeStoreId(CustomUserDetails userDetails) {
-        if (userDetails.getUser().getRole() != Role.STAFF) {
+        if (userDetails.getUser().getRole() == Role.ADMIN) {
             return null;
         }
         Store store = userDetails.getUser().getStore();

@@ -42,12 +42,11 @@ public class ReportController {
                               @RequestParam(value = "tab", defaultValue = "overview") String tab,
                               Model model) {
         Role userRole = userDetails != null && userDetails.getUser() != null ? userDetails.getUser().getRole() : Role.STAFF;
-        boolean isStaff = userRole == Role.STAFF;
-        Long staffStoreId = isStaff && userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
+        boolean isScoped = userRole == Role.STAFF || userRole == Role.MANAGER;
 
-        // Nhân viên STAFF bị khóa cứng theo chi nhánh công tác
-        if (isStaff) {
-            storeId = staffStoreIdOrDeny(userDetails);
+        // Quản lý và nhân viên bị khóa cứng theo chi nhánh công tác
+        if (isScoped) {
+            storeId = scopedStoreIdOrDeny(userDetails);
             model.addAttribute("isScopedToStore", true);
         } else {
             model.addAttribute("isScopedToStore", false);
@@ -72,8 +71,8 @@ public class ReportController {
         model.addAttribute("endDate", endDate);
         model.addAttribute("selectedStoreId", storeId);
         model.addAttribute("currentTab", tab);
-        model.addAttribute("stores", isStaff && staffStoreId != null ? List.of(userDetails.getUser().getStore()) : storeService.getAllStores());
-        model.addAttribute("isStaff", isStaff);
+        model.addAttribute("stores", isScoped && userDetails.getUser().getStore() != null ? List.of(userDetails.getUser().getStore()) : storeService.getAllStores());
+        model.addAttribute("isStaff", isScoped);
 
         return "admin/report/report-dashboard";
     }
@@ -85,8 +84,8 @@ public class ReportController {
                                   @RequestParam(value = "storeId", required = false) Long storeId,
                                   HttpServletResponse response) throws Exception {
         Role userRole = userDetails != null && userDetails.getUser() != null ? userDetails.getUser().getRole() : Role.STAFF;
-        if (userRole == Role.STAFF) {
-            storeId = staffStoreIdOrDeny(userDetails);
+        if (userRole == Role.STAFF || userRole == Role.MANAGER) {
+            storeId = scopedStoreIdOrDeny(userDetails);
         }
 
         if (startDate == null) {
@@ -106,8 +105,8 @@ public class ReportController {
                                 @RequestParam(value = "storeId", required = false) Long storeId,
                                 HttpServletResponse response) throws Exception {
         Role userRole = userDetails != null && userDetails.getUser() != null ? userDetails.getUser().getRole() : Role.STAFF;
-        if (userRole == Role.STAFF) {
-            storeId = staffStoreIdOrDeny(userDetails);
+        if (userRole == Role.STAFF || userRole == Role.MANAGER) {
+            storeId = scopedStoreIdOrDeny(userDetails);
         }
 
         if (startDate == null) {
@@ -121,10 +120,10 @@ public class ReportController {
     }
 
     /**
-     * Chi nhánh mà nhân viên được xem báo cáo. Nhân viên chưa gán chi nhánh bị từ chối: truyền null xuống tầng báo cáo
+     * Chi nhánh mà nhân viên / quản lý được xem báo cáo. Chưa gán chi nhánh bị từ chối: truyền null xuống tầng báo cáo
      * nghĩa là toàn chuỗi, sẽ lộ số liệu và doanh thu của mọi chi nhánh.
      */
-    private Long staffStoreIdOrDeny(CustomUserDetails userDetails) {
+    private Long scopedStoreIdOrDeny(CustomUserDetails userDetails) {
         if (userDetails.getUser().getStore() == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản chưa được gán chi nhánh nên không xem được báo cáo.");
         }

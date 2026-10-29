@@ -59,7 +59,7 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/api/auth/**").permitAll()
 						.requestMatchers(HttpMethod.GET, "/api/books/**").permitAll()
-						.requestMatchers(HttpMethod.POST, "/api/books/**").hasAnyRole("ADMIN", "MANAGER", "STAFF")
+						.requestMatchers(HttpMethod.POST, "/api/books/**").hasAnyRole("ADMIN", "MANAGER")
 						.anyRequest().authenticated()
 				)
 				.exceptionHandling(ex -> ex.authenticationEntryPoint(restAuthenticationEntryPoint))

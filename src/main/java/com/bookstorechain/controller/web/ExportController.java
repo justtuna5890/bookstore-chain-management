@@ -31,15 +31,15 @@ public class ExportController {
 
     // ==================== EXCEL ====================
 
-    /** Xuất tồn kho ra Excel (giới hạn nghiêm ngặt theo chi nhánh của STAFF) */
+    /** Xuất tồn kho ra Excel (giới hạn nghiêm ngặt theo chi nhánh của STAFF và MANAGER) */
     @GetMapping("/excel/inventory")
     public void exportInventoryExcel(@RequestParam(value = "storeId", required = false) Long storeId,
                                      @AuthenticationPrincipal CustomUserDetails userDetails,
                                      HttpServletResponse response) throws Exception {
-        if (userDetails != null && userDetails.getUser().getRole() == Role.STAFF) {
+        if (userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER)) {
             Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
             if (staffStoreId == null) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Tài khoản nhân viên chưa được gán chi nhánh để xuất báo cáo tồn kho!");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Tài khoản chưa được gán chi nhánh để xuất báo cáo tồn kho!");
                 return;
             }
             storeId = staffStoreId;
@@ -47,15 +47,15 @@ public class ExportController {
         excelExportService.exportInventory(storeId, response);
     }
 
-    /** Xuất danh sách phiếu chuyển kho ra Excel (STAFF chỉ xuất phiếu liên quan chi nhánh mình) */
+    /** Xuất danh sách phiếu chuyển kho ra Excel (STAFF và MANAGER chỉ xuất phiếu liên quan chi nhánh mình) */
     @GetMapping("/excel/transfers")
     public void exportTransfersExcel(@RequestParam(value = "storeId", required = false) Long storeId,
                                      @AuthenticationPrincipal CustomUserDetails userDetails,
                                      HttpServletResponse response) throws Exception {
-        if (userDetails != null && userDetails.getUser().getRole() == Role.STAFF) {
+        if (userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER)) {
             Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
             if (staffStoreId == null) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Tài khoản nhân viên chưa được gán chi nhánh để xuất phiếu chuyển kho!");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Tài khoản chưa được gán chi nhánh để xuất phiếu chuyển kho!");
                 return;
             }
             storeId = staffStoreId;
@@ -63,15 +63,15 @@ public class ExportController {
         excelExportService.exportTransfers(storeId, response);
     }
 
-    /** Xuất danh sách đơn thu mua ra Excel (STAFF chỉ xuất đơn chi nhánh mình phụ trách) */
+    /** Xuất danh sách đơn thu mua ra Excel (STAFF và MANAGER chỉ xuất đơn chi nhánh mình phụ trách) */
     @GetMapping("/excel/buybacks")
     public void exportBuybacksExcel(@RequestParam(value = "storeId", required = false) Long storeId,
                                     @AuthenticationPrincipal CustomUserDetails userDetails,
                                     HttpServletResponse response) throws Exception {
-        if (userDetails != null && userDetails.getUser().getRole() == Role.STAFF) {
+        if (userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER)) {
             Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
             if (staffStoreId == null) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Tài khoản nhân viên chưa được gán chi nhánh để xuất đơn thu mua!");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Tài khoản chưa được gán chi nhánh để xuất đơn thu mua!");
                 return;
             }
             storeId = staffStoreId;
@@ -86,13 +86,13 @@ public class ExportController {
     public void exportTransferPdf(@PathVariable Long id,
                                   @AuthenticationPrincipal CustomUserDetails userDetails,
                                   HttpServletResponse response) throws Exception {
-        if (userDetails != null && userDetails.getUser().getRole() == Role.STAFF) {
+        if (userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER)) {
             Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
             StockTransfer transfer = stockTransferService.getTransferById(id);
             boolean isRelated = staffStoreId != null &&
                     (staffStoreId.equals(transfer.getSenderStore().getId()) || staffStoreId.equals(transfer.getReceiverStore().getId()));
             if (!isRelated) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Nhân viên chỉ có quyền xuất PDF phiếu chuyển kho của chi nhánh mình!");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Chỉ có quyền xuất PDF phiếu chuyển kho của chi nhánh mình phụ trách!");
                 return;
             }
         }
@@ -104,11 +104,11 @@ public class ExportController {
     public void exportBuybackPdf(@PathVariable Long id,
                                  @AuthenticationPrincipal CustomUserDetails userDetails,
                                  HttpServletResponse response) throws Exception {
-        if (userDetails != null && userDetails.getUser().getRole() == Role.STAFF) {
+        if (userDetails != null && (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER)) {
             Long staffStoreId = userDetails.getUser().getStore() != null ? userDetails.getUser().getStore().getId() : null;
             BuybackRequest request = buybackService.getRequestById(id);
             if (staffStoreId == null || !staffStoreId.equals(request.getStore().getId())) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Nhân viên chỉ có quyền xuất PDF đơn thu mua của chi nhánh mình!");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Chỉ có quyền xuất PDF đơn thu mua của chi nhánh mình phụ trách!");
                 return;
             }
         }

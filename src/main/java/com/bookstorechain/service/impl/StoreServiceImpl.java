@@ -19,6 +19,7 @@ public class StoreServiceImpl implements StoreService {
 
     private final StoreRepository storeRepository;
     private final com.bookstorechain.repository.StockTransferRepository stockTransferRepository;
+    private final com.bookstorechain.repository.BookCopyRepository bookCopyRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -87,6 +88,11 @@ public class StoreServiceImpl implements StoreService {
             );
             if (hasOngoingTransfers) {
                 throw new IllegalStateException("Không thể tạm dừng hoạt động chi nhánh đang có phiếu chuyển kho chưa hoàn tất!");
+            }
+
+            long remainingInventory = bookCopyRepository.countByStoreId(id);
+            if (remainingInventory > 0) {
+                throw new IllegalStateException("Không thể tạm dừng hoạt động chi nhánh vẫn còn " + remainingInventory + " bản sao sách tồn kho! Hãy điều chuyển toàn bộ sách sang chi nhánh khác trước khi tạm dừng.");
             }
         }
 

@@ -58,7 +58,7 @@ public class StockTransferServiceImpl implements StockTransferService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin tài khoản thao tác"));
 
         // Nếu người thao tác là STAFF thì chỉ được tạo phiếu xuất từ đúng chi nhánh của mình
-        if (creator.getRole() == com.bookstorechain.enums.Role.STAFF) {
+        if (creator.getRole() == com.bookstorechain.enums.Role.STAFF || creator.getRole() == com.bookstorechain.enums.Role.MANAGER) {
             if (creator.getStore() == null || !creator.getStore().getId().equals(senderStore.getId())) {
                 throw new org.springframework.security.access.AccessDeniedException("Nhân viên chỉ có quyền tạo phiếu điều chuyển từ chi nhánh trực thuộc của mình!");
             }

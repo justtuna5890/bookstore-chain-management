@@ -109,7 +109,32 @@ class StockTransferServiceTest {
 
         assertThatThrownBy(() -> stockTransferService.createTransfer(dto, "staff1"))
                 .isInstanceOf(AccessDeniedException.class)
-                .hasMessageContaining("Nhân viên chỉ có quyền tạo phiếu điều chuyển từ chi nhánh trực thuộc");
+                .hasMessageContaining("Nhân viên");
+    }
+
+    @Test
+    @DisplayName("createTransfer - Bắt lỗi AccessDeniedException khi quản lý cố tạo phiếu từ chi nhánh khác")
+    void createTransfer_WhenManagerFromDifferentStore_ShouldThrowAccessDeniedException() {
+        Store otherStore = Store.builder().name("Kho Đà Nẵng").build();
+        otherStore.setId(3L);
+        User managerUser = User.builder()
+                .username("manager1")
+                .role(Role.MANAGER)
+                .store(otherStore)
+                .build();
+
+        StockTransferRequestDTO dto = new StockTransferRequestDTO();
+        dto.setSenderStoreId(1L);
+        dto.setReceiverStoreId(2L);
+        dto.setBookCopyIds(List.of(101L));
+
+        when(storeRepository.findById(1L)).thenReturn(Optional.of(senderStore));
+        when(storeRepository.findById(2L)).thenReturn(Optional.of(receiverStore));
+        when(userRepository.findByUsername("manager1")).thenReturn(Optional.of(managerUser));
+
+        assertThatThrownBy(() -> stockTransferService.createTransfer(dto, "manager1"))
+                .isInstanceOf(AccessDeniedException.class)
+                .hasMessageContaining("chỉ có quyền tạo phiếu điều chuyển từ chi nhánh trực thuộc");
     }
 
     @Test

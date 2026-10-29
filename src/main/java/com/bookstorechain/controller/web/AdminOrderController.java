@@ -51,7 +51,7 @@ public class AdminOrderController {
         model.addAttribute("selectedStatus", status);
         model.addAttribute("selectedKeyword", keyword);
 
-        if (userDetails.getUser().getRole() == Role.STAFF) {
+        if (userDetails.getUser().getRole() == Role.STAFF || userDetails.getUser().getRole() == Role.MANAGER) {
             Store store = userDetails.getUser().getStore();
             if (store == null) {
                 model.addAttribute("unassignedStoreWarning", true);
@@ -129,7 +129,7 @@ public class AdminOrderController {
 
     /** Nhân viên chỉ xử lý đơn của chi nhánh mình; quản lý và quản trị không bị giới hạn (giống các trang thu mua, chuyển kho). */
     private Long scopeStoreId(CustomUserDetails userDetails) {
-        if (userDetails.getUser().getRole() != Role.STAFF) {
+        if (userDetails.getUser().getRole() == Role.ADMIN) {
             return null;
         }
         Store store = userDetails.getUser().getStore();

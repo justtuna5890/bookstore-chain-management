@@ -18,6 +18,10 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import java.util.List;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -156,9 +160,11 @@ class UserServiceTest {
         dto.setFullName("Nguyễn Văn Nhân Viên");
         dto.setEmail("nhanvien1@bookstore.com");
         dto.setRole(Role.STAFF);
+        dto.setStoreId(1L);
         dto.setPassword("newPass456");
 
         when(userRepository.findById(10L)).thenReturn(Optional.of(sampleUser));
+        when(storeRepository.findById(1L)).thenReturn(Optional.of(sampleStore));
         when(passwordEncoder.encode("newPass456")).thenReturn("$2a$10$updatedEncodedPassword");
 
         userService.updateUser(10L, dto);
@@ -174,9 +180,11 @@ class UserServiceTest {
         dto.setFullName("Nguyễn Văn Nhân Viên Sửa");
         dto.setEmail("nhanvien1@bookstore.com");
         dto.setRole(Role.STAFF);
+        dto.setStoreId(1L);
         dto.setPassword("");
 
         when(userRepository.findById(10L)).thenReturn(Optional.of(sampleUser));
+        when(storeRepository.findById(1L)).thenReturn(Optional.of(sampleStore));
 
         userService.updateUser(10L, dto);
 
@@ -247,5 +255,124 @@ class UserServiceTest {
         assertThat(customer.getRole()).isEqualTo(Role.CUSTOMER);
         assertThat(customer.getPassword()).isEqualTo("$2a$10$encodedCustomerPass");
         assertThat(customer.isActive()).isTrue();
+    }
+
+    @Test
+    @DisplayName("createUser - Bắt lỗi khi tạo tài khoản STAFF hoặc MANAGER mà không gán chi nhánh")
+    void createUser_WhenStaffWithoutStore_ShouldThrowIllegalArgumentException() {
+        UserRequestDTO dto = new UserRequestDTO();
+        dto.setUsername("staff_no_store");
+        dto.setEmail("nostore@bookstore.com");
+        dto.setRole(Role.STAFF);
+        dto.setStoreId(null);
+
+        when(userRepository.existsByUsername("staff_no_store")).thenReturn(false);
+        when(userRepository.existsByEmail("nostore@bookstore.com")).thenReturn(false);
+
+        assertThatThrownBy(() -> userService.createUser(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("bắt buộc phải được gán vào một chi nhánh cụ thể");
+    }
+
+    @Test
+    @DisplayName("toggleUserStatus - Bắt lỗi khi ADMIN tự khóa tài khoản của chính mình")
+    void toggleUserStatus_WhenLockingSelfAdmin_ShouldThrowIllegalStateException() {
+        User adminUser = User.builder()
+                .username("admin")
+                .role(Role.ADMIN)
+                .isActive(true)
+                .build();
+        adminUser.setId(1L);
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("admin", "pass", List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
+        );
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(adminUser));
+
+        try {
+            assertThatThrownBy(() -> userService.toggleUserStatus(1L))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Bạn không thể tự khóa tài khoản Quản trị viên (ADMIN) của chính mình");
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
+    @Test
+    @DisplayName("toggleUserStatus - Bắt lỗi khi khóa ADMIN đang hoạt động cuối cùng của hệ thống")
+    void toggleUserStatus_WhenLockingLastActiveAdmin_ShouldThrowIllegalStateException() {
+        User adminUser = User.builder()
+                .username("other_admin")
+                .role(Role.ADMIN)
+                .isActive(true)
+                .build();
+        adminUser.setId(2L);
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("current_admin", "pass", List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
+        );
+
+        when(userRepository.findById(2L)).thenReturn(Optional.of(adminUser));
+        when(userRepository.countActiveAdmins()).thenReturn(1L);
+
+        try {
+            assertThatThrownBy(() -> userService.toggleUserStatus(2L))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Không thể khóa tài khoản Quản trị viên (ADMIN) đang hoạt động cuối cùng");
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
+    @Test
+    @DisplayName("changeUserRole - Bắt lỗi khi ADMIN tự hạ quyền của chính mình")
+    void changeUserRole_WhenDemotingSelfAdmin_ShouldThrowIllegalStateException() {
+        User adminUser = User.builder()
+                .username("admin")
+                .role(Role.ADMIN)
+                .isActive(true)
+                .build();
+        adminUser.setId(1L);
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("admin", "pass", List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
+        );
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(adminUser));
+
+        try {
+            assertThatThrownBy(() -> userService.changeUserRole(1L, Role.STAFF))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Bạn không thể tự hạ quyền Quản trị viên (ADMIN) của chính mình");
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
+    @Test
+    @DisplayName("changeUserRole - Bắt lỗi khi hạ quyền ADMIN đang hoạt động cuối cùng")
+    void changeUserRole_WhenDemotingLastActiveAdmin_ShouldThrowIllegalStateException() {
+        User adminUser = User.builder()
+                .username("other_admin")
+                .role(Role.ADMIN)
+                .isActive(true)
+                .build();
+        adminUser.setId(2L);
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("current_admin", "pass", List.of(new SimpleGrantedAuthority("ROLE_ADMIN")))
+        );
+
+        when(userRepository.findById(2L)).thenReturn(Optional.of(adminUser));
+        when(userRepository.countActiveAdmins()).thenReturn(1L);
+
+        try {
+            assertThatThrownBy(() -> userService.changeUserRole(2L, Role.CUSTOMER))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Không thể hạ quyền Quản trị viên (ADMIN) đang hoạt động cuối cùng");
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
     }
 }
