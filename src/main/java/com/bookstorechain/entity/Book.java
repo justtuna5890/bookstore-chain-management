@@ -2,86 +2,45 @@ package com.bookstorechain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.*;
+
+import java.math.BigDecimal;
 
 @Entity
-@Table(name = "books")
-public class Book {
+@Table(name = "book")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class Book extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(nullable = false)
+    @Column(nullable = false, length = 200, columnDefinition = "NVARCHAR(200)")
     private String title;
 
+    @Column(nullable = false, length = 100, columnDefinition = "NVARCHAR(100)")
     private String author;
 
+    @Column(length = 100, columnDefinition = "NVARCHAR(100)")
     private String publisher;
 
+    @Column(name = "publication_year")
+    private Integer publicationYear;
+
+    @Column(length = 50, columnDefinition = "NVARCHAR(50)")
     private String category;
 
-    @Column(length = 2000)
+    @Column(columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
-    private String coverImageUrl;
+    @Column(name = "cover_price", precision = 12, scale = 2)
+    private BigDecimal coverPrice;
 
-    public Long getId() {
-        return id;
-    }
+    @Column(name = "cover_image", columnDefinition = "NVARCHAR(500)")
+    private String coverImage;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public String getPublisher() {
-        return publisher;
-    }
-
-    public void setPublisher(String publisher) {
-        this.publisher = publisher;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getCoverImageUrl() {
-        return coverImageUrl;
-    }
-
-    public void setCoverImageUrl(String coverImageUrl) {
-        this.coverImageUrl = coverImageUrl;
-    }
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private boolean isActive = true;
 }

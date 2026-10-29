@@ -1,0 +1,23 @@
+title|Chat hỗ trợ theo chi nhánh
+lane|Khách hàng
+lane|Hệ thống
+lane|Nhân viên chi nhánh
+n|s|0|0|s|
+n|send|0|1|a|Chọn chi nhánh, gửi tin nhắn
+n|chk|1|2|a|Kiểm tra độ dài, giới hạn 20 tin mỗi phút
+n|save|1|3|a|Khoá dòng cuộc trò chuyện, lưu tin, tăng số chưa đọc của nhân viên, commit
+n|push1|1|4|a|Sau commit: đẩy tin tới /topic/chat/store/{id}, chuông nhân viên reo
+n|see|2|5|a|Thấy tin mới ngay, mở /admin/chat và trả lời
+n|save2|1|6|a|Lưu câu trả lời, tăng số chưa đọc của khách
+n|push2|1|7|a|Đẩy tin tới /user/queue/chat, lần đầu tạo thêm thông báo trên chuông
+n|recv|0|8|a|Nhận câu trả lời ngay trong khung chat
+n|end|0|9|e|
+e|s|send
+e|send|chk
+e|chk|save
+e|save|push1
+e|push1|see
+e|see|save2
+e|save2|push2
+e|push2|recv
+e|recv|end
