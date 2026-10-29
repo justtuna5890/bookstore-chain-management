@@ -2,9 +2,30 @@
 
 Đề tài cuối kỳ môn Lập trình Web: hệ thống bán lẻ đa chi nhánh cho chuỗi cửa hàng sách cũ, gồm ba mảng nghiệp vụ: **bán sách online**, **thu mua sách cũ từ khách** và **vận hành liên chi nhánh** (kho, chuyển kho, báo cáo toàn chuỗi).
 
-**Công nghệ:** Spring Boot 3.3 · Spring MVC + JSP/JSTL · Spring Security (đăng nhập session cho trang web, JWT cho `/api/**`) · Spring Data JPA/Hibernate · SQL Server · WebSocket (STOMP qua SockJS) · Cloudinary · Apache POI và OpenPDF (xuất báo cáo) · Chart.js · Bootstrap 5.3 và Tailwind (CDN) · JUnit 5 + Mockito.
+**Công nghệ:** Spring Boot 3.3 · Spring MVC + JSP/JSTL · Spring Security (đăng nhập session cho trang web, JWT cho `/api/**`) · Spring Data JPA/Hibernate · SQL Server · WebSocket (STOMP qua SockJS) · Cloudinary (ảnh bìa sách, ảnh tình trạng sách thu mua) · Apache POI và OpenPDF (xuất báo cáo) · Chart.js · Bootstrap 5.3 và Tailwind (CDN) · JUnit 5 + Mockito.
 
 Nhóm 2 người, chia theo chiều dọc (mỗi người làm trọn một cụm chức năng từ dữ liệu đến giao diện). Khung sườn ban đầu và phân công nằm trong [`Khung_suon_du_an.docx`](./Khung_suon_du_an.docx).
+
+### Mục tiêu
+
+- Bán sách cũ trực tuyến và theo dõi tồn kho từng cuốn, từng chi nhánh.
+- Tiếp nhận, định giá và nhập kho sách thu mua từ khách.
+- Chuyển sách giữa các chi nhánh; phân quyền và giới hạn dữ liệu theo chi nhánh.
+- Dashboard, báo cáo (Excel, PDF), chat và thông báo realtime.
+
+## Mô hình sách: đầu sách và bản sách
+
+Sách cũ khác sách mới ở chỗ mỗi cuốn là một vật thể riêng, nên hệ thống tách hai thực thể:
+
+| | `Book` (đầu sách) | `BookCopy` (bản sách) |
+|---|---|---|
+| Đại diện | Thông tin chung: tên, tác giả, nhà xuất bản, năm, thể loại, mô tả, giá bìa, ảnh bìa | Một cuốn sách vật lý cụ thể |
+| Định danh | `id` | `copy_code` duy nhất (ví dụ `OB-HN-001`) |
+| Chi nhánh | Không thuộc chi nhánh nào | Thuộc đúng một chi nhánh |
+| Tình trạng và giá | Không | Tình trạng riêng, giá bán riêng, ghi chú |
+| Trạng thái | Không | `AVAILABLE`, `RESERVED`, `HOLDING`, `IN_TRANSIT`, `SOLD` |
+
+Ví dụ: 5 cuốn cùng một đầu sách là 1 bản ghi `Book` và 5 bản ghi `BookCopy`. Nhờ vậy hệ thống giữ chỗ từng cuốn khi đặt hàng và chuyển từng cuốn giữa các chi nhánh.
 
 ## Chức năng
 
@@ -13,7 +34,7 @@ Nhóm 2 người, chia theo chiều dọc (mỗi người làm trọn một cụ
 | Xác thực và phân quyền | Đăng ký, đăng nhập; 4 vai trò `ADMIN`, `MANAGER`, `STAFF`, `CUSTOMER`; JWT cho REST | A |
 | Người dùng, chi nhánh | CRUD người dùng (chỉ `ADMIN`), CRUD chi nhánh | A |
 | Sách và kho | Đầu sách, bản sách theo từng chi nhánh, tìm kiếm, lọc; ảnh bìa qua Cloudinary | A |
-| Thu mua sách cũ | Khách gửi yêu cầu từ trang chủ; nhân viên định giá, duyệt, hoàn tất thì nhập kho | A |
+| Thu mua sách cũ | Khách gửi yêu cầu từ trang chủ (kèm ảnh tình trạng sách, tuỳ chọn); nhân viên định giá, duyệt, hoàn tất thì nhập kho | A (+ ảnh tình trạng: B) |
 | Chuyển kho | Phiếu chuyển giữa hai chi nhánh, theo dõi trạng thái, xuất PDF | A |
 | Báo cáo và xuất file | Dashboard vận hành, báo cáo theo kỳ, xuất Excel và PDF | A (+ doanh thu: B) |
 | Trang khách | Chi tiết sách, đánh giá, yêu thích, tài khoản | B |
@@ -66,7 +87,7 @@ Controller (web/, api/) ──► Service ──► Repository (Spring Data JPA)
 ### Yêu cầu
 - **JDK 17 hoặc 21** (Lombok chưa chạy được trên JDK 26), Maven 3.9+.
 - **Microsoft SQL Server** 2019 trở lên và công cụ `sqlcmd`. Dự án chỉ cấu hình driver SQL Server.
-- Tài khoản [Cloudinary](https://cloudinary.com) nếu muốn tải ảnh bìa sách lên (không bắt buộc để chạy ứng dụng).
+- Tài khoản [Cloudinary](https://cloudinary.com) nếu muốn tải ảnh bìa sách và ảnh tình trạng sách thu mua lên (không bắt buộc để chạy ứng dụng).
 - Nên đặt dự án ở đường dẫn **không có dấu tiếng Việt** (ví dụ `C:\Projects\WEB_CK`), vì đường dẫn có dấu làm `mvn spring-boot:run` lỗi.
 
 ### 1. Tạo cơ sở dữ liệu
@@ -86,7 +107,7 @@ Dữ liệu mẫu: 4 chi nhánh, 15 người dùng, 25 đầu sách, 68 bản s�
 |---|---|---|
 | `DB_USERNAME`, `DB_PASSWORD` | `sa`, `123456` | Tài khoản SQL Server (nên tạo login riêng thay vì dùng `sa`) |
 | `JWT_SECRET` | một chuỗi mẫu | Khoá ký JWT; khi triển khai thật phải đổi thành chuỗi ngẫu nhiên từ 32 ký tự |
-| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | `demo` | Thiếu thì chỉ riêng việc tải ảnh bìa không hoạt động |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | `demo` | Thiếu thì chỉ riêng việc tải ảnh bìa và ảnh thu mua không hoạt động |
 
 Cấu hình nghiệp vụ trong `application.yml`:
 
@@ -121,7 +142,7 @@ Mở http://localhost:8080. Sửa file `.jsp` cần khởi động lại ứng d
 ```bash
 mvn test
 ```
-Chạy các test đơn vị (Mockito, không cần database) và các bài quét JSP: thoát HTML dữ liệu người dùng (chống XSS), khai báo taglib, từ khoá EL dùng làm tên thuộc tính.
+Hiện có 281 test đơn vị (Mockito, không cần database) và 10 test tích hợp. Lệnh này chạy các test đơn vị và các bài quét JSP: thoát HTML dữ liệu người dùng (chống XSS), khai báo taglib, từ khoá EL dùng làm tên thuộc tính.
 
 Các bài tích hợp ghi vào database dùng chung nên mặc định bị bỏ qua; bật bằng biến `RUN_DB_TESTS=true` và trỏ `DB_USERNAME`, `DB_PASSWORD` tới database đã chạy script. Mỗi bài tự dọn dữ liệu của mình:
 
@@ -155,15 +176,16 @@ src/main/java/com/bookstorechain/
 src/main/webapp/WEB-INF/views/   JSP: index, auth/, customer/, admin/
 src/main/resources/              application.yml, BookStoreChain_Init.sql, static/js/
 src/test/                        test đơn vị, test tích hợp, bài quét JSP
-docs/                            tài liệu nộp bài
+docs/diagrams/                   mã nguồn và ảnh các sơ đồ hoạt động
 ```
 
 ## Quy trình Git
-- Mỗi cụm chức năng một nhánh `feature/...`, commit theo dạng `loai(pham-vi): mo ta`.
+- Mỗi cụm chức năng một nhánh `feature/...`, commit theo dạng `loai(pham-vi): mo ta`, ví dụ `feat(thu-mua): tai anh tinh trang sach len Cloudinary tu form thu mua cua khach`.
+- `develop` là nhánh tích hợp, chứa các nhánh tính năng của cả hai thành viên; `main` vẫn là bộ khung ban đầu.
 - Phần của thành viên B được chia thành 8 Pull Request xếp chồng (mỗi PR nhắm vào nhánh của PR trước) để thành viên A review chéo theo từng giai đoạn; merge theo thứ tự.
 
 ## Hạn chế đã biết
 - Thanh toán là COD hoặc chuyển khoản do nhân viên xác nhận thủ công, chưa tích hợp cổng thanh toán hay mã QR.
-- Ảnh tình trạng sách khi thu mua chưa được tải lên từ form của khách (trường dữ liệu đã có).
+- Ảnh tình trạng sách khi thu mua: mỗi yêu cầu nhận một ảnh (tối đa 5MB) và cần khoá Cloudinary thật để tải lên.
 - Đăng ký tài khoản chưa kiểm tra dữ liệu đầu vào; chuỗi `JWT_SECRET` mặc định chỉ để chạy thử.
 - Giao diện dùng cả Bootstrap 5.3 và Tailwind (CDN), cần kết nối mạng để tải thư viện, phông chữ và biểu đồ.
