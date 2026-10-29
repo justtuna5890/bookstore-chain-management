@@ -9,6 +9,7 @@ import com.bookstorechain.repository.BookRepository;
 import com.bookstorechain.repository.BuybackRequestRepository;
 import com.bookstorechain.repository.StoreRepository;
 import com.bookstorechain.repository.UserRepository;
+import com.bookstorechain.service.FileUploadService;
 import com.bookstorechain.service.NotificationService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.bookstorechain.service.UserNotificationService;
@@ -43,13 +44,14 @@ class BuybackServiceImplTest {
     @Mock private UserRepository userRepository;
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private NotificationService notificationService;
+    @Mock private FileUploadService fileUploadService;
 
     private BuybackServiceImpl service;
 
     @BeforeEach
     void setUp() {
         service = new BuybackServiceImpl(buybackRequestRepository, bookCopyRepository, bookRepository, userNotificationService,
-                storeRepository, userRepository, passwordEncoder, notificationService);
+                storeRepository, userRepository, passwordEncoder, notificationService, fileUploadService);
     }
 
     private BuybackRequest request(BuybackStatus status) {

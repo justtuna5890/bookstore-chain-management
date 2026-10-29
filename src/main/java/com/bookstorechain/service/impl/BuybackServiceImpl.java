@@ -13,6 +13,7 @@ import com.bookstorechain.repository.BookRepository;
 import com.bookstorechain.repository.BuybackRequestRepository;
 import com.bookstorechain.enums.UserNotificationType;
 import com.bookstorechain.service.BuybackService;
+import com.bookstorechain.service.FileUploadService;
 import com.bookstorechain.service.UserNotificationService;
 import com.bookstorechain.repository.StoreRepository;
 import com.bookstorechain.repository.UserRepository;
@@ -43,6 +44,7 @@ public class BuybackServiceImpl implements BuybackService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final NotificationService notificationService;
+    private final FileUploadService fileUploadService;
 
     @Override
     @Transactional(readOnly = true)
@@ -157,6 +159,9 @@ public class BuybackServiceImpl implements BuybackService {
         Store store = storeRepository.findById(dto.getStoreId())
                 .orElseThrow(() -> new ResourceNotFoundException("Chi nhánh tiếp nhận không tồn tại!"));
 
+        // Ảnh tình trạng sách (nếu có) lên Cloudinary; lỗi upload làm hỏng cả giao dịch nên không tạo đơn thiếu ảnh
+        String itemImage = fileUploadService.uploadFile(dto.getConditionImage(), "buybacks");
+
         BuybackRequest request = BuybackRequest.builder()
                 .customer(customer)
                 .store(store)
@@ -171,6 +176,7 @@ public class BuybackServiceImpl implements BuybackService {
                 .bookAuthor(dto.getBookAuthor() != null && !dto.getBookAuthor().isBlank()
                         ? dto.getBookAuthor() : "Chưa rõ")
                 .proposedCondition(dto.getCondition())
+                .itemImage(itemImage)
                 .build();
 
         request.getItems().add(item);

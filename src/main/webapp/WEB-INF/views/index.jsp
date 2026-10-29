@@ -1249,7 +1249,7 @@
                                     </div>
                                 </c:if>
 
-                                <form action="/buyback-request" method="post" class="space-y-3">
+                                <form action="/buyback-request" method="post" enctype="multipart/form-data" class="space-y-3">
                                     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1297,6 +1297,26 @@
                                     <div>
                                         <label class="block text-[11px] font-medium text-slate-300 mb-1">Ghi chú tình trạng sách</label>
                                         <textarea name="note" rows="2" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-100 placeholder-slate-500" placeholder="VD: Sách bìa cứng năm 1990, gáy còn nguyên...">${fn:escapeXml(buybackForm.note)}</textarea>
+                                    </div>
+
+                                    <div>
+                                        <label for="buyback-image" class="block text-[11px] font-medium text-slate-300 mb-1">Ảnh tình trạng sách (không bắt buộc)</label>
+                                        <input id="buyback-image" type="file" name="conditionImage" accept="image/*" class="glass-input w-full px-3 py-2 text-xs rounded-xl text-slate-300 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-gold/20 file:px-3 file:py-1 file:text-[11px] file:font-semibold file:text-brand-gold"/>
+                                        <p id="buyback-image-hint" class="mt-1 text-[10px] text-slate-500">Chụp bìa, gáy và các trang có vết ố hoặc rách. Ảnh JPG, PNG hoặc WEBP, tối đa 5MB.</p>
+                                        <script>
+                                            (function () {
+                                                var input = document.getElementById('buyback-image');
+                                                var hint = document.getElementById('buyback-image-hint');
+                                                input.addEventListener('change', function () {
+                                                    var f = input.files[0];
+                                                    if (f && f.size > 5 * 1024 * 1024) {
+                                                        input.value = '';
+                                                        hint.textContent = 'Ảnh vượt quá 5MB, vui lòng chọn ảnh nhỏ hơn.';
+                                                        hint.className = 'mt-1 text-[10px] text-rose-400';
+                                                    }
+                                                });
+                                            })();
+                                        </script>
                                     </div>
 
                                     <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-gold to-yellow-500 hover:from-yellow-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-glow-gold transition">

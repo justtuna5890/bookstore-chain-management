@@ -4,6 +4,7 @@ import com.bookstorechain.enums.BookCondition;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -30,4 +31,7 @@ public class CustomerBuybackDTO {
     private BookCondition condition;
 
     private String note;
+
+    // Ảnh thực tế tình trạng sách khách chụp (không bắt buộc)
+    private MultipartFile conditionImage;
 }
