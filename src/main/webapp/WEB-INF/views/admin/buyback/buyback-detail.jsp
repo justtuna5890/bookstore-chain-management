@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!DOCTYPE html>
 <html class="dark" data-bs-theme="dark" lang="vi">
 <head>
@@ -218,6 +219,12 @@
                                                     <i class="fa-solid fa-book-bookmark text-brand-gold"></i>
                                                     <span>${item.bookTitle}</span>
                                                 </div>
+                                                <c:if test="${not empty item.itemImage and fn:startsWith(item.itemImage, 'https://')}">
+                                                    <a href="${fn:escapeXml(item.itemImage)}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex items-center gap-2 text-[11px] text-brand-gold hover:text-brand-goldLight transition">
+                                                        <img src="${fn:escapeXml(item.itemImage)}" alt="Ảnh tình trạng sách khách gửi" class="h-14 w-11 rounded-md object-cover border border-white/10"/>
+                                                        <span>Xem ảnh tình trạng khách gửi</span>
+                                                    </a>
+                                                </c:if>
                                             </td>
                                             <td class="py-3 px-4 text-slate-400">${item.bookAuthor}</td>
                                             <td class="py-3 px-4">
