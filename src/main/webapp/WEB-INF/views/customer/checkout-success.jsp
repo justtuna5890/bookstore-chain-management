@@ -39,6 +39,7 @@
                     <p class="mt-3 p-2.5 rounded-lg bg-sky-500/10 border border-sky-500/30 text-sky-200 text-[11px] leading-relaxed">
                         Vui lòng chuyển khoản đúng số tiền và ghi nội dung <strong class="font-mono">${fn:escapeXml(order.orderCode)}</strong>. Nhân viên sẽ xác nhận khi nhận được tiền.
                     </p>
+                    <jsp:include page="/WEB-INF/views/customer/common/transfer-qr.jsp"/>
                 </c:if>
             </div>
         </section>
