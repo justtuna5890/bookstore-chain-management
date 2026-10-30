@@ -22,36 +22,94 @@ public class OrderNotificationServiceImpl implements OrderNotificationService {
     static final String STORE_TOPIC_PREFIX = "/topic/store/";
     /** Kênh của quản trị viên chưa gán chi nhánh, nhận đơn mới của mọi chi nhánh. */
     static final String ALL_STORES_TOPIC = "/topic/store/all";
+    /** Kênh của các shipper thuộc một chi nhánh; WebSocketSubscriptionInterceptor chỉ cho shipper đúng chi nhánh đăng ký. */
+    static final String SHIPPER_TOPIC_PREFIX = "/topic/shipper/store/";
+
+    /** Diễn biến giao hàng gửi cho nhân viên; nav-dock dùng loại này để đặt nhãn "Giao Hàng" cho cửa sổ thông báo. */
+    static final String TYPE_DELIVERY = "DELIVERY";
+    static final String TYPE_DELIVERY_AVAILABLE = "DELIVERY_AVAILABLE";
+    static final String TYPE_DELIVERY_TAKEN = "DELIVERY_TAKEN";
 
     private final SimpMessagingTemplate messagingTemplate;
 
     @Override
     public void notifyNewOrder(OrderSummaryDTO order) {
-        try {
+        safely(order, () -> {
             // Kênh này chưa xác thực người đăng ký nên nội dung chỉ gồm mã đơn, số cuốn, tiền và hình thức nhận,
             // không có tên, số điện thoại hay địa chỉ của khách
-            NotificationDTO notification = NotificationDTO.builder()
-                    .id(UUID.randomUUID().toString())
-                    .title("Đơn hàng mới (" + order.getOrderCode() + ")")
-                    .message(order.getItemCount() + " cuốn · " + formatMoney(order) + " · "
+            publishToStaff(order, build(order, "Đơn hàng mới (" + order.getOrderCode() + ")",
+                    order.getItemCount() + " cuốn · " + formatMoney(order.getTotalAmount().longValue()) + " · "
                             + (order.getFulfillmentType() == FulfillmentType.DELIVERY ? "Giao tận nơi" : "Nhận tại chi nhánh")
-                            + " · " + order.getStoreName())
-                    .type("ORDER")
-                    .storeId(order.getStoreId())
-                    .storeName(order.getStoreName())
-                    .targetUrl("/admin/orders/" + order.getOrderId())
-                    .timestamp(LocalDateTime.now())
-                    .build();
+                            + " · " + order.getStoreName(),
+                    "ORDER", "/admin/orders/" + order.getOrderId()));
+        });
+    }
 
-            messagingTemplate.convertAndSend(STORE_TOPIC_PREFIX + order.getStoreId(), notification);
-            messagingTemplate.convertAndSend(ALL_STORES_TOPIC, notification);
-            log.info("Đã phát thông báo WebSocket cho đơn hàng mới {}", order.getOrderCode());
+    @Override
+    public void notifyDeliveryAvailable(OrderSummaryDTO order) {
+        safely(order, () -> {
+            String collect = order.getAmountToCollect().signum() > 0
+                    ? " · Thu " + formatMoney(order.getAmountToCollect().longValue()) : " · Đã thanh toán";
+            publish(order, SHIPPER_TOPIC_PREFIX + order.getStoreId(),
+                    build(order, "Có đơn chờ giao (" + order.getOrderCode() + ")",
+                            order.getItemCount() + " cuốn" + collect + " · " + order.getStoreName(),
+                            TYPE_DELIVERY_AVAILABLE, "/shipper/orders/" + order.getOrderId()));
+        });
+    }
+
+    @Override
+    public void notifyDeliveryTaken(OrderSummaryDTO order) {
+        safely(order, () -> publish(order, SHIPPER_TOPIC_PREFIX + order.getStoreId(),
+                build(order, "Đơn " + order.getOrderCode() + " đã có người nhận", order.getStoreName(),
+                        TYPE_DELIVERY_TAKEN, "/shipper/orders")));
+    }
+
+    @Override
+    public void notifyStaffDelivery(OrderSummaryDTO order, String title, String message) {
+        safely(order, () -> publishToStaff(order,
+                build(order, title, message, TYPE_DELIVERY, "/admin/orders/" + order.getOrderId())));
+    }
+
+    private void publishToStaff(OrderSummaryDTO order, NotificationDTO notification) {
+        publish(order, STORE_TOPIC_PREFIX + order.getStoreId(), notification);
+        publish(order, ALL_STORES_TOPIC, notification);
+    }
+
+    /** Gửi sau khi transaction của người gọi commit; lỗi gửi chỉ được ghi log. */
+    private void publish(OrderSummaryDTO order, String destination, NotificationDTO notification) {
+        AfterCommit.run(() -> {
+            try {
+                messagingTemplate.convertAndSend(destination, notification);
+                log.info("Đã phát thông báo WebSocket {} cho đơn hàng {} tới {}", notification.getType(), order.getOrderCode(), destination);
+            } catch (Exception e) {
+                log.error("Lỗi khi gửi thông báo WebSocket đơn hàng {}", order.getOrderCode(), e);
+            }
+        });
+    }
+
+    /** Dựng nội dung hoặc đăng ký gửi bị lỗi cũng không được làm hỏng nghiệp vụ đang gọi. */
+    private void safely(OrderSummaryDTO order, Runnable action) {
+        try {
+            action.run();
         } catch (Exception e) {
             log.error("Lỗi khi gửi thông báo WebSocket đơn hàng {}", order.getOrderCode(), e);
         }
     }
 
-    private String formatMoney(OrderSummaryDTO order) {
-        return String.format(Locale.US, "%,d", order.getTotalAmount().longValue()) + " đ";
+    private NotificationDTO build(OrderSummaryDTO order, String title, String message, String type, String targetUrl) {
+        return NotificationDTO.builder()
+                .id(UUID.randomUUID().toString())
+                .title(title)
+                .message(message)
+                .type(type)
+                .storeId(order.getStoreId())
+                .storeName(order.getStoreName())
+                .targetUrl(targetUrl)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    private String formatMoney(long amount) {
+        return String.format(Locale.US, "%,d", amount) + " đ";
     }
 }

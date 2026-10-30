@@ -5,10 +5,10 @@ lane|Khách hàng
 n|s|0|0|s|
 n|conf|0|1|a|Mở /admin/orders, chọn đơn, bấm Xác nhận
 n|st1|1|2|a|PENDING chuyển CONFIRMED, lưu thông báo cho khách
-n|ready|0|3|a|Chuẩn bị xong: sẵn sàng nhận tại cửa hàng hoặc đang giao
-n|st2|1|4|a|CONFIRMED chuyển READY_FOR_PICKUP hoặc SHIPPING
+n|ready|0|3|a|Đóng gói xong: chờ khách đến nhận hoặc chờ shipper giao
+n|st2|1|4|a|CONFIRMED chuyển READY_FOR_PICKUP hoặc READY_FOR_DELIVERY
 n|payc|0|5|a|Đơn chuyển khoản: nhập mã giao dịch, xác nhận đã nhận tiền
-n|cmp|0|6|a|Bấm Hoàn tất khi khách đã nhận hàng
+n|cmp|0|6|a|Đơn nhận tại cửa hàng: bấm Hoàn tất khi khách đã nhận (đơn giao do shipper chốt, xem sơ đồ giao hàng)
 n|st3|1|7|a|Bản sách thành SOLD, ghi completed_at, thanh toán thành PAID
 n|note|2|8|a|Nhận thông báo realtime trên chuông và trang /notifications
 n|end|2|9|e|

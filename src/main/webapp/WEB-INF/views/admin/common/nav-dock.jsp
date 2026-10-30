@@ -868,7 +868,7 @@
 
                 '<div class="flex items-center justify-between">' +
 
-                    '<h4 class="text-xs font-bold text-white uppercase tracking-wider">' + (data.type === 'ORDER' ? 'Đơn Hàng Mới' : (isBuyback ? 'Thu Mua Mới' : (isChat ? 'Tin Nhắn Hỗ Trợ' : 'Điều Chuyển Kho'))) + '</h4>' +
+                    '<h4 class="text-xs font-bold text-white uppercase tracking-wider">' + (data.type === 'ORDER' ? 'Đơn Hàng Mới' : (data.type === 'DELIVERY' ? 'Giao Hàng' : (isBuyback ? 'Thu Mua Mới' : (isChat ? 'Tin Nhắn Hỗ Trợ' : 'Điều Chuyển Kho')))) + '</h4>' +
 
                     '<span class="text-[10px] text-slate-400">Vừa xong</span>' +
 

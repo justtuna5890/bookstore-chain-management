@@ -15,6 +15,7 @@ import com.bookstorechain.exception.ResourceNotFoundException;
 import com.bookstorechain.repository.CustomerOrderRepository;
 import com.bookstorechain.service.AdminOrderService;
 import com.bookstorechain.enums.UserNotificationType;
+import com.bookstorechain.service.OrderNotificationService;
 import com.bookstorechain.service.PromotionService;
 import com.bookstorechain.service.UserNotificationService;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,8 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     private final OrderMapper orderMapper;
     private final PromotionService promotionService;
     private final UserNotificationService userNotificationService;
+    private final OrderCompletionSupport orderCompletionSupport;
+    private final OrderNotificationService orderNotificationService;
     private final Clock clock;
 
     @Override
@@ -70,40 +73,36 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         CustomerOrder order = lockAndCheck(orderId, scopeStoreId);
         requireStatus(order, "Chỉ chuẩn bị giao nhận được đơn đã xác nhận.", OrderStatus.CONFIRMED);
         boolean delivery = order.getFulfillmentType() == FulfillmentType.DELIVERY;
-        order.setStatus(delivery ? OrderStatus.SHIPPING : OrderStatus.READY_FOR_PICKUP);
+        order.setStatus(delivery ? OrderStatus.READY_FOR_DELIVERY : OrderStatus.READY_FOR_PICKUP);
         notifyCustomer(order,
-                delivery ? "Đơn " + order.getOrderCode() + " đang được giao" : "Đơn " + order.getOrderCode() + " sẵn sàng để nhận",
-                delivery ? "Sách của bạn đã được giao đi, hãy giữ điện thoại để nhận hàng."
+                delivery ? "Đơn " + order.getOrderCode() + " đã đóng gói xong" : "Đơn " + order.getOrderCode() + " sẵn sàng để nhận",
+                delivery ? "Sách của bạn đã sẵn sàng, đang chờ shipper nhận giao."
                         : "Mời bạn đến " + order.getStore().getName() + " để nhận sách.");
+        if (delivery) {
+            orderNotificationService.notifyDeliveryAvailable(orderMapper.toSummary(order));
+        }
     }
 
     @Override
     @Transactional
     public void complete(Long orderId, Long scopeStoreId) {
         CustomerOrder order = lockAndCheck(orderId, scopeStoreId);
-        requireStatus(order, "Chỉ hoàn tất được đơn đang chờ nhận hàng hoặc đang giao.",
-                OrderStatus.READY_FOR_PICKUP, OrderStatus.SHIPPING);
+        requireStatus(order, "Chỉ hoàn tất được đơn nhận tại cửa hàng đang chờ khách đến nhận. Đơn giao tận nơi do shipper xác nhận đã giao.",
+                OrderStatus.READY_FOR_PICKUP);
+        orderCompletionSupport.complete(order);
+    }
 
-        // Kiểm tra hết trước khi sửa bất cứ thứ gì để không để lại đơn bán dở
-        for (OrderItem item : order.getItems()) {
-            if (item.getCopy().getStatus() != CopyStatus.RESERVED) {
-                throw new BusinessException("Bản sách " + item.getCopyCodeSnapshot()
-                        + " không còn ở trạng thái giữ cho đơn này. Hãy kiểm tra lại kho trước khi hoàn tất.");
-            }
-        }
-        Payment payment = order.getPayment();
-        if (payment.getStatus() == PaymentStatus.UNPAID) {
-            if (payment.getMethod() != PaymentMethod.COD) {
-                throw new BusinessException("Chưa xác nhận đã nhận tiền chuyển khoản. Hãy xác nhận thanh toán trước khi hoàn tất đơn.");
-            }
-            payment.setStatus(PaymentStatus.PAID);
-            payment.setPaidAt(LocalDateTime.now(clock));
-        }
-        order.getItems().forEach(item -> item.getCopy().setStatus(CopyStatus.SOLD));
-        order.setStatus(OrderStatus.COMPLETED);
-        order.setCompletedAt(LocalDateTime.now(clock));
-        notifyCustomer(order, "Đơn " + order.getOrderCode() + " đã hoàn tất",
-                "Cảm ơn bạn đã mua sách. Hãy để lại đánh giá cho những cuốn bạn vừa nhận.");
+    @Override
+    @Transactional
+    public void redeliver(Long orderId, Long scopeStoreId) {
+        CustomerOrder order = lockAndCheck(orderId, scopeStoreId);
+        requireStatus(order, "Chỉ cho giao lại được đơn giao thất bại.", OrderStatus.DELIVERY_FAILED);
+        order.setStatus(OrderStatus.READY_FOR_DELIVERY);
+        order.setShipper(null);
+        order.setDeliveryFailureReason(null);
+        notifyCustomer(order, "Đơn " + order.getOrderCode() + " sẽ được giao lại",
+                "Chi nhánh đã sắp xếp giao lại đơn của bạn, đang chờ shipper nhận.");
+        orderNotificationService.notifyDeliveryAvailable(orderMapper.toSummary(order));
     }
 
     @Override
@@ -141,7 +140,8 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     public void cancel(Long orderId, Long scopeStoreId) {
         CustomerOrder order = lockAndCheck(orderId, scopeStoreId);
         requireStatus(order, "Chỉ huỷ được đơn chưa hoàn tất và chưa bị huỷ.",
-                OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.READY_FOR_PICKUP, OrderStatus.SHIPPING);
+                OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.READY_FOR_PICKUP, OrderStatus.READY_FOR_DELIVERY,
+                OrderStatus.SHIPPING, OrderStatus.DELIVERY_FAILED);
 
         order.setStatus(OrderStatus.CANCELLED);
         if (order.getPromotion() != null) {

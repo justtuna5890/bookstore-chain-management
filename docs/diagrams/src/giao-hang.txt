@@ -1,0 +1,27 @@
+title|Giao hàng của shipper
+lane|Nhân viên chi nhánh
+lane|Hệ thống
+lane|Shipper
+n|s|0|0|s|
+n|pack|0|1|a|Đơn giao tận nơi đã xác nhận: đóng gói xong, bấm Đã đóng gói
+n|st1|1|2|a|CONFIRMED chuyển READY_FOR_DELIVERY, sau commit đẩy thông báo tới shipper của chi nhánh
+n|claim|2|3|a|Nghe thông báo, danh sách tự làm mới, bấm Nhận đơn
+n|st2|1|4|a|Khoá dòng đơn, chuyển SHIPPING, gán shipper, báo khách và các shipper khác
+n|dec|2|5|d|Giao được cho khách?
+n|fail|1|5|a|Lưu lý do, DELIVERY_FAILED, báo khách và nhân viên
+n|redo|0|5|a|Chọn Cho giao lại hoặc Huỷ đơn
+n|end1|0|6|e|
+n|ok|2|6|a|Bấm Đã giao thành công, thu tiền COD
+n|st3|1|7|a|COMPLETED: sách thành SOLD, ghi completed_at, thanh toán PAID, báo khách
+n|end2|1|8|e|
+e|s|pack
+e|pack|st1
+e|st1|claim
+e|claim|st2
+e|st2|dec
+e|dec|ok|Có
+e|dec|fail|Không|h
+e|fail|redo||h
+e|redo|end1
+e|ok|st3
+e|st3|end2

@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
  *   <li>/topic/store/{id}: quản trị mọi chi nhánh; quản lý và nhân viên chỉ chi nhánh của mình;</li>
  *   <li>/topic/store/all: quản trị và quản lý (đơn hàng của mọi chi nhánh);</li>
  *   <li>/topic/chat/store/{id} và /topic/chat/all: chat hỗ trợ, cùng quy tắc với /topic/store/{id} và /topic/store/all;</li>
+ *   <li>/topic/shipper/store/{id}: chỉ shipper của đúng chi nhánh đó (đơn chờ giao);</li>
  *   <li>/user/queue/notifications và /user/queue/chat: mọi người dùng đã đăng nhập, chỉ nhận tin gửi riêng cho chính mình
  *       (Spring ghép đích này với tên đăng nhập của phiên, nên không nghe được kênh của người khác).</li>
  * </ul>
@@ -39,6 +40,7 @@ public class WebSocketSubscriptionInterceptor implements ChannelInterceptor {
     static final String PERSONAL_NOTIFICATIONS = "/user/queue/notifications";
     static final String PERSONAL_CHAT = "/user/queue/chat";
     private static final Pattern STORE_TOPIC = Pattern.compile("^/topic/(?:chat/)?store/(\\d+)$");
+    private static final Pattern SHIPPER_TOPIC = Pattern.compile("^/topic/shipper/store/(\\d+)$");
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -61,6 +63,12 @@ public class WebSocketSubscriptionInterceptor implements ChannelInterceptor {
         }
         if (PERSONAL_NOTIFICATIONS.equals(destination) || PERSONAL_CHAT.equals(destination)) {
             return true;
+        }
+        Matcher shipperTopic = SHIPPER_TOPIC.matcher(destination);
+        if (shipperTopic.matches()) {
+            Store own = signedIn.getUser().getStore();
+            return signedIn.getUser().getRole() == Role.SHIPPER && own != null && own.getId() != null
+                    && String.valueOf(own.getId()).equals(shipperTopic.group(1));
         }
         CustomUserDetails user = staffOf(signedIn);
         if (user == null) {

@@ -55,6 +55,33 @@ class OrderSummaryDTOTest {
     }
 
     @Test
+    @DisplayName("Đơn giao tận nơi chờ shipper nhận vẫn dừng ở 'Đã xác nhận'; giao thất bại dừng ở 'Đang giao'")
+    void deliveryTimelineForShipperStages() {
+        OrderSummaryDTO waiting = order(OrderStatus.READY_FOR_DELIVERY, FulfillmentType.DELIVERY, PaymentStatus.UNPAID);
+        assertThat(doneFlags(waiting)).containsExactly(true, true, false, false);
+
+        OrderSummaryDTO failed = order(OrderStatus.DELIVERY_FAILED, FulfillmentType.DELIVERY, PaymentStatus.UNPAID);
+        assertThat(doneFlags(failed)).containsExactly(true, true, true, false);
+    }
+
+    @Test
+    @DisplayName("Số tiền shipper phải thu chỉ có ở đơn COD chưa thanh toán")
+    void amountToCollectOnlyForUnpaidCod() {
+        OrderSummaryDTO cod = order(OrderStatus.SHIPPING, FulfillmentType.DELIVERY, PaymentStatus.UNPAID);
+        cod.setPaymentMethod(com.bookstorechain.enums.PaymentMethod.COD);
+        cod.setTotalAmount(new java.math.BigDecimal("150000"));
+        assertThat(cod.getAmountToCollect()).isEqualByComparingTo("150000");
+
+        cod.setPaymentStatus(PaymentStatus.PAID);
+        assertThat(cod.getAmountToCollect()).isEqualByComparingTo("0");
+
+        OrderSummaryDTO transfer = order(OrderStatus.SHIPPING, FulfillmentType.DELIVERY, PaymentStatus.UNPAID);
+        transfer.setPaymentMethod(com.bookstorechain.enums.PaymentMethod.BANK_TRANSFER);
+        transfer.setTotalAmount(new java.math.BigDecimal("150000"));
+        assertThat(transfer.getAmountToCollect()).isEqualByComparingTo("0");
+    }
+
+    @Test
     @DisplayName("Đơn hoàn tất đạt mọi mốc, đơn đã huỷ không đạt mốc nào")
     void completedAndCancelledTimelines() {
         assertThat(doneFlags(order(OrderStatus.COMPLETED, FulfillmentType.PICKUP, PaymentStatus.PAID)))

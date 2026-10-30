@@ -38,10 +38,12 @@ public class DataInitializer implements CommandLineRunner {
         Store storeDanang = initStore("OldBook Đà Nẵng — Bạch Đằng", "Số 45 Bạch Đằng, Quận Hải Châu, Đà Nẵng", "02363123456");
 
         // 2. Khởi tạo đủ 4 Roles với tài khoản test
-        User admin = initUser("admin", "admin123", "Quản Trị Viên Toàn Hệ Thống", "admin@bookstorechain.com", "0901234567", Role.ADMIN, null);
-        User managerHn = initUser("manager", "manager123", "Trần Quản Lý (Hà Nội)", "manager@bookstorechain.com", "0912345678", Role.MANAGER, storeHanoi);
+        initUser("admin", "admin123", "Quản Trị Viên Toàn Hệ Thống", "admin@bookstorechain.com", "0901234567", Role.ADMIN, null);
+        initUser("manager", "manager123", "Trần Quản Lý (Hà Nội)", "manager@bookstorechain.com", "0912345678", Role.MANAGER, storeHanoi);
         User staffHn = initUser("staff", "staff123", "Lê Nhân Viên (Hà Nội)", "staff@bookstorechain.com", "0923456789", Role.STAFF, storeHanoi);
-        User staffHcm = initUser("staff_hcm", "staff123", "Nguyễn Nhân Viên (Sài Gòn)", "staff_hcm@bookstorechain.com", "0934567890", Role.STAFF, storeHcm);
+        initUser("staff_hcm", "staff123", "Nguyễn Nhân Viên (Sài Gòn)", "staff_hcm@bookstorechain.com", "0934567890", Role.STAFF, storeHcm);
+        initUser("shipper", "shipper123", "Ngô Văn Giao (Hà Nội)", "shipper@bookstorechain.com", "0961112233", Role.SHIPPER, storeHanoi);
+        initUser("shipper_hcm", "shipper123", "Đinh Văn Chuyển (Sài Gòn)", "shipper_hcm@bookstorechain.com", "0962223344", Role.SHIPPER, storeHcm);
         User customer1 = initUser("customer", "customer123", "Nguyễn Văn Đọc", "customer@bookstorechain.com", "0945678901", Role.CUSTOMER, null);
         User customer2 = initUser("khachhang", "customer123", "Phạm Thị Yêu Sách", "khachhang@bookstorechain.com", "0956789012", Role.CUSTOMER, null);
 

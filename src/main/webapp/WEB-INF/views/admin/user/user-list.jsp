@@ -263,6 +263,11 @@
                                                 <i class="fa-solid fa-id-badge text-[9px]"></i> STAFF
                                             </span>
                                         </c:when>
+                                        <c:when test="${user.role == 'SHIPPER'}">
+                                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-orange-500/10 border border-orange-500/30 text-orange-300">
+                                                <i class="fa-solid fa-motorcycle text-[9px]"></i> SHIPPER
+                                            </span>
+                                        </c:when>
                                         <c:otherwise>
                                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-300">
                                                 <i class="fa-solid fa-user text-[9px]"></i> CUSTOMER

@@ -67,7 +67,7 @@ CREATE TABLE dbo.users (
     full_name NVARCHAR(100) NOT NULL,
     email NVARCHAR(100) NOT NULL,
     phone NVARCHAR(20) NULL,
-    role NVARCHAR(20) NOT NULL CHECK (role IN (N'CUSTOMER', N'STAFF', N'MANAGER', N'ADMIN')),
+    role NVARCHAR(20) NOT NULL CHECK (role IN (N'CUSTOMER', N'STAFF', N'MANAGER', N'ADMIN', N'SHIPPER')),
     is_active BIT NOT NULL DEFAULT 1,
     store_id BIGINT NULL,
     CONSTRAINT PK_users PRIMARY KEY CLUSTERED (id ASC),
@@ -321,7 +321,7 @@ CREATE TABLE dbo.customer_order (
     order_code NVARCHAR(30) NOT NULL,
     user_id BIGINT NOT NULL,
     store_id BIGINT NOT NULL,
-    status NVARCHAR(20) NOT NULL CHECK (status IN (N'PENDING', N'CONFIRMED', N'READY_FOR_PICKUP', N'SHIPPING', N'COMPLETED', N'CANCELLED')),
+    status NVARCHAR(20) NOT NULL CHECK (status IN (N'PENDING', N'CONFIRMED', N'READY_FOR_PICKUP', N'READY_FOR_DELIVERY', N'SHIPPING', N'DELIVERY_FAILED', N'COMPLETED', N'CANCELLED')),
     fulfillment_type NVARCHAR(20) NOT NULL CHECK (fulfillment_type IN (N'PICKUP', N'DELIVERY')),
     receiver_name NVARCHAR(100) NOT NULL,
     receiver_phone NVARCHAR(20) NOT NULL,
@@ -334,11 +334,14 @@ CREATE TABLE dbo.customer_order (
     completed_at DATETIME2(6) NULL,
     promotion_id BIGINT NULL,
     promotion_code NVARCHAR(30) NULL,
+    shipper_id BIGINT NULL,
+    delivery_failure_reason NVARCHAR(255) NULL,
     CONSTRAINT PK_customer_order PRIMARY KEY CLUSTERED (id ASC),
     CONSTRAINT UQ_customer_order_code UNIQUE (order_code),
     CONSTRAINT FK_customer_order_user FOREIGN KEY (user_id) REFERENCES dbo.users(id),
     CONSTRAINT FK_customer_order_store FOREIGN KEY (store_id) REFERENCES dbo.store(id),
-    CONSTRAINT FK_customer_order_promotion FOREIGN KEY (promotion_id) REFERENCES dbo.promotion(id)
+    CONSTRAINT FK_customer_order_promotion FOREIGN KEY (promotion_id) REFERENCES dbo.promotion(id),
+    CONSTRAINT FK_customer_order_shipper FOREIGN KEY (shipper_id) REFERENCES dbo.users(id)
 );
 GO
 -- Thống kê doanh thu lọc theo trạng thái và ngày hoàn tất
@@ -390,12 +393,13 @@ INSERT INTO dbo.store (id, created_at, updated_at, name, address, phone, is_acti
 SET IDENTITY_INSERT dbo.store OFF;
 GO
 
--- 3.2. Dữ liệu Người Dùng (Đủ 4 Roles, Phân bổ theo Store, Đăng ký rải rác theo chu kỳ)
+-- 3.2. Dữ liệu Người Dùng (Đủ 5 Roles, Phân bổ theo Store, Đăng ký rải rác theo chu kỳ)
 -- Mật khẩu mặc định:
 -- admin: admin123 ($2a$10$u5O0YAExfMSe/tPj5YQuHuLJTeHT00rvl/hLLMbRRDqeBu5QBcPoW)
 -- manager: manager123 ($2a$10$2cUgd7RJbkKPT1eMUe6ZieBaLFckprpcq6ANQ6WvutdKjB4/ng1mu)
 -- staff: staff123 ($2a$10$q.ryHZTTNEffKDxsI6OZ8.90Dkvso/.XpdPguBfgyhSPura4GKqAC)
 -- customer: customer123 ($2a$10$s8ytujkU4N4dq7/Cv5oyOO.x0JK1cQgWsJGJwA0caystVkZArWhn6)
+-- shipper: shipper123 ($2a$10$hU/EEvW4syufpJENqjh9t.OYp/NrAD72PYjvTxOlB8N1WJ5qB72zy)
 SET IDENTITY_INSERT dbo.users ON;
 INSERT INTO dbo.users (id, created_at, updated_at, username, password, full_name, email, phone, role, is_active, store_id) VALUES
 (1, DATEADD(day, -180, SYSDATETIME()), SYSDATETIME(), N'admin', N'$2a$10$u5O0YAExfMSe/tPj5YQuHuLJTeHT00rvl/hLLMbRRDqeBu5QBcPoW', N'Quản Trị Viên Toàn Hệ Thống', N'admin@bookstorechain.com', N'0901234567', N'ADMIN', 1, NULL),
@@ -412,7 +416,9 @@ INSERT INTO dbo.users (id, created_at, updated_at, username, password, full_name
 (12, DATEADD(day, -25, SYSDATETIME()), SYSDATETIME(), N'minhduc', N'$2a$10$s8ytujkU4N4dq7/Cv5oyOO.x0JK1cQgWsJGJwA0caystVkZArWhn6', N'Đặng Minh Đức', N'minhduc.dang@gmail.com', N'0988334455', N'CUSTOMER', 1, NULL),
 (13, DATEADD(day, -10, SYSDATETIME()), SYSDATETIME(), N'thuyle', N'$2a$10$s8ytujkU4N4dq7/Cv5oyOO.x0JK1cQgWsJGJwA0caystVkZArWhn6', N'Lê Thị Thúy', N'thuyle99@gmail.com', N'0933445566', N'CUSTOMER', 1, NULL),
 (14, DATEADD(day, -3, SYSDATETIME()), SYSDATETIME(), N'quanghuy', N'$2a$10$s8ytujkU4N4dq7/Cv5oyOO.x0JK1cQgWsJGJwA0caystVkZArWhn6', N'Phạm Quang Huy', N'quanghuy.dev@gmail.com', N'0944556677', N'CUSTOMER', 1, NULL),
-(15, SYSDATETIME(), SYSDATETIME(), N'ngocmai', N'$2a$10$s8ytujkU4N4dq7/Cv5oyOO.x0JK1cQgWsJGJwA0caystVkZArWhn6', N'Bùi Ngọc Mai', N'ngocmai.bui@gmail.com', N'0966778899', N'CUSTOMER', 1, NULL);
+(15, SYSDATETIME(), SYSDATETIME(), N'ngocmai', N'$2a$10$s8ytujkU4N4dq7/Cv5oyOO.x0JK1cQgWsJGJwA0caystVkZArWhn6', N'Bùi Ngọc Mai', N'ngocmai.bui@gmail.com', N'0966778899', N'CUSTOMER', 1, NULL),
+(16, DATEADD(day, -60, SYSDATETIME()), SYSDATETIME(), N'shipper', N'$2a$10$hU/EEvW4syufpJENqjh9t.OYp/NrAD72PYjvTxOlB8N1WJ5qB72zy', N'Ngô Văn Giao (Hà Nội)', N'shipper@bookstorechain.com', N'0961112233', N'SHIPPER', 1, 1),
+(17, DATEADD(day, -60, SYSDATETIME()), SYSDATETIME(), N'shipper_hcm', N'$2a$10$hU/EEvW4syufpJENqjh9t.OYp/NrAD72PYjvTxOlB8N1WJ5qB72zy', N'Đinh Văn Chuyển (Sài Gòn)', N'shipper_hcm@bookstorechain.com', N'0962223344', N'SHIPPER', 1, 2);
 SET IDENTITY_INSERT dbo.users OFF;
 GO
 

@@ -24,6 +24,12 @@ final class TestData {
         return user;
     }
 
+    static User shipper(long id, Store store) {
+        User user = User.builder().username("shipper" + id).fullName("Shipper " + id).role(Role.SHIPPER).store(store).isActive(true).build();
+        user.setId(id);
+        return user;
+    }
+
     static Store store(long id, String name) {
         Store store = Store.builder().name(name).address("So " + id + " Pho Hue").phone("0900000000").build();
         store.setId(id);

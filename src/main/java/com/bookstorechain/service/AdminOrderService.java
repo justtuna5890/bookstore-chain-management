@@ -19,14 +19,17 @@ public interface AdminOrderService {
     /** PENDING -> CONFIRMED. */
     void confirm(Long orderId, Long scopeStoreId);
 
-    /** CONFIRMED -> READY_FOR_PICKUP (nhận tại chi nhánh) hoặc SHIPPING (giao tận nơi). */
+    /** CONFIRMED -> READY_FOR_PICKUP (nhận tại chi nhánh) hoặc READY_FOR_DELIVERY (giao tận nơi, chờ shipper nhận). */
     void markReady(Long orderId, Long scopeStoreId);
 
     /**
-     * READY_FOR_PICKUP/SHIPPING -> COMPLETED: các bản sách chuyển sang SOLD. Đơn COD được ghi nhận đã thu tiền;
-     * đơn chuyển khoản phải được xác nhận thanh toán trước.
+     * READY_FOR_PICKUP -> COMPLETED: các bản sách chuyển sang SOLD. Đơn COD được ghi nhận đã thu tiền;
+     * đơn chuyển khoản phải được xác nhận thanh toán trước. Đơn giao tận nơi do shipper chốt, không qua đây.
      */
     void complete(Long orderId, Long scopeStoreId);
+
+    /** DELIVERY_FAILED -> READY_FOR_DELIVERY: cho giao lại, bỏ shipper cũ để bất kỳ shipper nào của chi nhánh cũng nhận được. */
+    void redeliver(Long orderId, Long scopeStoreId);
 
     /** Xác nhận đã nhận tiền chuyển khoản của đơn, lưu mã giao dịch ngân hàng. */
     void confirmPayment(Long orderId, Long scopeStoreId, String transactionCode);

@@ -45,6 +45,10 @@ public class OrderSummaryDTO {
     private BigDecimal shippingFee;
     private BigDecimal totalAmount;
     private LocalDateTime createdAt;
+    /** Shipper đang giữ đơn (null nếu chưa có). */
+    private Long shipperId;
+    private String shipperName;
+    private String deliveryFailureReason;
     private List<OrderLineDTO> lines;
 
     public String getFormattedPaidAt() {
@@ -74,10 +78,17 @@ public class OrderSummaryDTO {
             case PENDING: return "bg-amber-500/15 border-amber-500/30 text-amber-300";
             case CONFIRMED: return "bg-sky-500/15 border-sky-500/30 text-sky-300";
             case READY_FOR_PICKUP:
+            case READY_FOR_DELIVERY:
             case SHIPPING: return "bg-violet-500/15 border-violet-500/30 text-violet-300";
+            case DELIVERY_FAILED: return "bg-orange-500/15 border-orange-500/30 text-orange-300";
             case COMPLETED: return "bg-emerald-500/15 border-emerald-500/30 text-emerald-300";
             default: return "bg-rose-500/15 border-rose-500/30 text-rose-300";
         }
+    }
+
+    /** Số tiền shipper phải thu tận tay: chỉ đơn thanh toán khi nhận hàng và chưa thu. */
+    public BigDecimal getAmountToCollect() {
+        return paymentMethod == PaymentMethod.COD && paymentStatus == PaymentStatus.UNPAID ? totalAmount : BigDecimal.ZERO;
     }
 
     public String getPaymentLabel() {
@@ -112,9 +123,10 @@ public class OrderSummaryDTO {
         String[] labels = {"Đã đặt hàng", "Đã xác nhận",
                 fulfillmentType == FulfillmentType.DELIVERY ? "Đang giao" : "Sẵn sàng nhận", "Hoàn tất"};
         // Mốc đã đạt: thứ tự trong chuỗi xử lý, bỏ qua nhánh không áp dụng (giao hàng hoặc nhận tại cửa hàng)
+        // Đơn chờ shipper nhận vẫn dừng ở "Đã xác nhận"; mốc "Đang giao" chỉ sáng khi đã có shipper cầm đơn
         int reached = status == OrderStatus.CANCELLED ? -1
                 : status == OrderStatus.PENDING ? 0
-                : status == OrderStatus.CONFIRMED ? 1
+                : status == OrderStatus.CONFIRMED || status == OrderStatus.READY_FOR_DELIVERY ? 1
                 : status == OrderStatus.COMPLETED ? 3 : 2;
         List<TimelineStep> timeline = new ArrayList<>();
         for (int i = 0; i < steps.length; i++) {
