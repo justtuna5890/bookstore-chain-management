@@ -17,6 +17,7 @@ import com.bookstorechain.exception.BusinessException;
 import com.bookstorechain.exception.ResourceNotFoundException;
 import com.bookstorechain.repository.CustomerOrderRepository;
 import com.bookstorechain.enums.UserNotificationType;
+import com.bookstorechain.service.OrderNotificationService;
 import com.bookstorechain.service.PromotionService;
 import com.bookstorechain.service.UserNotificationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,6 +53,7 @@ class AdminOrderServiceImplTest {
     @Mock private CustomerOrderRepository customerOrderRepository;
     @Mock private PromotionService promotionService;
     @Mock private UserNotificationService userNotificationService;
+    @Mock private OrderNotificationService orderNotificationService;
 
     private AdminOrderServiceImpl service;
     private Store hanoi;
@@ -62,7 +64,7 @@ class AdminOrderServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new AdminOrderServiceImpl(customerOrderRepository, new OrderMapper(), promotionService, userNotificationService,
-                CLOCK);
+                new OrderCompletionSupport(userNotificationService, CLOCK), orderNotificationService, CLOCK);
         hanoi = TestData.store(1L, "OldBook Ha Noi");
         book = TestData.book(100L, "Hoang Tu Be");
         copy1 = TestData.copy(1L, "OB-HN-001", "60000", hanoi, book, CopyStatus.RESERVED);
@@ -114,7 +116,7 @@ class AdminOrderServiceImplTest {
     }
 
     @Test
-    @DisplayName("Đơn nhận tại cửa hàng sang READY_FOR_PICKUP, đơn giao tận nơi sang SHIPPING")
+    @DisplayName("Đơn nhận tại cửa hàng sang READY_FOR_PICKUP, đơn giao tận nơi sang READY_FOR_DELIVERY chờ shipper")
     void markReadyDependsOnFulfillment() {
         CustomerOrder pickup = order(OrderStatus.CONFIRMED, FulfillmentType.PICKUP, PaymentMethod.COD, PaymentStatus.UNPAID);
         service.markReady(ORDER_ID, null);
@@ -122,18 +124,20 @@ class AdminOrderServiceImplTest {
 
         CustomerOrder delivery = order(OrderStatus.CONFIRMED, FulfillmentType.DELIVERY, PaymentMethod.COD, PaymentStatus.UNPAID);
         service.markReady(ORDER_ID, null);
-        assertThat(delivery.getStatus()).isEqualTo(OrderStatus.SHIPPING);
+        assertThat(delivery.getStatus()).isEqualTo(OrderStatus.READY_FOR_DELIVERY);
+        assertThat(delivery.getShipper()).as("chưa có shipper nào nhận").isNull();
+        verify(orderNotificationService, org.mockito.Mockito.times(1)).notifyDeliveryAvailable(any());
 
         verify(userNotificationService).notify(eq(7L), eq(UserNotificationType.ORDER),
                 eq("Đơn OB-20261023-ABCDEF sẵn sàng để nhận"), contains("OldBook Ha Noi"), any());
         verify(userNotificationService).notify(eq(7L), eq(UserNotificationType.ORDER),
-                eq("Đơn OB-20261023-ABCDEF đang được giao"), any(), any());
+                eq("Đơn OB-20261023-ABCDEF đã đóng gói xong"), contains("shipper"), any());
     }
 
     @Test
     @DisplayName("Hoàn tất đơn COD: sách thành SOLD, ghi nhận đã thu tiền")
     void completeCodOrderSellsCopiesAndCollectsPayment() {
-        CustomerOrder order = order(OrderStatus.SHIPPING, FulfillmentType.DELIVERY, PaymentMethod.COD, PaymentStatus.UNPAID);
+        CustomerOrder order = order(OrderStatus.READY_FOR_PICKUP, FulfillmentType.PICKUP, PaymentMethod.COD, PaymentStatus.UNPAID);
 
         service.complete(ORDER_ID, null);
 
@@ -175,15 +179,80 @@ class AdminOrderServiceImplTest {
     @Test
     @DisplayName("Bản sách không còn RESERVED (bị chỉnh tay) thì từ chối hoàn tất và không đụng tới thanh toán")
     void completeRejectsCopyThatIsNoLongerReserved() {
-        CustomerOrder order = order(OrderStatus.SHIPPING, FulfillmentType.DELIVERY, PaymentMethod.COD, PaymentStatus.UNPAID);
+        CustomerOrder order = order(OrderStatus.READY_FOR_PICKUP, FulfillmentType.PICKUP, PaymentMethod.COD, PaymentStatus.UNPAID);
         copy2.setStatus(CopyStatus.AVAILABLE);
 
         assertThatThrownBy(() -> service.complete(ORDER_ID, null))
                 .isInstanceOf(BusinessException.class).hasMessageContaining("OB-HN-002");
 
-        assertThat(order.getStatus()).isEqualTo(OrderStatus.SHIPPING);
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.READY_FOR_PICKUP);
         assertThat(copy1.getStatus()).isEqualTo(CopyStatus.RESERVED);
         assertThat(order.getPayment().getStatus()).isEqualTo(PaymentStatus.UNPAID);
+    }
+
+    @Test
+    @DisplayName("Nhân viên không hoàn tất tay được đơn giao tận nơi: việc này của shipper")
+    void staffCannotCompleteDeliveryOrders() {
+        for (OrderStatus status : List.of(OrderStatus.READY_FOR_DELIVERY, OrderStatus.SHIPPING, OrderStatus.DELIVERY_FAILED)) {
+            CustomerOrder order = order(status, FulfillmentType.DELIVERY, PaymentMethod.COD, PaymentStatus.UNPAID);
+
+            assertThatThrownBy(() -> service.complete(ORDER_ID, null))
+                    .isInstanceOf(BusinessException.class).hasMessageContaining("shipper");
+
+            assertThat(order.getStatus()).isEqualTo(status);
+            assertThat(copy1.getStatus()).isEqualTo(CopyStatus.RESERVED);
+        }
+        verifyNoInteractions(userNotificationService);
+    }
+
+    @Test
+    @DisplayName("Cho giao lại: đơn giao thất bại về READY_FOR_DELIVERY, bỏ shipper cũ và lý do")
+    void redeliverResetsFailedOrder() {
+        CustomerOrder order = order(OrderStatus.DELIVERY_FAILED, FulfillmentType.DELIVERY, PaymentMethod.COD, PaymentStatus.UNPAID);
+        order.setShipper(TestData.shipper(30L, hanoi));
+        order.setDeliveryFailureReason("Khach khong nghe may");
+
+        service.redeliver(ORDER_ID, null);
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.READY_FOR_DELIVERY);
+        assertThat(order.getShipper()).isNull();
+        assertThat(order.getDeliveryFailureReason()).isNull();
+        verify(userNotificationService).notify(eq(7L), eq(UserNotificationType.ORDER),
+                eq("Đơn OB-20261023-ABCDEF sẽ được giao lại"), any(), any());
+        verify(orderNotificationService).notifyDeliveryAvailable(any());
+    }
+
+    @Test
+    @DisplayName("Đơn nhận tại cửa hàng không báo cho shipper")
+    void pickupOrderDoesNotNotifyShippers() {
+        order(OrderStatus.CONFIRMED, FulfillmentType.PICKUP, PaymentMethod.COD, PaymentStatus.UNPAID);
+
+        service.markReady(ORDER_ID, null);
+
+        verifyNoInteractions(orderNotificationService);
+    }
+
+    @Test
+    @DisplayName("Chỉ đơn giao thất bại mới cho giao lại được")
+    void redeliverOnlyFromDeliveryFailed() {
+        order(OrderStatus.SHIPPING, FulfillmentType.DELIVERY, PaymentMethod.COD, PaymentStatus.UNPAID);
+
+        assertThatThrownBy(() -> service.redeliver(ORDER_ID, null)).isInstanceOf(BusinessException.class);
+        verifyNoInteractions(orderNotificationService);
+    }
+
+    @Test
+    @DisplayName("Huỷ được đơn đang chờ shipper, đang giao hoặc giao thất bại, sách về AVAILABLE")
+    void cancelWorksForEveryDeliveryStage() {
+        for (OrderStatus status : List.of(OrderStatus.READY_FOR_DELIVERY, OrderStatus.SHIPPING, OrderStatus.DELIVERY_FAILED)) {
+            copy1.setStatus(CopyStatus.RESERVED);
+            CustomerOrder order = order(status, FulfillmentType.DELIVERY, PaymentMethod.COD, PaymentStatus.UNPAID);
+
+            service.cancel(ORDER_ID, null);
+
+            assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+            assertThat(copy1.getStatus()).isEqualTo(CopyStatus.AVAILABLE);
+        }
     }
 
     @Test

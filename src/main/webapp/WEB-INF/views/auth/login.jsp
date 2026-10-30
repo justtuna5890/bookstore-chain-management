@@ -277,6 +277,9 @@
                     <span class="px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
                         CUSTOMER: <strong>customer</strong> | <strong>customer123</strong>
                     </span>
+                    <span class="px-2 py-0.5 rounded-md bg-orange-500/10 border border-orange-500/20 text-orange-300">
+                        SHIPPER: <strong>shipper</strong> | <strong>shipper123</strong>
+                    </span>
                 </div>
                 <div class="mt-4">
                     <a href="/register" class="text-xs text-brand-gold hover:text-brand-goldLight transition underline underline-offset-4">

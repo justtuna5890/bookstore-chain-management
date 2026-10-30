@@ -100,7 +100,7 @@ public class AdminOrderController {
     @PostMapping("/{id}/ready")
     public String markReady(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails,
                             RedirectAttributes redirectAttributes) {
-        return act(id, redirectAttributes, "Đã chuyển đơn sang bước giao nhận.",
+        return act(id, redirectAttributes, "Đã đóng gói xong: đơn chờ khách đến nhận hoặc chờ shipper nhận.",
                 () -> adminOrderService.markReady(id, scopeStoreId(userDetails)));
     }
 
@@ -109,6 +109,13 @@ public class AdminOrderController {
                            RedirectAttributes redirectAttributes) {
         return act(id, redirectAttributes, "Đã hoàn tất đơn hàng, các bản sách được ghi nhận là đã bán.",
                 () -> adminOrderService.complete(id, scopeStoreId(userDetails)));
+    }
+
+    @PostMapping("/{id}/redeliver")
+    public String redeliver(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails,
+                            RedirectAttributes redirectAttributes) {
+        return act(id, redirectAttributes, "Đã đưa đơn về danh sách chờ shipper nhận để giao lại.",
+                () -> adminOrderService.redeliver(id, scopeStoreId(userDetails)));
     }
 
     @PostMapping("/{id}/payment")

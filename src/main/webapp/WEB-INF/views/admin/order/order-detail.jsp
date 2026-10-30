@@ -79,6 +79,8 @@
             <p class="text-slate-400 mt-0.5">${fn:escapeXml(order.receiverPhone)}</p>
             <p class="mt-2 text-slate-300"><i class="fa-solid ${order.fulfillmentType == 'DELIVERY' ? 'fa-truck' : 'fa-store'} text-brand-gold mr-1.5"></i>${order.fulfillmentLabel}
                 <c:if test="${order.fulfillmentType == 'DELIVERY'}">: ${fn:escapeXml(order.shippingAddress)}</c:if></p>
+            <c:if test="${not empty order.shipperName}"><p class="mt-2 text-slate-300"><i class="fa-solid fa-motorcycle text-brand-gold mr-1.5"></i>Shipper: <span class="text-slate-100 font-semibold">${fn:escapeXml(order.shipperName)}</span></p></c:if>
+            <c:if test="${order.status == 'DELIVERY_FAILED'}"><p class="mt-2 p-2.5 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-200 leading-relaxed"><strong>Lý do giao không thành công:</strong> ${fn:escapeXml(order.deliveryFailureReason)}</p></c:if>
             <c:if test="${not empty order.note}"><p class="mt-2 text-slate-400 italic">“${fn:escapeXml(order.note)}”</p></c:if>
         </section>
 
@@ -119,8 +121,20 @@
                             <form action="/admin/orders/${order.orderId}/ready" method="post">
                                 <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                                 <button type="submit" class="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold hover:from-yellow-400 hover:to-amber-500 transition">
-                                    <i class="fa-solid ${order.fulfillmentType == 'DELIVERY' ? 'fa-truck' : 'fa-box-open'} mr-1.5"></i>${order.fulfillmentType == 'DELIVERY' ? 'Bắt đầu giao hàng' : 'Đã chuẩn bị xong, chờ khách đến nhận'}
+                                    <i class="fa-solid ${order.fulfillmentType == 'DELIVERY' ? 'fa-truck' : 'fa-box-open'} mr-1.5"></i>${order.fulfillmentType == 'DELIVERY' ? 'Đã đóng gói, chờ shipper nhận' : 'Đã chuẩn bị xong, chờ khách đến nhận'}
                                 </button>
+                            </form>
+                        </c:when>
+                        <c:when test="${order.status == 'READY_FOR_DELIVERY'}">
+                            <p class="p-3 rounded-xl bg-violet-500/10 border border-violet-500/30 text-violet-200 leading-relaxed"><i class="fa-solid fa-hourglass-half mr-1.5"></i>Đang chờ một shipper của chi nhánh nhận đơn. Shipper sẽ tự xác nhận khi giao xong.</p>
+                        </c:when>
+                        <c:when test="${order.status == 'SHIPPING'}">
+                            <p class="p-3 rounded-xl bg-violet-500/10 border border-violet-500/30 text-violet-200 leading-relaxed"><i class="fa-solid fa-motorcycle mr-1.5"></i>Shipper <strong>${fn:escapeXml(order.shipperName)}</strong> đang giao đơn này. Shipper sẽ tự xác nhận khi giao xong.</p>
+                        </c:when>
+                        <c:when test="${order.status == 'DELIVERY_FAILED'}">
+                            <form action="/admin/orders/${order.orderId}/redeliver" method="post">
+                                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+                                <button type="submit" class="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-gold to-amber-600 text-slate-950 font-bold hover:from-yellow-400 hover:to-amber-500 transition"><i class="fa-solid fa-rotate-right mr-1.5"></i>Cho giao lại</button>
                             </form>
                         </c:when>
                         <c:otherwise>

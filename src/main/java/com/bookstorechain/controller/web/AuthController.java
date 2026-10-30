@@ -33,6 +33,10 @@ public class AuthController {
                     role.getAuthority().equals("ROLE_ADMIN")
                             || role.getAuthority().equals("ROLE_MANAGER")
                             || role.getAuthority().equals("ROLE_STAFF"));
+            boolean isShipper = auth.getAuthorities().stream().anyMatch(role -> role.getAuthority().equals("ROLE_SHIPPER"));
+            if (isShipper) {
+                return "redirect:/shipper/orders";
+            }
             if (isStaffOrAdmin) {
                 return "redirect:/admin/dashboard";
             }

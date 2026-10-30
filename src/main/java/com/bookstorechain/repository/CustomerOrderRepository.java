@@ -25,6 +25,15 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
 
     List<CustomerOrder> findByCustomerIdOrderByCreatedAtDesc(Long customerId);
 
+    /** Đơn của một chi nhánh theo trạng thái, cũ nhất trước (danh sách đơn chờ shipper nhận). */
+    List<CustomerOrder> findByStoreIdAndStatusOrderByIdAsc(Long storeId, OrderStatus status);
+
+    /** Đơn một shipper đang giữ theo trạng thái, cũ nhất trước. */
+    List<CustomerOrder> findByShipperIdAndStatusOrderByIdAsc(Long shipperId, OrderStatus status);
+
+    /** 20 đơn gần nhất của shipper ở các trạng thái cho trước (lịch sử giao hàng). */
+    List<CustomerOrder> findTop20ByShipperIdAndStatusInOrderByIdDesc(Long shipperId, java.util.Collection<OrderStatus> statuses);
+
     /** Khách đã có đơn (chưa huỷ) dùng mã này chưa; dùng cho mã giới hạn mỗi khách một lần. */
     boolean existsByCustomerIdAndPromotionIdAndStatusNot(Long customerId, Long promotionId, OrderStatus status);
 

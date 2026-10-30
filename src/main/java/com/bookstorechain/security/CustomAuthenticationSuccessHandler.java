@@ -24,7 +24,11 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                         || role.getAuthority().equals("ROLE_MANAGER")
                         || role.getAuthority().equals("ROLE_STAFF"));
 
-        if (isStaffOrAdmin) {
+        boolean isShipper = authorities.stream().anyMatch(role -> role.getAuthority().equals("ROLE_SHIPPER"));
+
+        if (isShipper) {
+            response.sendRedirect("/shipper/orders");
+        } else if (isStaffOrAdmin) {
             response.sendRedirect("/admin/dashboard");
         } else {
             response.sendRedirect("/");

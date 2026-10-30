@@ -89,6 +89,9 @@ public class SecurityConfig {
 						// Admin
 						.requestMatchers("/admin/**").hasAnyRole("ADMIN", "MANAGER", "STAFF")
 
+						// Shipper (khu giao hàng riêng, không vào được /admin)
+						.requestMatchers("/shipper/**").hasRole("SHIPPER")
+
 						// Các URL còn lại phải đăng nhập
 						.anyRequest().authenticated())
 

@@ -57,6 +57,10 @@
     </c:otherwise>
 </c:choose>
 
+<c:if test="${order.status == 'DELIVERY_FAILED'}">
+    <div class="mt-5 p-3.5 rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-200 text-xs"><i class="fa-solid fa-triangle-exclamation mr-1.5"></i>Shipper chưa giao được đơn này. ${fn:escapeXml(order.storeName)} sẽ liên hệ với bạn để sắp xếp giao lại.</div>
+</c:if>
+
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
     <!-- Sách trong đơn -->
     <section class="lg:col-span-7 rounded-2xl glass-panel-subtle border border-white/10 overflow-hidden self-start">
@@ -94,6 +98,7 @@
             <c:choose>
                 <c:when test="${order.fulfillmentType == 'DELIVERY'}">
                     <p class="text-slate-300 mt-2"><i class="fa-solid fa-truck text-brand-gold mr-1.5"></i>Giao tận nơi: ${fn:escapeXml(order.shippingAddress)}</p>
+                    <c:if test="${order.status == 'SHIPPING' && not empty order.shipperName}"><p class="text-slate-300 mt-1"><i class="fa-solid fa-motorcycle text-brand-gold mr-1.5"></i>Shipper: ${fn:escapeXml(order.shipperName)}</p></c:if>
                 </c:when>
                 <c:otherwise>
                     <p class="text-slate-300 mt-2"><i class="fa-solid fa-store text-brand-gold mr-1.5"></i>Nhận tại: ${fn:escapeXml(order.storeName)}</p>

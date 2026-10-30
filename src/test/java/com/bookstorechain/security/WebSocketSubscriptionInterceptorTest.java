@@ -107,6 +107,32 @@ class WebSocketSubscriptionInterceptorTest {
     }
 
     @Test
+    @DisplayName("Shipper chỉ nghe kênh đơn chờ giao của chi nhánh mình, không nghe kênh nhân viên")
+    void shipperHearsOnlyOwnStoreDeliveryTopic() {
+        Principal shipper = principal(Role.SHIPPER, 3L);
+
+        assertThat(subscribeAllowed(shipper, "/topic/shipper/store/3")).isTrue();
+        assertThat(subscribeAllowed(shipper, "/topic/shipper/store/4")).isFalse();
+        assertThat(subscribeAllowed(shipper, "/topic/store/3")).isFalse();
+        assertThat(subscribeAllowed(shipper, "/topic/store/all")).isFalse();
+        assertThat(subscribeAllowed(shipper, "/topic/chat/store/3")).isFalse();
+        assertThat(subscribeAllowed(shipper, "/topic/notifications")).isFalse();
+        assertThat(subscribeAllowed(shipper, "/user/queue/notifications")).isTrue();
+        assertThat(subscribeAllowed(principal(Role.SHIPPER, null), "/topic/shipper/store/3")).isFalse();
+    }
+
+    @Test
+    @DisplayName("Kênh shipper không dành cho nhân viên, quản lý, quản trị hay khách")
+    void shipperTopicIsOnlyForShippers() {
+        for (Role role : new Role[]{Role.STAFF, Role.MANAGER, Role.ADMIN, Role.CUSTOMER}) {
+            assertThat(subscribeAllowed(principal(role, 3L), "/topic/shipper/store/3")).as(role.name()).isFalse();
+        }
+        assertThat(subscribeAllowed(null, "/topic/shipper/store/3")).isFalse();
+        assertThat(subscribeAllowed(principal(Role.SHIPPER, 3L), "/topic/shipper/store/abc")).isFalse();
+        assertThat(subscribeAllowed(principal(Role.SHIPPER, 3L), "/topic/shipper/store/3/x")).isFalse();
+    }
+
+    @Test
     @DisplayName("Kênh lạ hoặc sai định dạng bị từ chối với mọi vai trò")
     void unknownDestinationsAreDenied() {
         Principal admin = principal(Role.ADMIN, null);

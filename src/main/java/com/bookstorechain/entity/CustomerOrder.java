@@ -79,6 +79,15 @@ public class CustomerOrder extends BaseEntity {
     @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount;
 
+    /** Shipper đang giữ đơn (null khi đơn chưa có người nhận, đã về chi nhánh hoặc nhận tại cửa hàng). */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shipper_id")
+    private User shipper;
+
+    /** Lý do giao thất bại do shipper ghi; xoá khi nhân viên cho giao lại. */
+    @Column(name = "delivery_failure_reason", columnDefinition = "NVARCHAR(255)")
+    private String deliveryFailureReason;
+
     /** Thời điểm đơn hoàn tất; doanh thu được tính theo ngày này, không theo ngày đặt hay ngày sửa cuối. */
     @Column(name = "completed_at")
     private LocalDateTime completedAt;

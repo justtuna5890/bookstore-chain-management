@@ -51,6 +51,17 @@ class CustomAuthenticationSuccessHandlerTest {
     }
 
     @Test
+    @DisplayName("onAuthenticationSuccess - Điều hướng /shipper/orders cho tài khoản SHIPPER")
+    void onAuthenticationSuccess_WhenShipper_ShouldRedirectToShipperOrders() throws IOException {
+        Authentication auth = new UsernamePasswordAuthenticationToken(
+                "shipper", "password", List.of(new SimpleGrantedAuthority("ROLE_SHIPPER")));
+
+        handler.onAuthenticationSuccess(request, response, auth);
+
+        assertThat(response.getRedirectedUrl()).isEqualTo("/shipper/orders");
+    }
+
+    @Test
     @DisplayName("onAuthenticationSuccess - Điều hướng trang chủ '/' cho khách hàng CUSTOMER")
     void onAuthenticationSuccess_WhenCustomer_ShouldRedirectToHomePage() throws IOException {
         Authentication auth = new UsernamePasswordAuthenticationToken(

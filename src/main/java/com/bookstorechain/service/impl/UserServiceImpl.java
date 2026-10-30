@@ -52,8 +52,8 @@ public class UserServiceImpl implements UserService {
             throw new DuplicateResourceException("Email '" + requestDTO.getEmail() + "' đã được sử dụng");
         }
 
-        if ((requestDTO.getRole() == Role.STAFF || requestDTO.getRole() == Role.MANAGER) && requestDTO.getStoreId() == null) {
-            throw new IllegalArgumentException("Nhân viên (STAFF) và Quản lý (MANAGER) bắt buộc phải được gán vào một chi nhánh cụ thể.");
+        if (requiresStore(requestDTO.getRole()) && requestDTO.getStoreId() == null) {
+            throw new IllegalArgumentException("Nhân viên (STAFF), Quản lý (MANAGER) và Shipper (SHIPPER) bắt buộc phải được gán vào một chi nhánh cụ thể.");
         }
 
         Store store = null;
@@ -82,8 +82,8 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy tài khoản với ID: " + id));
 
-        if ((requestDTO.getRole() == Role.STAFF || requestDTO.getRole() == Role.MANAGER) && requestDTO.getStoreId() == null) {
-            throw new IllegalArgumentException("Nhân viên (STAFF) và Quản lý (MANAGER) bắt buộc phải được gán vào một chi nhánh cụ thể.");
+        if (requiresStore(requestDTO.getRole()) && requestDTO.getStoreId() == null) {
+            throw new IllegalArgumentException("Nhân viên (STAFF), Quản lý (MANAGER) và Shipper (SHIPPER) bắt buộc phải được gán vào một chi nhánh cụ thể.");
         }
 
         if (user.getRole() == Role.ADMIN && requestDTO.getRole() != Role.ADMIN) {
@@ -150,7 +150,7 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        if ((role == Role.STAFF || role == Role.MANAGER) && user.getStore() == null) {
+        if (requiresStore(role) && user.getStore() == null) {
             throw new IllegalArgumentException("Không thể chuyển sang vai trò " + role + " vì tài khoản chưa được gán chi nhánh. Hãy chỉnh sửa thông tin tài khoản và chọn chi nhánh.");
         }
 
@@ -198,6 +198,11 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Sai tài khoản hoặc mật khẩu!");
         }
         return user;
+    }
+
+    /** Vai trò làm việc tại một chi nhánh cụ thể nên bắt buộc phải có chi nhánh. */
+    private boolean requiresStore(Role role) {
+        return role == Role.STAFF || role == Role.MANAGER || role == Role.SHIPPER;
     }
 
     private String getCurrentAuthenticatedUsername() {

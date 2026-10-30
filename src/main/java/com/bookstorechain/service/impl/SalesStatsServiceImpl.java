@@ -59,7 +59,8 @@ public class SalesStatsServiceImpl implements SalesStatsService {
         }
         long pending = counts.getOrDefault(OrderStatus.PENDING, 0L);
         long open = pending + counts.getOrDefault(OrderStatus.CONFIRMED, 0L)
-                + counts.getOrDefault(OrderStatus.READY_FOR_PICKUP, 0L) + counts.getOrDefault(OrderStatus.SHIPPING, 0L);
+                + counts.getOrDefault(OrderStatus.READY_FOR_PICKUP, 0L) + counts.getOrDefault(OrderStatus.READY_FOR_DELIVERY, 0L)
+                + counts.getOrDefault(OrderStatus.SHIPPING, 0L) + counts.getOrDefault(OrderStatus.DELIVERY_FAILED, 0L);
 
         long monthOrders = month[1].longValue();
         return SalesOverviewDTO.builder()

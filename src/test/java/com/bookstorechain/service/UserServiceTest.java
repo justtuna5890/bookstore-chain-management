@@ -275,6 +275,23 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("createUser - Bắt lỗi khi tạo tài khoản SHIPPER mà không gán chi nhánh")
+    void createUser_WhenShipperWithoutStore_ShouldThrowIllegalArgumentException() {
+        UserRequestDTO dto = new UserRequestDTO();
+        dto.setUsername("shipper_no_store");
+        dto.setEmail("shipper-nostore@bookstore.com");
+        dto.setRole(Role.SHIPPER);
+        dto.setStoreId(null);
+
+        when(userRepository.existsByUsername("shipper_no_store")).thenReturn(false);
+        when(userRepository.existsByEmail("shipper-nostore@bookstore.com")).thenReturn(false);
+
+        assertThatThrownBy(() -> userService.createUser(dto))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("bắt buộc phải được gán vào một chi nhánh cụ thể");
+    }
+
+    @Test
     @DisplayName("toggleUserStatus - Bắt lỗi khi ADMIN tự khóa tài khoản của chính mình")
     void toggleUserStatus_WhenLockingSelfAdmin_ShouldThrowIllegalStateException() {
         User adminUser = User.builder()
